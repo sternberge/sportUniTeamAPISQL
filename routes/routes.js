@@ -2,6 +2,7 @@ const CollegeController = require('../controllers/college_controller');
 const TeamController = require('../controllers/team_controller');
 const CoachController = require('../controllers/coach_controller');
 const PlayerController = require('../controllers/player_controller');
+const UserController = require('../controllers/user_controller');
 
 module.exports = (app) => {
   /*app.post('/api/colleges', CollegeController.createCollege);
@@ -23,4 +24,9 @@ module.exports = (app) => {
   app.put('/api/players/:player_id', PlayerController.editPlayer);
   app.delete('/api/players/:player_id', PlayerController.deletePlayer);
   app.get('/api/players/:player_id', PlayerController.findPlayerById);*/
+
+  app.post('/api/users', UserController.createUser);
+  app.delete('/api/users/:user_id', UserController.deleteUser);
+  app.get('/api/users/:user_id', UserController.findUserById);
+  app.put('/api/users/:user_id', UserController.editUser);
 };

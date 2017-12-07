@@ -8,21 +8,22 @@ app.use(bodyParser.json());
 routes(app);
 // Connection string parameters.
 
-var connection = mysql.createConnection({
+var pool = mysql.createPool({
   host     : 'sutdbtest.ct79avbur6ul.us-east-1.rds.amazonaws.com',
   user     : 'SUTeam',
   password : 'bddsutteam',
-  database : 'PFESUTeamDb',
-  port : '3306'
+  database : 'mydb',
+  port : '3306',
+  connectionLimit : 10
 });
 
-connection.connect((err) => {
+/*connection.connect((err) => {
   if (err) {
     console.error('error connecting: ' + err.stack);
     return;
   }
   console.log('connected as id ' + connection.threadId);
-});
+});*/
 
 
 app.use(function(req, res) {
@@ -30,3 +31,4 @@ app.use(function(req, res) {
 });
 
 module.exports = app;
+exports.pool = pool;
