@@ -11,7 +11,7 @@ routes(app);
 var pool = mysql.createPool({
   host     : 'sutdbtest.ct79avbur6ul.us-east-1.rds.amazonaws.com',
   user     : 'SUTeam',
-  password : 'bddsutteam',
+  password : '',
   database : 'mydb',
   port : '3306',
   connectionLimit : 10
