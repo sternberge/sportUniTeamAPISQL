@@ -1,10 +1,10 @@
-var app = require('./../app');
+var db = require('./../db');
 
 module.exports = {
 
   findUserById (req, res) {
     const userId = req.params.user_id;
-    app.pool.getConnection((error, connection) => {
+    db.pool.getConnection((error, connection) => {
       const userProp = req.body;
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -29,7 +29,7 @@ module.exports = {
       birthday: req.body.birthday,
       userType: req.body.userType};
 
-      app.pool.getConnection((error, connection) => {
+      db.pool.getConnection((error, connection) => {
         const userProp = req.body;
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -49,7 +49,7 @@ module.exports = {
     editUser(req, res, next) {
       const userId = req.params.user_id;
       const userProperties = req.body;
-      app.pool.getConnection((error, connection) => {
+      db.pool.getConnection((error, connection) => {
         const userProp = req.body;
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -67,7 +67,7 @@ module.exports = {
 
     deleteUser(req, res, next) {
       const userId = req.params.user_id;
-      app.pool.getConnection((error, connection) => {
+      db.pool.getConnection((error, connection) => {
         const userProp = req.body;
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
