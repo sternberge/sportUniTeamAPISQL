@@ -13,14 +13,14 @@ module.exports = (app) => {
   app.post('/api/teams', TeamController.createTeam);
   app.put('/api/teams/:team_id', TeamController.editTeam);
   app.delete('/api/teams/:team_id', TeamController.deleteTeam);
-  app.get('/api/teams/:team_id', TeamController.findTeamById);
+  app.get('/api/teams/:team_id', TeamController.findTeamById);*/
 
-  app.post('/api/coaches', CoachController.createCoach);
+  //app.post('/api/coaches', CoachController.createCoach);
   app.put('/api/coaches/:coach_id', CoachController.editCoach);
   app.delete('/api/coaches/:coach_id', CoachController.deleteCoach);
   app.get('/api/coaches/:coach_id', CoachController.findCoachById);
 
-  app.post('/api/players', PlayerController.createPlayer);
+  /*app.post('/api/players', PlayerController.createPlayer);
   app.put('/api/players/:player_id', PlayerController.editPlayer);
   app.delete('/api/players/:player_id', PlayerController.deletePlayer);
   app.get('/api/players/:player_id', PlayerController.findPlayerById);*/
