@@ -1,9 +1,8 @@
 var mysql = require('mysql');
 
-
 // Connection string parameters.
 var pool = mysql.createPool({
-  host     : 'sutdbtest.ct79avbur6ul.us-east-1.rds.amazonaws.com',
+  host     : 'sutdbtest.ct79avbur6ul.us-east-1.rds.amazonaws.com',  //process.env.DB_HOST --> A voir
   user     : 'SUTeam',
   password : 'bddsutteam',
   database : 'mydb',
