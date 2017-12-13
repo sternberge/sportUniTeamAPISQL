@@ -1,6 +1,6 @@
 var db = require('./../db');
 var expressValidator = require('express-validator');
-var bcrypt = require('bcrypt');
+var bcrypt = require('bcrypt'); // algo de hash
 const saltRounds = 10;
 
 module.exports = {
