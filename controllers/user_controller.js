@@ -29,6 +29,8 @@ module.exports = {
     req.checkBody('email','Email cannot be empty').notEmpty();
     req.checkBody('email','Your email is not valid').isEmail();
     req.checkBody('email','Your email should be between 4 and 100 characters').len(4,100);
+    req.checkBody('firstName','FirstName cannot be empty').notEmpty();
+    req.checkBody('lastName','Email cannot be empty').notEmpty();
     req.checkBody('password','Your password should be between 8 and 100 characters').len(8,100);
     req.checkBody('reEnterPassword','Your password is different').equals(req.body.password);
     var errors = req.validationErrors();

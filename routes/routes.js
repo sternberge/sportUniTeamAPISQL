@@ -15,7 +15,7 @@ module.exports = (app) => {
   app.delete('/api/teams/:team_id', TeamController.deleteTeam);
   app.get('/api/teams/:team_id', TeamController.findTeamById);*/
 
-  //app.post('/api/coaches', CoachController.createCoach);
+  app.post('/api/coaches', CoachController.createCoach);
   app.put('/api/coaches/:coach_id', CoachController.editCoach);
   app.delete('/api/coaches/:coach_id', CoachController.deleteCoach);
   app.get('/api/coaches/:coach_id', CoachController.findCoachById);
