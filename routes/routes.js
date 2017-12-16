@@ -5,12 +5,12 @@ const PlayerController = require('../controllers/player_controller');
 const UserController = require('../controllers/user_controller');
 
 module.exports = (app) => {
-  /*app.post('/api/colleges', CollegeController.createCollege);
+  app.post('/api/colleges', CollegeController.createCollege);
   app.put('/api/colleges/:college_id', CollegeController.editCollege);
   app.delete('/api/colleges/:college_id', CollegeController.deleteCollege);
   app.get('/api/colleges/:college_id', CollegeController.findCollegeById);
 
-  app.post('/api/teams', TeamController.createTeam);
+  /*app.post('/api/teams', TeamController.createTeam);
   app.put('/api/teams/:team_id', TeamController.editTeam);
   app.delete('/api/teams/:team_id', TeamController.deleteTeam);
   app.get('/api/teams/:team_id', TeamController.findTeamById);*/

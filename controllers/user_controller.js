@@ -15,7 +15,7 @@ module.exports = {
       var query = connection.query('SELECT * FROM Users WHERE userID = ?', userId, (error, results, fields) => {
         if (error){
           connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));// Convertion de la réponse en format JSON
         }
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
         connection.release(); // CLOSE THE CONNECTION
@@ -63,6 +63,8 @@ module.exports = {
               }
               res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
               connection.release(); // CLOSE THE CONNECTION
+              console.log("test1");
+              return (results.insertId);
             });
           });
         });

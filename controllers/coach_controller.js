@@ -25,9 +25,8 @@ module.exports = {
   },
 
   createCoach(req, res, next) {
-    var toto = UserController.createUser(req, res, next);
-    console.log (toto);
-    },
+    UserController.createUser({}).then((toto)=>console.log(toto));
+  },
 
     editCoach(req, res, next) {
       const coachId = req.params.coach_id;
