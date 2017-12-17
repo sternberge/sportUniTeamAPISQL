@@ -25,7 +25,7 @@ module.exports = {
   },
 
   createCoach(req, res, next) {
-    UserController.createUser({}).then((toto)=>console.log(toto));
+    UserController.createUser.call(null, req,res,next).then(()=>console.log("toto"));
   },
 
     editCoach(req, res, next) {

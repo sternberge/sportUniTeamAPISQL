@@ -63,7 +63,6 @@ module.exports = {
               }
               res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
               connection.release(); // CLOSE THE CONNECTION
-              console.log("test1");
               return (results.insertId);
             });
           });

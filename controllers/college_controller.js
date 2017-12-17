@@ -12,7 +12,7 @@ module.exports = {
       var query = connection.query('SELECT * FROM Colleges WHERE collegeID = ?', collegeId, (error, results, fields) => {
         if (error){
           connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));// Convertion de la réponse en format JSON
+          res.send(JSON.stringify({"status": 500, "error": error, "response": null}));// Convertion de la réponse en format JSON
         }
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
         connection.release(); // CLOSE THE CONNECTION
