@@ -11,6 +11,7 @@ const RankRulesPointsController = require('../controllers/rank_rules_points_cont
 const RankingController = require('../controllers/ranking_controller');
 const SimpleMatchesController = require('../controllers/simple_matches_controller');
 const TournamentsController = require('../controllers/tournaments_controller');
+const LeaguesController = require('../controllers/leagues_controller');
 
 module.exports = (app) => {
   //College
@@ -86,9 +87,15 @@ module.exports = (app) => {
   app.put('/api/teams/:team_id', TeamsController.edit);
 
   //Tournaments
-  app.post('/api//', TournamentsController.create);
+  app.post('/api/', TournamentsController.create);
   app.delete('/api/tournaments/:tournament_id',TournamentsController.delete);
   app.get('/api/tournaments/:tournament_id', TournamentsController.find);
   app.put('/api/tournaments/:tournament_id', TournamentsController.edit);
+
+  //Leagues
+  app.post('/api/', LeaguesController.create);
+  app.delete('/api/leagues/:league_id',LeaguesController.delete);
+  app.get('/api/leagues/:league_id', LeaguesController.find);
+  app.put('/api/leagues/:league_id', LeaguesController.edit);
 
 };
