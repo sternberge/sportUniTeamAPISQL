@@ -10,7 +10,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query('SELECT * FROM tournaments WHERE tournamentId = ?', tournamentId, (error, results, fields) => {
+      var query = connection.query('SELECT * FROM Tournaments WHERE tournamentId = ?', tournamentId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -44,7 +44,7 @@ module.exports = {
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
 
-        var query = connection.query('INSERT INTO tournaments (beginDate,endDate,gender,name) VALUES(?, ?, ?, ?)',
+        var query = connection.query('INSERT INTO Tournaments (beginDate,endDate,gender,name) VALUES(?, ?, ?, ?)',
         [beginDate,endDate,gender,name], (error, results, fields) => {
           if (error){
             connection.release();
@@ -66,7 +66,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('UPDATE tournaments SET ? WHERE tournamentId = ?',[tournamentProperties, tournamentId], (error, results, fields) => {
+      var query = connection.query('UPDATE Tournaments SET ? WHERE tournamentId = ?',[tournamentProperties, tournamentId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -84,7 +84,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('DELETE FROM tournaments WHERE tournamentId = ?', tournamentId, (error, results, fields) => {
+      var query = connection.query('DELETE FROM Tournaments WHERE tournamentId = ?', tournamentId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
