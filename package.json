@@ -22,7 +22,7 @@
     "express": "^4.16.2",
 	"bcrypt": "^1.0.3",
     "express-validator": "^4.3.0",
-    "mysql": "^2.15.0"
+    "mysql": "^2.15.0",
 	"promise": "^8.0.1"
   },
   "devDependencies": {
