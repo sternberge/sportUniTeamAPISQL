@@ -4,16 +4,28 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "restart": "pm2 startOrRestart ecosystem.config.js",
+    "deploy": "pm2 deploy ecosystem.config.js production",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sternberge/sportUniTeamAPISQL.git"
   },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sternberge/sportUniTeamAPISQL/issues"
+  },
+  "homepage": "https://github.com/sternberge/sportUniTeamAPISQL#readme",
   "dependencies": {
-    "bcrypt": "^1.0.3",
     "express": "^4.16.2",
+	"bcrypt": "^1.0.3",
     "express-validator": "^4.3.0",
-    "mysql": "^2.15.0",
-    "promise": "^8.0.1"
+    "mysql": "^2.15.0"
+	"promise": "^8.0.1"
+  },
+  "devDependencies": {
+    "pm2": "^2.9.1"
   }
 }
