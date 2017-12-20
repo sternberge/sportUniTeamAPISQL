@@ -22,15 +22,6 @@ module.exports = {
   },
 
   create(req, res, next) {
-
-    var errors = req.validationErrors();
-
-    if(errors){
-      res.send(errors);
-    }
-
-    else{
-
       const rank =	req.body.rank;
       const rankPoints =req.body.rankPoints;
       const Players_playerId = req.body.Players_playerId;
@@ -51,9 +42,7 @@ module.exports = {
           connection.release(); // CLOSE THE CONNECTION
           return (results.insertId);
         });
-
       });
-    }
   },
 
   edit(req, res, next) {
@@ -77,7 +66,6 @@ module.exports = {
   delete(req, res, next) {
     const RankingId = req.params.ranking_id;
     db.pool.getConnection((error, connection) => {
-
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
@@ -91,6 +79,4 @@ module.exports = {
       });
     });
   },
-
-
 };

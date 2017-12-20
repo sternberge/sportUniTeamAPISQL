@@ -22,20 +22,10 @@ module.exports = {
   },
 
   create(req, res, next) {
- 
-    req.checkBody('gender','Gender cannot be empty').notEmpty();
-    var errors = req.validationErrors();
-
-    if(errors){
-      res.send(errors);
-    }
-
-    else{
         const gender = req.body.gender;
         const Colleges_collegeId = req.body.Colleges_collegeId;
         const Coaches_headCoachId = req.body.Coaches_headCoachId;
         const Coaches_coachId = req.body.Coaches_coachId;
-
         db.pool.getConnection((error, connection) => {
           if (error){
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -51,9 +41,7 @@ module.exports = {
               connection.release(); // CLOSE THE CONNECTION
               return (results.insertId);
             });
-
         });
-      }
   },
 
     edit(req, res, next) {
@@ -77,7 +65,6 @@ module.exports = {
     delete(req, res, next) {
       const teamId = req.params.team_id;
       db.pool.getConnection((error, connection) => {
-
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
@@ -91,6 +78,4 @@ module.exports = {
         });
       });
     },
-
-
   };
