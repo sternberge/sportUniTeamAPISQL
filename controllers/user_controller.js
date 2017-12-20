@@ -1,5 +1,6 @@
 var db = require('./../db');
 var expressValidator = require('express-validator');
+var promise = require('promise');
 var bcrypt = require('bcrypt'); // algo de hash
 const saltRounds = 10;
 
@@ -70,6 +71,58 @@ module.exports = {
       }
     },
 
+    testUserPromise(req,res,next){
+      return new Promise(function (resolve, reject) {
+        // rajouter le check si l'utilisateur n'est pas déja existant
+        //different type of check of the informations
+        req.checkBody('email','Email cannot be empty').notEmpty();
+        req.checkBody('email','Your email is not valid').isEmail();
+        req.checkBody('email','Your email should be between 4 and 100 characters').len(4,100);
+        req.checkBody('firstName','FirstName cannot be empty').notEmpty();
+        req.checkBody('lastName','Email cannot be empty').notEmpty();
+        req.checkBody('password','Your password should be between 8 and 100 characters').len(8,100);
+        req.checkBody('reEnterPassword','Your password is different').equals(req.body.password);
+        var errors = req.validationErrors();
+
+        if(errors){          
+          reject(errors);
+          return res.send(errors);
+        }
+
+        else{
+            const firstName= req.body.firstName;
+            const lastName=req.body.lastName;
+            const gender= req.body.gender;
+            const email= req.body.email;
+            const password= req.body.password;
+            const birthday= req.body.birthday;
+            const userType= req.body.userType;
+
+            db.pool.getConnection((error, connection) => {
+              if (error){
+                reject(error);
+                return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+              }
+              //hash of the password and insert in the database
+              bcrypt.hash(password, saltRounds, function(err, hash) {
+                // Store hash in your password DB.
+                var query = connection.query('INSERT INTO Users (firstName,lastName,gender,email,password,birthday,userType) VALUES(?, ?, ?, ?, ?, ?, ?)',
+                [firstName,lastName,gender,email,hash,birthday,userType], (error, results, fields) => {
+                  if (error){
+                    connection.release();
+                    reject(error);
+                    return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                  }
+                  res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                  connection.release(); // CLOSE THE CONNECTION
+                  resolve(results.insertId);
+                });
+              });
+            });
+          }
+      });
+    },
+
     editUser(req, res, next) {
       const userId = req.params.user_id;
       const userProperties = req.body;
@@ -110,7 +163,6 @@ module.exports = {
     // check de l'email pour la création et l'update du User
     checkEmailUnicity(email){
       db.pool.getConnection((error, connection) => {
-
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
