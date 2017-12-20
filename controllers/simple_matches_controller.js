@@ -22,15 +22,7 @@ module.exports = {
   },
 
   create(req, res, next) {
- 
 
-    var errors = req.validationErrors();
-
-    if(errors){
-      res.send(errors);
-    }
-
-    else{
       const gender = req.body.gender;
       const Colleges_collegeId = req.body.Colleges_collegeId;
       const Coaches_headCoachId = req.body.Coaches_headCoachId;
@@ -51,12 +43,10 @@ module.exports = {
       const isRanked = req.body.isRanked;
       const springMatchType =req.body.springMatchType;
 
-
       db.pool.getConnection((error, connection) => {
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-
         var query = connection.query('INSERT INTO simplematches (winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,isRanked,springMatchType) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,isRanked,springMatchType], (error, results, fields) => {
           if (error){
@@ -67,9 +57,7 @@ module.exports = {
           connection.release(); // CLOSE THE CONNECTION
           return (results.insertId);
         });
-
       });
-    }
   },
 
   edit(req, res, next) {
@@ -107,6 +95,4 @@ module.exports = {
       });
     });
   },
-
-
 };
