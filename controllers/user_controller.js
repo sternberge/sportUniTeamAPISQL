@@ -24,7 +24,7 @@ module.exports = {
     });
   },
 
-  createUser(req, res, next) {
+  /*createUser(req, res, next) {
     // rajouter le check si l'utilisateur n'est pas déja existant
     //different type of check of the informations
     req.checkBody('email','Email cannot be empty').notEmpty();
@@ -69,9 +69,9 @@ module.exports = {
           });
         });
       }
-    },
+    },*/
 
-    testUserPromise(req,res,next){
+    createUser(req,res,next){
       return new Promise(function (resolve, reject) {
         // rajouter le check si l'utilisateur n'est pas déja existant
         //different type of check of the informations
@@ -84,7 +84,7 @@ module.exports = {
         req.checkBody('reEnterPassword','Your password is different').equals(req.body.password);
         var errors = req.validationErrors();
 
-        if(errors){          
+        if(errors){
           reject(errors);
           return res.send(errors);
         }

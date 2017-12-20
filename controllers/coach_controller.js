@@ -24,23 +24,26 @@ module.exports = {
     });
   },
 
+
+// Probleme mineur à régler, ne pas superposer les responses
   createCoach(req, res, next) {
-    UserController.testUserPromise(req, res, next)
+    UserController.createUser(req, res, next)
     .then((userId)=>{
       db.pool.getConnection((error, connection) => {
         //erreur de connection
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
+        var coachType = req.body.coachType;
         //requete d'insertion
-        var query = connection.query('INSERT INTO Coaches (Users_userId,coachType) VALUES  (userId,coachType)',
-        userId, req.body.coachType, (error, results, fields) => {
+        var query = connection.query('INSERT INTO Coaches (Users_userId,coachType) VALUES  (?,?)',
+        [userId, coachType], (error, results, fields) => {
           //erreur d'insertion
           if (error){
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
-          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          //return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           console.log("test ok");
           connection.release(); // CLOSE THE CONNECTION
           return (results.insertId);
