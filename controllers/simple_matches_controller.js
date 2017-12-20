@@ -10,7 +10,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query('SELECT * FROM simplematches WHERE simpleMatchId = ?', simpleMatchId, (error, results, fields) => {
+      var query = connection.query('SELECT * FROM SimpleMatches WHERE simpleMatchId = ?', simpleMatchId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -23,11 +23,7 @@ module.exports = {
 
   create(req, res, next) {
 
-      const gender = req.body.gender;
-      const Colleges_collegeId = req.body.Colleges_collegeId;
-      const Coaches_headCoachId = req.body.Coaches_headCoachId;
-      const Coaches_coachId = req.body.Coaches_coachId;
-      const simpleMatchId = req.body.simpleMatchId;
+
       const winner = req.body.winner;
       const loser = req.body.loser;
       const score = req.body.score;
@@ -43,11 +39,13 @@ module.exports = {
       const isRanked = req.body.isRanked;
       const springMatchType =req.body.springMatchType;
 
+
       db.pool.getConnection((error, connection) => {
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        var query = connection.query('INSERT INTO simplematches (winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,isRanked,springMatchType) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+
+        var query = connection.query('INSERT INTO SimpleMatches (winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,isRanked,springMatchType) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,isRanked,springMatchType], (error, results, fields) => {
           if (error){
             connection.release();
@@ -57,7 +55,9 @@ module.exports = {
           connection.release(); // CLOSE THE CONNECTION
           return (results.insertId);
         });
+
       });
+    
   },
 
   edit(req, res, next) {
@@ -67,7 +67,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('UPDATE simplematches SET ? WHERE simpleMatchId = ?',[simpleMatchProperties, simpleMatchId], (error, results, fields) => {
+      var query = connection.query('UPDATE SimpleMatches SET ? WHERE simpleMatchId = ?',[simpleMatchProperties, simpleMatchId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -85,7 +85,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('DELETE FROM simplematches WHERE simpleMatchId = ?', simpleMatchId, (error, results, fields) => {
+      var query = connection.query('DELETE FROM SimpleMatches WHERE simpleMatchId = ?', simpleMatchId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -95,4 +95,6 @@ module.exports = {
       });
     });
   },
+
+
 };

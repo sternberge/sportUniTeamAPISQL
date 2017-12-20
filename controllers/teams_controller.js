@@ -10,7 +10,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query('SELECT * FROM teams WHERE teamId = ?', teamId, (error, results, fields) => {
+      var query = connection.query('SELECT * FROM Teams WHERE teamId = ?', teamId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -31,7 +31,7 @@ module.exports = {
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
 
-            var query = connection.query('INSERT INTO teams (gender,Colleges_collegeId,Coaches_headCoachId,Coaches_coachId) VALUES(?, ?, ?, ?)',
+            var query = connection.query('INSERT INTO Teams (gender,Colleges_collegeId,Coaches_headCoachId,Coaches_coachId) VALUES(?, ?, ?, ?)',
             [gender,Colleges_collegeId,Coaches_headCoachId,Coaches_coachId], (error, results, fields) => {
               if (error){
                 connection.release();
@@ -51,7 +51,7 @@ module.exports = {
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        var query = connection.query('UPDATE teams SET ? WHERE teamId = ?',[teamProperties, teamId], (error, results, fields) => {
+        var query = connection.query('UPDATE Teams SET ? WHERE teamId = ?',[teamProperties, teamId], (error, results, fields) => {
           if (error){
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -68,7 +68,7 @@ module.exports = {
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        var query = connection.query('DELETE FROM teams WHERE teamId = ?', teamId, (error, results, fields) => {
+        var query = connection.query('DELETE FROM Teams WHERE teamId = ?', teamId, (error, results, fields) => {
           if (error){
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));

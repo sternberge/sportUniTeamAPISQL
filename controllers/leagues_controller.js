@@ -10,7 +10,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query('SELECT * FROM leagues WHERE leagueId = ?', leagueId, (error, results, fields) => {
+      var query = connection.query('SELECT * FROM Leagues WHERE leagueId = ?', leagueId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -22,14 +22,18 @@ module.exports = {
   },
 
   create(req, res, next) {
+
         const leagueLabel = req.body.leagueLabel;
         const leagueShortName = req.body.leagueShortName;
         const show = req.body.show;
+
+
         db.pool.getConnection((error, connection) => {
           if (error){
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
-            var query = connection.query('INSERT INTO leagues (leagueLabel,leagueShortName,show) VALUES(?, ?, ?)',
+
+            var query = connection.query('INSERT INTO Leagues (leagueLabel,leagueShortName,show) VALUES(?, ?, ?)',
             [leagueLabel,leagueShortName,show], (error, results, fields) => {
               if (error){
                 connection.release();
@@ -39,7 +43,9 @@ module.exports = {
               connection.release(); // CLOSE THE CONNECTION
               return (results.insertId);
             });
+
         });
+      
   },
 
     edit(req, res, next) {
@@ -49,7 +55,7 @@ module.exports = {
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        var query = connection.query('UPDATE leagues SET ? WHERE leagueId = ?',[leagueProperties, leagueId], (error, results, fields) => {
+        var query = connection.query('UPDATE Leagues SET ? WHERE leagueId = ?',[leagueProperties, leagueId], (error, results, fields) => {
           if (error){
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -63,10 +69,11 @@ module.exports = {
     delete(req, res, next) {
       const leagueId = req.params.team_id;
       db.pool.getConnection((error, connection) => {
+
         if (error){
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        var query = connection.query('DELETE FROM leagues WHERE leagueId = ?', leagueId, (error, results, fields) => {
+        var query = connection.query('DELETE FROM Leagues WHERE leagueId = ?', leagueId, (error, results, fields) => {
           if (error){
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -76,4 +83,6 @@ module.exports = {
         });
       });
     },
+
+
   };

@@ -10,7 +10,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query('SELECT * FROM ranking WHERE rankingId = ?', rankingId, (error, results, fields) => {
+      var query = connection.query('SELECT * FROM Ranking WHERE rankingId = ?', rankingId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -32,7 +32,7 @@ module.exports = {
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
 
-        var query = connection.query('INSERT INTO ranking (rank, rankPoints, Players_playerId,	rankDate) VALUES(?, ?, ?, ?)',
+        var query = connection.query('INSERT INTO Ranking (rank, rankPoints, Players_playerId,	rankDate) VALUES(?, ?, ?, ?)',
         [rank, rankPoints,	Players_playerId,	rankDate], (error, results, fields) => {
           if (error){
             connection.release();
@@ -52,7 +52,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('UPDATE ranking SET ? WHERE rankingId = ?',[rankingProperties, rankingId], (error, results, fields) => {
+      var query = connection.query('UPDATE Ranking SET ? WHERE rankingId = ?',[rankingProperties, rankingId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -69,7 +69,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('DELETE FROM ranking WHERE rankingId = ?', RankingId, (error, results, fields) => {
+      var query = connection.query('DELETE FROM Ranking WHERE rankingId = ?', RankingId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
