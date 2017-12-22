@@ -1,8 +1,7 @@
 var db = require('./../db');
 const UserController = require('../controllers/user_controller');
 var expressValidator = require('express-validator');
-var bcrypt = require('bcrypt');
-const saltRounds = 10;
+
 
 module.exports = {
 
@@ -44,14 +43,12 @@ module.exports = {
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
           //return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          console.log("test ok");
           connection.release(); // CLOSE THE CONNECTION
-          return (results.insertId);
         });
       });
     })
     .catch((err) => {
-      res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
     });
   },
 

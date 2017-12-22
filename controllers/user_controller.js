@@ -72,6 +72,7 @@ module.exports = {
     },*/
 
     createUser(req,res,next){
+
       return new Promise(function (resolve, reject) {
         // rajouter le check si l'utilisateur n'est pas déja existant
         //different type of check of the informations
@@ -101,7 +102,7 @@ module.exports = {
             db.pool.getConnection((error, connection) => {
               if (error){
                 reject(error);
-                return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                return; // Pour sortir de la methode
               }
               //hash of the password and insert in the database
               bcrypt.hash(password, saltRounds, function(err, hash) {
@@ -111,7 +112,7 @@ module.exports = {
                   if (error){
                     connection.release();
                     reject(error);
-                    return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                    return; // pour sortir de la methode
                   }
                   res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
                   connection.release(); // CLOSE THE CONNECTION
@@ -120,6 +121,10 @@ module.exports = {
               });
             });
           }
+      })
+
+      .catch((error)=>{
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       });
     },
 
@@ -162,18 +167,24 @@ module.exports = {
 
     // check de l'email pour la création et l'update du User
     checkEmailUnicity(email){
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        var query = connection.query('Select 1 from Users Where email = ?', email, (error, results, fields) => {
+      new Promise((resolve,reject) => {
+        db.pool.getConnection((error, connection) => {
           if (error){
-            connection.release();
+            reject(error);
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
-          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          connection.release(); // CLOSE THE CONNECTION
+          var query = connection.query('Select 1 from Users Where email = ?', email, (error, results, fields) => {
+            if (error){
+              connection.release();
+              reject(error);
+              return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+            }
+            res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+            connection.release(); // CLOSE THE CONNECTION
+            resolve();
+          });
         });
       });
     }
+
   };
