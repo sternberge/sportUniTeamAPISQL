@@ -24,7 +24,7 @@ module.exports = {
     });
   },
 
-  /*createUser(req, res, next) {
+  createUser(req, res, next) {
     // rajouter le check si l'utilisateur n'est pas déja existant
     //different type of check of the informations
     req.checkBody('email','Email cannot be empty').notEmpty();
@@ -64,14 +64,14 @@ module.exports = {
               }
               res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
               connection.release(); // CLOSE THE CONNECTION
-              return (results.insertId);
+
             });
           });
         });
       }
-    },*/
+    },
 
-    createUser(req,res,next){
+    createUserWithPromise(req,res,next){
 
       return new Promise(function (resolve, reject) {
         // rajouter le check si l'utilisateur n'est pas déja existant
@@ -114,18 +114,16 @@ module.exports = {
                     reject(error);
                     return; // pour sortir de la methode
                   }
-                  res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                  //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
                   connection.release(); // CLOSE THE CONNECTION
+                  console.log(results.insertId);
+
                   resolve(results.insertId);
                 });
               });
             });
           }
       })
-
-      .catch((error)=>{
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      });
     },
 
     editUser(req, res, next) {
@@ -167,21 +165,26 @@ module.exports = {
 
     // check de l'email pour la création et l'update du User
     checkEmailUnicity(email){
-      new Promise((resolve,reject) => {
+      return new Promise((resolve,reject) => {
         db.pool.getConnection((error, connection) => {
           if (error){
             reject(error);
-            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+            //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
           var query = connection.query('Select 1 from Users Where email = ?', email, (error, results, fields) => {
             if (error){
               connection.release();
               reject(error);
-              return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+              //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
             }
-            res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+            //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
             connection.release(); // CLOSE THE CONNECTION
-            resolve();
+            if(results.length > 0){
+              reject("email deja utilise");
+            }
+            else{
+              resolve();
+            }
           });
         });
       });

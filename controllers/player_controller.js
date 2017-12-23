@@ -26,7 +26,7 @@ module.exports = {
 
 // Probleme mineur à régler, ne pas superposer les responses
   createPlayer(req, res, next) {
-    UserController.createUser(req, res, next)
+    UserController.createUserWithPromise(req, res, next)
     .then((userId)=>{
       db.pool.getConnection((error, connection) => {
         //erreur de connection
@@ -44,7 +44,7 @@ module.exports = {
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
-          //return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           connection.release(); // CLOSE THE CONNECTION
         });
       });

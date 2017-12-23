@@ -26,8 +26,10 @@ module.exports = {
 
 // Probleme mineur à régler, ne pas superposer les responses
   createCoach(req, res, next) {
-    UserController.createUser(req, res, next)
+    UserController.checkEmailUnicity(req.body.email)
+    .then(UserController.createUserWithPromise(req, res, next))
     .then((userId)=>{
+      console.log(userId);
       db.pool.getConnection((error, connection) => {
         //erreur de connection
         if (error){
@@ -42,13 +44,13 @@ module.exports = {
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
-          //return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           connection.release(); // CLOSE THE CONNECTION
         });
       });
     })
     .catch((err) => {
-      res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
+      return res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
     });
   },
 
@@ -86,23 +88,7 @@ module.exports = {
         connection.release(); // CLOSE THE CONNECTION
       });
     });
-  },
-
-  // check de l'email pour la création et l'update du Coach
-  checkEmailUnicity(email){
-    db.pool.getConnection((error, connection) => {
-
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      }
-      var query = connection.query('Select 1 from Coachs Where email = ?', email, (error, results, fields) => {
-        if (error){
-          connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-        connection.release(); // CLOSE THE CONNECTION
-      });
-    });
   }
+
+
 };
