@@ -27,9 +27,8 @@ module.exports = {
 // Probleme mineur à régler, ne pas superposer les responses
   createCoach(req, res, next) {
     UserController.checkEmailUnicity(req.body.email)
-    .then(UserController.createUserWithPromise(req, res, next))
-    .then((userId)=>{
-      console.log(userId);
+    .then(() => UserController.createUserWithPromise(req, res, next))
+    .then((userId)=>{      
       db.pool.getConnection((error, connection) => {
         //erreur de connection
         if (error){

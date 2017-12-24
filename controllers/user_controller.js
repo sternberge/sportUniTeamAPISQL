@@ -24,7 +24,7 @@ module.exports = {
     });
   },
 
-  createUser(req, res, next) {
+  /*createUser(req, res, next) {
     // rajouter le check si l'utilisateur n'est pas déja existant
     //different type of check of the informations
     req.checkBody('email','Email cannot be empty').notEmpty();
@@ -69,13 +69,21 @@ module.exports = {
           });
         });
       }
+    },*/
+
+    createUser(req, res, next){
+      this.checkEmailUnicity(req.body.email)
+      .then(() => createUserWithPromise(req, res, next))
+      .catch((error) => {
+        console.log(error);
+      })
     },
 
     createUserWithPromise(req,res,next){
 
       return new Promise(function (resolve, reject) {
         // rajouter le check si l'utilisateur n'est pas déja existant
-        //different type of check of the informations
+        // different type of check of the informations
         req.checkBody('email','Email cannot be empty').notEmpty();
         req.checkBody('email','Your email is not valid').isEmail();
         req.checkBody('email','Your email should be between 4 and 100 characters').len(4,100);
@@ -116,8 +124,6 @@ module.exports = {
                   }
                   //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
                   connection.release(); // CLOSE THE CONNECTION
-                  console.log(results.insertId);
-
                   resolve(results.insertId);
                 });
               });
