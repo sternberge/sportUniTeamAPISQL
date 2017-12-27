@@ -35,11 +35,9 @@ module.exports = {
     req.checkBody('password','Your password should be between 8 and 100 characters').len(8,100);
     req.checkBody('reEnterPassword','Your password is different').equals(req.body.password);
     var errors = req.validationErrors();
-
     if(errors){
       res.send(errors);
     }
-
     else{
         const firstName= req.body.firstName;
         const lastName=req.body.lastName;
@@ -48,7 +46,6 @@ module.exports = {
         const password= req.body.password;
         const birthday= req.body.birthday;
         const userType= req.body.userType;
-
         db.pool.getConnection((error, connection) => {
           if (error){
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -64,7 +61,6 @@ module.exports = {
               }
               res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
               connection.release(); // CLOSE THE CONNECTION
-
             });
           });
         });
@@ -73,7 +69,10 @@ module.exports = {
 
     createUser(req, res, next){
       module.exports.checkEmailUnicity(req.body.email)
-      .then(() => createUserWithPromise(req, res, next))
+      .then(() => module.exports.createUserWithPromise(req, res, next))
+      .then(() => {
+        res.send(JSON.stringify({"status": 200, "error": null, "response": "User has been created"}));
+      })
       .catch((error) => {
         res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
       })
@@ -82,6 +81,7 @@ module.exports = {
     createUserWithPromise(req,res,next){
 
       return new Promise(function (resolve, reject) {
+
         // rajouter le check si l'utilisateur n'est pas déja existant
         // different type of check of the informations
         req.checkBody('email','Email cannot be empty').notEmpty();

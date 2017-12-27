@@ -28,7 +28,7 @@ module.exports = {
   createCoach(req, res, next) {
     UserController.checkEmailUnicity(req.body.email)
     .then(() => UserController.createUserWithPromise(req, res, next))
-    .then((userId)=>{      
+    .then((userId)=>{
       db.pool.getConnection((error, connection) => {
         //erreur de connection
         if (error){
