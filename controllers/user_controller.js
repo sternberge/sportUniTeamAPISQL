@@ -72,10 +72,10 @@ module.exports = {
     },*/
 
     createUser(req, res, next){
-      this.checkEmailUnicity(req.body.email)
+      module.exports.checkEmailUnicity(req.body.email)
       .then(() => createUserWithPromise(req, res, next))
       .catch((error) => {
-        console.log(error);
+        res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
       })
     },
 
@@ -186,7 +186,8 @@ module.exports = {
             //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
             connection.release(); // CLOSE THE CONNECTION
             if(results.length > 0){
-              reject("email deja utilise");
+              reject("Email already used");
+
             }
             else{
               resolve();
