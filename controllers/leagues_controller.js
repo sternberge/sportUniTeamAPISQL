@@ -15,8 +15,14 @@ module.exports = {
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-        connection.release(); // CLOSE THE CONNECTION
+        else if (results.length > 0){
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        }
+        else{
+          res.send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
+          connection.release(); // CLOSE THE CONNECTION
+        }
       });
     });
   },
@@ -45,7 +51,7 @@ module.exports = {
             });
 
         });
-      
+
   },
 
     edit(req, res, next) {

@@ -17,14 +17,20 @@ module.exports = {
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-        connection.release(); // CLOSE THE CONNECTION
+        else if (results.length > 0){
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        }
+        else{
+          res.send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
+          connection.release(); // CLOSE THE CONNECTION
+        }
       });
     });
   },
 
 
-// Probleme mineur à régler, ne pas superposer les responses
+  
   createCoach(req, res, next) {
     UserController.checkEmailUnicity(req.body.email)
     .then(() => UserController.createUserWithPromise(req, res, next))
@@ -43,8 +49,10 @@ module.exports = {
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
-          return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           connection.release(); // CLOSE THE CONNECTION
+
         });
       });
     })
