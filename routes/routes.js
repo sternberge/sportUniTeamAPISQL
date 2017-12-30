@@ -13,12 +13,21 @@ const SimpleMatchesController = require('../controllers/simple_matches_controlle
 const TournamentsController = require('../controllers/tournaments_controller');
 const LeaguesController = require('../controllers/leagues_controller');
 
+//Very important : keep the order of the drop down list because the server will
+//interpret the order, if you put the generateDropDownList at the end
+//the server will first execture getCollege and will be stuck avoiding
+//the drop down method to be called
+
 module.exports = (app) => {
   //College
+  app.get('/api/colleges/generateCollegeDropDownList', CollegeController.generateCollegeDropDownList);
   app.post('/api/colleges', CollegeController.createCollege);
   app.put('/api/colleges/:college_id', CollegeController.editCollege);
   app.delete('/api/colleges/:college_id', CollegeController.deleteCollege);
   app.get('/api/colleges/:college_id', CollegeController.findCollegeById);
+  //Generate drop down lists for colleges
+
+
 
   /*app.post('/api/teams', TeamController.createTeam);
   app.put('/api/teams/:team_id', TeamController.editTeam);
@@ -31,10 +40,16 @@ module.exports = (app) => {
   app.delete('/api/coaches/:coach_id', CoachController.deleteCoach);
   app.get('/api/coaches/:coach_id', CoachController.findCoachById);
 
+  //Players
   app.post('/api/players', PlayerController.createPlayer);
   app.put('/api/players/:player_id', PlayerController.editPlayer);
   app.delete('/api/players/:player_id', PlayerController.deletePlayer);
   app.get('/api/players/:player_id', PlayerController.findPlayerById);
+  //Generate drop down lists for players
+  app.get('/api/players/generateOtherPlayerDropDownList/:coach_id', PlayerController.generateOtherPlayerDropDownList);
+  app.get('/api/players/generateMyPlayerDropDownList/:coach_id', PlayerController.generateMyPlayerDropDownList);
+
+
 
   //Users
   app.post('/api/users', UserController.createUser);
@@ -86,11 +101,18 @@ module.exports = (app) => {
   app.get('/api/teams/:team_id', TeamsController.find);
   app.put('/api/teams/:team_id', TeamsController.edit);
 
+
+
   //Tournaments
+  app.get('/api/tournaments/generateTournamentDropDownList', TournamentsController.generateTournamentDropDownList);
   app.post('/api/', TournamentsController.create);
   app.delete('/api/tournaments/:tournament_id',TournamentsController.delete);
   app.get('/api/tournaments/:tournament_id', TournamentsController.find);
   app.put('/api/tournaments/:tournament_id', TournamentsController.edit);
+  //Generate drop down lists for tournaments
+
+
+
 
   //Leagues
   app.post('/api/', LeaguesController.create);

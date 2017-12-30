@@ -94,5 +94,41 @@ module.exports = {
         connection.release(); // CLOSE THE CONNECTION
       });
     });
+  },
+
+  generateMyPlayerDropDownList(req, res, next){
+    const coachId = req.params.coach_id;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId = (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?);',[coachId,coachId], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  },
+
+  generateOtherPlayerDropDownList(req, res, next){
+    const coachId = req.params.coach_id;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId != (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?);',[coachId,coachId], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
   }
 };
