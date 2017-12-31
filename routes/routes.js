@@ -84,6 +84,8 @@ module.exports = (app) => {
   app.put('/api/rankRulesPoints/:rankRulesPoints_id', RankRulesPointsController.edit);*/
 
   //Ranking
+  //Get the ranking
+  app.get('/api/ranking/getRanking', RankingController.getRanking);
   app.post('/api/ranking', RankingController.create);
   app.delete('/api/ranking/:ranking_id',RankingController.delete);
   app.get('/api/ranking/:ranking_id', RankingController.find);
