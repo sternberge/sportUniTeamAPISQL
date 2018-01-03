@@ -15,17 +15,17 @@ const LeaguesController = require('../controllers/leagues_controller');
 
 //Very important : keep the order of the drop down list because the server will
 //interpret the order, if you put the generateDropDownList at the end
-//the server will first execture getCollege and will be stuck avoiding
+//the server will first execute getCollege and will be stuck avoiding
 //the drop down method to be called
 
 module.exports = (app) => {
   //College
+  //Generate drop down lists for colleges
   app.get('/api/colleges/generateCollegeDropDownList', CollegeController.generateCollegeDropDownList);
   app.post('/api/colleges', CollegeController.createCollege);
   app.put('/api/colleges/:college_id', CollegeController.editCollege);
   app.delete('/api/colleges/:college_id', CollegeController.deleteCollege);
   app.get('/api/colleges/:college_id', CollegeController.findCollegeById);
-  //Generate drop down lists for colleges
 
 
 
@@ -92,6 +92,13 @@ module.exports = (app) => {
   app.put('/api/ranking/:ranking_id', RankingController.edit);
 
   //SimpleMatches
+  app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall', SimpleMatchesController.getAllMatchsByYear);
+  app.get('/api/simpleMatches/getMatchsByPlayer/:playerId', SimpleMatchesController.getMatchsByPlayer);
+  app.get('/api/simpleMatches/getMatchsByPlayerSpringFall/:playerId/:springFall', SimpleMatchesController.getMatchsByPlayerSpringFall);
+  app.get('/api/simpleMatches/getMatchsByPlayerSpringFallYear/:playerId/:springFall/:year', SimpleMatchesController.getMatchsByPlayerSpringFallYear);
+  app.get('/api/simpleMatches/getMatchsByCollegeSpringFallYear/:collegeId/:springFall/:year', SimpleMatchesController.getMatchsByCollegeSpringFallYear);
+  app.get('/api/simpleMatches/getMatchsByTournamentSpringFallYear/:tournamentId/:springFall/:year', SimpleMatchesController.getMatchsByTournamentSpringFallYear);
+  app.get('/api/simpleMatches/getMatchsByTournamentCollegeSpringFallYear/:tournamentId/:collegeId/:springFall/:year', SimpleMatchesController.getMatchsByTournamentCollegeSpringFallYear);
   app.post('/api/simpleMatches', SimpleMatchesController.create);
   app.delete('/api/simpleMatches/:simpleMatch_id',SimpleMatchesController.delete);
   app.get('/api/simpleMatches/:simpleMatch_id', SimpleMatchesController.find);

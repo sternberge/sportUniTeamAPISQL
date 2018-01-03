@@ -102,5 +102,157 @@ module.exports = {
     });
   },
 
+  getAllMatchsByYear(req, res, next) {
+    const year = Number(req.params.year); //Convert to number to avoid having '2018' but 2018
+    const springFall = req.params.springFall;
+    const yearPlusOne = Number(year)+1;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName, sm.score,sm.round,sm.date,sm.homeAway,t.name as TournamentName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE sm.date >= \'?-09-01\' AND sm.date <= \'?-06-30\' AND sm.springFall = ? ', [year,yearPlusOne,springFall], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  },
+
+  getMatchsByPlayer(req, res, next) {
+    const playerId = req.params.playerId;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,t.name  as TournamentName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE sm.winner = ? OR sm.loser = ? ;', [playerId,playerId], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+
+    });
+  },
+
+  getMatchsByPlayerSpringFall(req, res, next) {
+    const playerId = req.params.playerId;
+    const springFall = req.params.springFall;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,t.name  as TournamentName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE (sm.winner = ? OR sm.loser = ?) AND sm.springFall = ?;', [playerId,playerId,springFall], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+
+    });
+  },
+
+  getMatchsByPlayerSpringFallYear(req, res, next) {
+    const playerId = req.params.playerId;
+    const springFall = req.params.springFall;
+    const year = Number(req.params.year);
+    const yearPlusOne = Number(year)+1;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,t.name  as TournamentName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE (sm.winner = ? OR sm.loser = ?) AND sm.springFall = ? AND sm.date >= \'?-09-01\' AND sm.date <= \'?-06-30\' ', [playerId,playerId,springFall,year,yearPlusOne], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+
+    });
+  },
+
+  getMatchsByCollegeSpringFallYear(req, res, next) {
+    const collegeId = req.params.collegeId;
+    const springFall = req.params.springFall;
+    const year = Number(req.params.year);
+    const yearPlusOne = Number(year)+1;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,sm.date,t.name as TournamentName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE (t1.Colleges_collegeId = ? OR t2.Colleges_collegeId = ?) AND sm.springFall = ? AND sm.date >= \'?-09-01\' AND sm.date <= \'?-06-30\' ; ', [collegeId,collegeId,springFall,year,yearPlusOne], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+    });
+  },
+
+  getMatchsByTournamentSpringFallYear(req, res, next) {
+    const tournamentId = req.params.tournamentId;
+    const springFall = req.params.springFall;
+    const year = Number(req.params.year);
+    const yearPlusOne = Number(year)+1;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,sm.round,t.name as TournamentName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE sm.Tournaments_tournamentId = ? AND sm.springFall = ? AND sm.date >= \'?-09-01\' AND sm.date <= \'?-06-30\' ;', [tournamentId,springFall,year,yearPlusOne], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+    });
+  },
+
+  getMatchsByTournamentCollegeSpringFallYear(req, res, next) {
+    const collegeId = req.params.collegeId;
+    const tournamentId = req.params.tournamentId;
+    const springFall = req.params.springFall;
+    const year = Number(req.params.year);
+    const yearPlusOne = Number(year)+1;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,sm.round,t.name as TournamentName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE (t1.Colleges_collegeId = ? OR t2.Colleges_collegeId = ?) AND sm.Tournaments_tournamentId = ? AND sm.springFall = ? AND sm.date >= \'?-09-01\' AND sm.date <= \'?-06-30\' ;', [collegeId,collegeId,tournamentId,springFall,year,yearPlusOne], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+    });
+  },
+
 
 };
