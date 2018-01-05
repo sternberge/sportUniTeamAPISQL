@@ -13,6 +13,8 @@ const SimpleMatchesController = require('../controllers/simple_matches_controlle
 const TournamentsController = require('../controllers/tournaments_controller');
 const LeaguesController = require('../controllers/leagues_controller');
 
+const DropDownListController = require ('../controllers/drop_down_list_controller');
+
 //Very important : keep the order of the drop down list because the server will
 //interpret the order, if you put the generateDropDownList at the end
 //the server will first execute getCollege and will be stuck avoiding
@@ -121,12 +123,16 @@ module.exports = (app) => {
   //Generate drop down lists for tournaments
 
 
-
-
   //Leagues
   app.post('/api/', LeaguesController.create);
   app.delete('/api/leagues/:league_id',LeaguesController.delete);
   app.get('/api/leagues/:league_id', LeaguesController.find);
   app.put('/api/leagues/:league_id', LeaguesController.edit);
+
+  //DropDownList
+  app.get('/api/dropDownList/collegesFromConference/:conferenceId', DropDownListController.collegesFromConference);
+  app.get('/api/dropDownList/playersFromCollege/:collegeId', DropDownListController.playersFromCollege);
+  app.get('/api/dropDownList/playersFromTournament/:tournamentId', DropDownListController.playersFromTournament);
+  app.get('/api/dropDownList/playersFromConference/:conferenceId', DropDownListController.playersFromConference);
 
 };
