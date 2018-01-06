@@ -94,14 +94,14 @@ module.exports = (app) => {
   app.put('/api/ranking/:ranking_id', RankingController.edit);
 
   //SimpleMatches
-  app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall', SimpleMatchesController.getAllMatchsByYear);
+  app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall/:gender', SimpleMatchesController.getAllMatchsByYear);
   app.get('/api/simpleMatches/getMatchsByPlayer/:playerId', SimpleMatchesController.getMatchsByPlayer);
   app.get('/api/simpleMatches/getMatchsByPlayerSpringFall/:playerId/:springFall', SimpleMatchesController.getMatchsByPlayerSpringFall);
   app.get('/api/simpleMatches/getMatchsByPlayerSpringFallYear/:playerId/:springFall/:year', SimpleMatchesController.getMatchsByPlayerSpringFallYear);
-  app.get('/api/simpleMatches/getMatchsByCollegeSpringFallYear/:collegeId/:springFall/:year', SimpleMatchesController.getMatchsByCollegeSpringFallYear);
-  app.get('/api/simpleMatches/getMatchsByTournamentSpringFallYear/:tournamentId/:springFall/:year', SimpleMatchesController.getMatchsByTournamentSpringFallYear);
-  app.get('/api/simpleMatches/getMatchsByTournamentCollegeSpringFallYear/:tournamentId/:collegeId/:springFall/:year', SimpleMatchesController.getMatchsByTournamentCollegeSpringFallYear);
-  app.get('/api/simpleMatches/getMatchsByPlayerTournamentSpringFallYear/:playerId/:tournamentId/:springFall/:year', SimpleMatchesController.getMatchsByPlayerTournamentSpringFallYear);
+  app.get('/api/simpleMatches/getMatchsByCollegeSpringFallYearGender/:collegeId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByCollegeSpringFallYearGender);
+  app.get('/api/simpleMatches/getMatchsByTournamentSpringFallYearGender/:tournamentId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByTournamentSpringFallYearGender);
+  app.get('/api/simpleMatches/getMatchsByTournamentCollegeSpringFallYearGender/:tournamentId/:collegeId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByTournamentCollegeSpringFallYearGender);
+  app.get('/api/simpleMatches/getMatchsByPlayerTournamentSpringFallYearGender/:playerId/:tournamentId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByPlayerTournamentSpringFallYearGender);
 
   app.post('/api/simpleMatches', SimpleMatchesController.create);
   app.delete('/api/simpleMatches/:simpleMatch_id',SimpleMatchesController.delete);
@@ -133,8 +133,8 @@ module.exports = (app) => {
 
   //DropDownList
   app.get('/api/dropDownList/collegesFromConference/:conferenceId', DropDownListController.collegesFromConference);
-  app.get('/api/dropDownList/playersFromCollege/:collegeId', DropDownListController.playersFromCollege);
-  app.get('/api/dropDownList/playersFromTournament/:tournamentId', DropDownListController.playersFromTournament);
-  app.get('/api/dropDownList/playersFromConference/:conferenceId', DropDownListController.playersFromConference);
+  app.get('/api/dropDownList/playersFromCollege/:collegeId/:gender', DropDownListController.playersFromCollege);
+  app.get('/api/dropDownList/playersFromTournament/:tournamentId/:gender', DropDownListController.playersFromTournament);
+  app.get('/api/dropDownList/playersFromConference/:conferenceId/:gender', DropDownListController.playersFromConference);
 
 };
