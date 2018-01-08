@@ -139,5 +139,6 @@ module.exports = (app) => {
   app.get('/api/dropDownList/playersFromTournament/:tournamentId/:gender', DropDownListController.playersFromTournament);
   app.get('/api/dropDownList/playersFromConference/:conferenceId/:gender', DropDownListController.playersFromConference);
   app.get('/api/dropDownList/getConferences', DropDownListController.getConferences);
+  app.get('/api/dropDownList/getOpponentCollege/:conferenceId/:coachId', DropDownListController.getOpponentCollege);
 
 };
