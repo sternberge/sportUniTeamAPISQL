@@ -126,6 +126,8 @@ module.exports = {
         connection.release(); // CLOSE THE CONNECTION
       });
 
+      console.log(query.sql);
+
     });
   },
 
