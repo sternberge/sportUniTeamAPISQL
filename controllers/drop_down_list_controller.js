@@ -96,7 +96,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT conferenceId,conferenceLabel FROM mydb.Conferences WHERE isDeleted = 0;', [conferenceId,gender], (error, results, fields) => {
+      var query = connection.query('SELECT conferenceId,conferenceLabel as name FROM mydb.Conferences WHERE isDeleted = 0;', [conferenceId,gender], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -106,6 +106,8 @@ module.exports = {
       });
 
     });
-  }
+  },
+
+
 
 };
