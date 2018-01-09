@@ -55,6 +55,7 @@ module.exports = (app) => {
 
   //Users
   app.post('/api/users', UserController.createUser);
+  app.post('/api/users/authentication', UserController.authentication);
   app.delete('/api/users/:user_id', UserController.deleteUser);
   app.get('/api/users/:user_id', UserController.findUserById);
   app.put('/api/users/:user_id', UserController.editUser);

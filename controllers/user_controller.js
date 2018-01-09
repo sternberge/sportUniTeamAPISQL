@@ -160,6 +160,71 @@ module.exports = {
         });
       });
     });
+  },
+
+  // check de l'email pour la création et l'update du User
+  checkEmailExistence(email){
+    return new Promise((resolve,reject) => {
+      // Check de l'email
+      /*req.checkBody('email','Email cannot be empty').notEmpty();
+      req.checkBody('email','Your email is not valid').isEmail();
+      var errors = req.validationErrors();
+      if(errors){
+        console.log("test");
+        reject(errors);
+
+      }*/
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          console.log("test");
+          reject(error);
+          //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        var query = connection.query('Select * from Users Where email = ?', email, (error, results, fields) => {
+          if (error){
+            console.log("test");
+            connection.release();
+            reject(error);
+            //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+          if(results.length > 0){
+            resolve(JSON.stringify(results));
+          }
+          else{
+            reject("Email doesn't exists");
+          }
+        });
+      });
+    });
+  },
+
+  // check de l'email pour la création et l'update du User
+  checkPassword(results, req){
+    return new Promise((resolve,reject) => {
+      var objectValue = JSON.parse(results);
+      bcrypt.compare(req.body.password, objectValue[0].password, function(err, res) {
+        if(err){
+          reject(err);
+        }
+        if(res){
+          resolve("Password correct");
+        }
+        else {
+          reject("Password incorrect");
+        }
+      });
+    });
+  },
+
+  authentication (req, res, next){
+    module.exports.checkEmailExistence(req.body.email)
+    .then((results) => module.exports.checkPassword(results, req))
+    .then(() => res.send(JSON.stringify({"status": 200, "error": null, "response": "User connected"})))
+    .catch((error) => {
+      res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
+    })
   }
 
 };
