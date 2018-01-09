@@ -133,7 +133,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT sm.simpleMatchId,concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,t.name  as TournamentName,sm.score FROM SimpleMatches sm FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE sm.winner = ? OR sm.loser = ? ;', [playerId,playerId], (error, results, fields) => {
+      var query = connection.query('SELECT sm.simpleMatchId,concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.date,t.name  as TournamentName,sm.score FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId WHERE sm.winner = ? OR sm.loser = ? ;', [playerId,playerId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
