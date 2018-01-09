@@ -11,7 +11,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT c.collegeId, c.name as CollegeName FROM Colleges c WHERE Conferences_conferenceId = ?;', [conferenceId], (error, results, fields) => {
+      var query = connection.query('SELECT c.collegeId, c.name as name FROM Colleges c WHERE Conferences_conferenceId = ?;', [conferenceId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
