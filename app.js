@@ -1,6 +1,6 @@
 var express = require('express'); // Web Framework
 var expressValidator = require('express-validator');
-
+require('dotenv').config();
 var app = express();
 const routes = require('./routes/routes');
 const bodyParser = require('body-parser');

@@ -20,9 +20,10 @@
   "homepage": "https://github.com/sternberge/sportUniTeamAPISQL#readme",
   "dependencies": {
     "bcrypt": "^1.0.3",
-    "bcryptjs": "^2.4.3",
+    "dotenv": "^4.0.0",
     "express": "^4.16.2",
     "express-validator": "^4.3.0",
+    "jsonwebtoken": "^8.1.0",
     "mysql": "^2.15.0",
     "promise": "^8.0.1"
   },
