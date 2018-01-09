@@ -15,6 +15,8 @@ const LeaguesController = require('../controllers/leagues_controller');
 
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
+const AuthenticateController = require ('../controllers/authenticate_controller');
+
 //Very important : keep the order of the drop down list because the server will
 //interpret the order, if you put the generateDropDownList at the end
 //the server will first execute getCollege and will be stuck avoiding
@@ -142,4 +144,7 @@ module.exports = (app) => {
   app.get('/api/dropDownList/getConferences', DropDownListController.getConferences);
   app.get('/api/dropDownList/getOpponentCollege/:conferenceId/:coachId', DropDownListController.getOpponentCollege);
   app.get('/api/dropDownList/getAllPlayers',DropDownListController.getAllPlayers)
+
+
+  app.get('/api/authentication', AuthenticateController.authenticate);
 };

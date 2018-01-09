@@ -9,20 +9,20 @@ module.exports = {
     const coachId = req.params.coach_id;
     db.pool.getConnection((error, connection) => {
       if (error){
-        return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
       var query = connection.query('SELECT * FROM Coaches WHERE CoachID = ?', coachId, (error, results, fields) => {
         if (error){
           connection.release();
-          return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         else if (results.length > 0){
           res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           connection.release(); // CLOSE THE CONNECTION
         }
         else{
-          res.status(500).send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
+          res.send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
           connection.release(); // CLOSE THE CONNECTION
         }
       });
@@ -38,7 +38,7 @@ module.exports = {
       db.pool.getConnection((error, connection) => {
         //erreur de connection
         if (error){
-          return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         var coachType = req.body.coachType;
         //requete d'insertion
@@ -47,7 +47,7 @@ module.exports = {
           //erreur d'insertion
           if (error){
             connection.release();
-            return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
 
           res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
@@ -57,7 +57,7 @@ module.exports = {
       });
     })
     .catch((err) => {
-      return res.status(500).send(JSON.stringify({"status": 500, "error": err, "response": null}));
+      return res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
     });
   },
 
@@ -66,12 +66,12 @@ module.exports = {
     const coachProperties = req.body;
     db.pool.getConnection((error, connection) => {
       if (error){
-        return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query('UPDATE Coaches SET ? WHERE CoachID = ?',[coachProperties, coachId], (error, results, fields) => {
         if (error){
           connection.release();
-          return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
         connection.release(); // CLOSE THE CONNECTION
@@ -84,12 +84,12 @@ module.exports = {
     db.pool.getConnection((error, connection) => {
 
       if (error){
-        return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query('DELETE FROM Coaches WHERE CoachID = ?', coachId, (error, results, fields) => {
         if (error){
           connection.release();
-          return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
         connection.release(); // CLOSE THE CONNECTION

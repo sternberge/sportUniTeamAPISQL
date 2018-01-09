@@ -1,5 +1,6 @@
 var db = require('./../db');
 var expressValidator = require('express-validator');
+const AuthenticateController = require('../controllers/authenticate_controller');
 var promise = require('promise');
 var bcrypt = require('bcrypt'); // algo de hash
 const saltRounds = 10;
@@ -10,20 +11,20 @@ module.exports = {
     const userId = req.params.user_id;
     db.pool.getConnection((error, connection) => {
       if (error){
-        return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
       var query = connection.query('SELECT * FROM Users WHERE userID = ?', userId, (error, results, fields) => {
         if (error){
           connection.release();
-          return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));// Convertion de la réponse en format JSON
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));// Convertion de la réponse en format JSON
         }
         else if (results.length > 0){
           res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           connection.release(); // CLOSE THE CONNECTION
         }
         else{
-          res.status(500).send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
+          res.send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
           connection.release(); // CLOSE THE CONNECTION
         }
       });
@@ -39,7 +40,7 @@ module.exports = {
       res.send(JSON.stringify({"status": 200, "error": null, "response": "User has been created"}));
     })
     .catch((error) => {
-      res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": error}));
+      res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
     })
   },
 
@@ -108,7 +109,7 @@ module.exports = {
       var query = connection.query('UPDATE Users SET ? WHERE userID = ?',[userProperties, userId], (error, results, fields) => {
         if (error){
           connection.release();
-          return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
         connection.release(); // CLOSE THE CONNECTION
@@ -126,7 +127,7 @@ module.exports = {
       var query = connection.query('DELETE FROM Users WHERE userID = ?', userId, (error, results, fields) => {
         if (error){
           connection.release();
-          return res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
         connection.release(); // CLOSE THE CONNECTION
@@ -209,7 +210,7 @@ module.exports = {
           reject(err);
         }
         if(res){
-          resolve("Password correct");
+          resolve(objectValue);
         }
         else {
           reject("Password incorrect");
@@ -221,9 +222,10 @@ module.exports = {
   authentication (req, res, next){
     module.exports.checkEmailExistence(req.body.email)
     .then((results) => module.exports.checkPassword(results, req))
-    .then(() => res.send(JSON.stringify({"status": 200, "error": null, "response": "User connected"})))
+    .then((results) => AuthenticateController.authenticate(results))
+    .then((token) => res.send(JSON.stringify({"status": 200, "error": null, "response": token})))
     .catch((error) => {
-      res.status(500).send(JSON.stringify({"status": 500, "error": error, "response": error}));
+      res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
     })
   }
 

@@ -1,15 +1,15 @@
 const jwt = require('jsonwebtoken');
+var promise = require('promise');
 
-module.exports.authenticate = function (req, res, next) {
+module.exports.authenticate = function (informations) {
+  return new Promise(function (resolve, reject) {
   var user = {
-    firstName : 'firstName',
-    lastName: 'lastName'
+    firstName : informations.firstName,
+    lastName: informations.lastName
   }
   var token = jwt.sign(user, process.env.SECRET_TOKENKEY, {
     expiresIn: 4000
   })
-  res.json({
-    success: true,
-    token: token
-  })
+  resolve(token);
+});
 }
