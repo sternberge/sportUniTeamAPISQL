@@ -23,6 +23,12 @@ const AuthenticateController = require ('../controllers/authenticate_controller'
 //the drop down method to be called
 
 module.exports = (app) => {
+
+  app.post('/api/users/authentication', UserController.authentication);
+
+  // From now on all routes require authentication
+  //app.all('/*', AuthenticateController.ensureLoggedIn);
+
   //College
   //Generate drop down lists for colleges
   app.get('/api/colleges/generateCollegeDropDownList', CollegeController.generateCollegeDropDownList);
@@ -31,12 +37,6 @@ module.exports = (app) => {
   app.delete('/api/colleges/:college_id', CollegeController.deleteCollege);
   app.get('/api/colleges/:college_id', CollegeController.findCollegeById);
 
-
-
-  /*app.post('/api/teams', TeamController.createTeam);
-  app.put('/api/teams/:team_id', TeamController.editTeam);
-  app.delete('/api/teams/:team_id', TeamController.deleteTeam);
-  app.get('/api/teams/:team_id', TeamController.findTeamById);*/
 
   //Coaches
   app.post('/api/coaches', CoachController.createCoach);
@@ -57,7 +57,6 @@ module.exports = (app) => {
 
   //Users
   app.post('/api/users', UserController.createUser);
-  app.post('/api/users/authentication', UserController.authentication);
   app.delete('/api/users/:user_id', UserController.deleteUser);
   app.get('/api/users/:user_id', UserController.findUserById);
   app.put('/api/users/:user_id', UserController.editUser);
@@ -146,5 +145,5 @@ module.exports = (app) => {
   app.get('/api/dropDownList/getAllPlayers',DropDownListController.getAllPlayers)
 
 
-  app.get('/api/authentication', AuthenticateController.authenticate);
+
 };
