@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'SUT',
-    script: './index.js'
+    script: './index.js > my_app_log.log 2> my_app_err.log'
   }],
   deploy: {
     production: {
