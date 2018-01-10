@@ -1,2 +1,0 @@
-app listening at port 3000
-SELECT DISTINCT c.collegeId,c.name FROM Colleges c INNER JOIN Teams t on c.collegeId = t.Colleges_collegeId INNER JOIN Coaches co on co.coachId = t.Coaches_coachId WHERE c.Conferences_conferenceId = '1' AND t.Coaches_coachId != '1' ;
