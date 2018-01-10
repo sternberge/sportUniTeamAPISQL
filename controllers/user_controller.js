@@ -72,6 +72,7 @@ module.exports = {
         const password= req.body.password;
         const birthday= req.body.birthday;
         const userType= req.body.userType;
+        const phone = req.body.phone;
 
         db.pool.getConnection((error, connection) => {
           if (error){
@@ -81,8 +82,8 @@ module.exports = {
           //hash of the password and insert in the database
           bcrypt.hash(password, saltRounds, function(err, hash) {
             // Store hash in your password DB.
-            var query = connection.query('INSERT INTO Users (firstName,lastName,gender,email,password,birthday,userType) VALUES(?, ?, ?, ?, ?, ?, ?)',
-            [firstName,lastName,gender,email,hash,birthday,userType], (error, results, fields) => {
+            var query = connection.query('INSERT INTO Users (firstName,lastName,gender,email,password,birthday,userType,phone) VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
+            [firstName,lastName,gender,email,hash,birthday,userType,phone], (error, results, fields) => {
               if (error){
                 connection.release();
                 reject(error);
