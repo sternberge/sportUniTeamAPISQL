@@ -10,6 +10,7 @@ const RankRulesController = require('../controllers/rank_rules_controller');
 const RankRulesPointsController = require('../controllers/rank_rules_points_controller');
 const RankingController = require('../controllers/ranking_controller');
 const SimpleMatchesController = require('../controllers/simple_matches_controller');
+const DoubleMatchesController = require('../controllers/double_matches_controller');
 const TournamentsController = require('../controllers/tournaments_controller');
 const LeaguesController = require('../controllers/leagues_controller');
 
@@ -111,6 +112,16 @@ module.exports = (app) => {
   app.delete('/api/simpleMatches/:simpleMatch_id',SimpleMatchesController.delete);
   app.get('/api/simpleMatches/:simpleMatch_id', SimpleMatchesController.find);
   app.put('/api/simpleMatches/:simpleMatch_id', SimpleMatchesController.edit);
+
+  //DoublesMatches
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGender/:year/:springFall/:gender',DoubleMatchesController.getMatchsByYearSpringFallGender);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderConference/:year/:springFall/:gender/:conferenceId',DoubleMatchesController.getMatchsByYearSpringFallGenderConference);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderCollege/:year/:springFall/:gender/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderCollege);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournament/:year/:springFall/:gender/:tournamentId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournament);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallPlayer1/:year/:springFall/:playerId',DoubleMatchesController.getMatchsByYearSpringFallPlayer1)
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallPlayer1Player2/:year/:springFall/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallPlayer1Player2)
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1/:year/:springFall/:tournamentId/:playerId1',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1)
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1Player2/:year/:springFall/:tournamentId/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1Player2)
 
   //Teams
   app.post('/api/teams', TeamsController.create);
