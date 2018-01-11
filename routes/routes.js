@@ -105,8 +105,9 @@ module.exports = (app) => {
   app.get('/api/simpleMatches/getMatchsByTournamentSpringFallYearGender/:tournamentId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByTournamentSpringFallYearGender);
   app.get('/api/simpleMatches/getMatchsByTournamentCollegeSpringFallYearGender/:tournamentId/:collegeId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByTournamentCollegeSpringFallYearGender);
   app.get('/api/simpleMatches/getMatchsByPlayerTournamentSpringFallYearGender/:playerId/:tournamentId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByPlayerTournamentSpringFallYearGender);
-  app.get('/api/simpleMatches/getMatchsByConferenceSpringFallYear/:conferenceId/:springFall/:year', SimpleMatchesController.getMatchsByConferenceSpringFallYear);
+  app.get('/api/simpleMatches/getMatchsByConferenceSpringFallYear/:conferenceId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByConferenceSpringFallYear);
 
+  app.get('/api/simpleMatches/getMatchsByCurrentYear',SimpleMatchesController.getMatchsByCurrentYear);
 
   app.post('/api/simpleMatches', SimpleMatchesController.create);
   app.delete('/api/simpleMatches/:simpleMatch_id',SimpleMatchesController.delete);
@@ -118,11 +119,11 @@ module.exports = (app) => {
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderConference/:year/:springFall/:gender/:conferenceId',DoubleMatchesController.getMatchsByYearSpringFallGenderConference);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderCollege/:year/:springFall/:gender/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderCollege);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournament/:year/:springFall/:gender/:tournamentId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournament);
-  app.get('/api/doubleMatches/getMatchsByYearSpringFallPlayer1/:year/:springFall/:playerId',DoubleMatchesController.getMatchsByYearSpringFallPlayer1)
-  app.get('/api/doubleMatches/getMatchsByYearSpringFallPlayer1Player2/:year/:springFall/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallPlayer1Player2)
-  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1/:year/:springFall/:tournamentId/:playerId1',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1)
-  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1Player2/:year/:springFall/:tournamentId/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1Player2)
-
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallPlayer1/:year/:springFall/:playerId',DoubleMatchesController.getMatchsByYearSpringFallPlayer1);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallPlayer1Player2/:year/:springFall/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallPlayer1Player2);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1/:year/:springFall/:tournamentId/:playerId1',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1Player2/:year/:springFall/:tournamentId/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1Player2);
+  app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentCollege/:year/:springFall/:gender/:tournamentId/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentCollege);
   //Teams
   app.post('/api/teams', TeamsController.create);
   app.delete('/api/teams/:team_id',TeamsController.delete);
@@ -153,7 +154,7 @@ module.exports = (app) => {
   app.get('/api/dropDownList/playersFromConference/:conferenceId/:gender', DropDownListController.playersFromConference);
   app.get('/api/dropDownList/getConferences', DropDownListController.getConferences);
   app.get('/api/dropDownList/getOpponentCollege/:conferenceId/:coachId', DropDownListController.getOpponentCollege);
-  app.get('/api/dropDownList/getAllPlayers',DropDownListController.getAllPlayers)
+  app.get('/api/dropDownList/getAllPlayers/:gender',DropDownListController.getAllPlayers)
 
 
 

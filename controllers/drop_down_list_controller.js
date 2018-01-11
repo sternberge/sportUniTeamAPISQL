@@ -133,12 +133,13 @@ module.exports = {
 
   getAllPlayers(req, res, next) {
 
+    var gender = req.params.gender;
     db.pool.getConnection((error, connection) => {
 
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as playerName FROM Players p INNER JOIN Users u on p.Users_userId = u.userId;', (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as playerName FROM Players p INNER JOIN Users u on p.Users_userId = u.userId Where u.gender LIKE ?;',gender, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));

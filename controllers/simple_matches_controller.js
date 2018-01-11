@@ -171,13 +171,14 @@ module.exports = {
     const springFall = req.params.springFall;
     const year = Number(req.params.year);
     const yearPlusOne = Number(year)+1;
+    const gender = req.params.gender;
     db.pool.getConnection((error, connection) => {
 
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.*,t.name  as TournamentName,sm.score,c1.name as winnerCollege,c2.name as loserCollege FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId INNER JOIN Colleges c1 on c1.collegeId = t1.Colleges_collegeId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId INNER JOIN Colleges c2 on c2.collegeId = t2.Colleges_collegeId WHERE sm.springFall = ? AND sm.date >= \'?-09-01\' AND sm.date <= \'?-06-30\' AND (c1.Conferences_conferenceId = ? OR c2.Conferences_conferenceId = ?);'
-      , [springFall,year,yearPlusOne,conference,conference], (error, results, fields) => {
+      var query = connection.query('SELECT concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName,sm.*,t.name  as TournamentName,c1.name as winnerCollege,c2.name as loserCollege FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId INNER JOIN Colleges c1 on c1.collegeId = t1.Colleges_collegeId INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId INNER JOIN Colleges c2 on c2.collegeId = t2.Colleges_collegeId WHERE sm.springFall = ? AND sm.date >= \'?-09-01\' AND sm.date <= \'?-06-30\' AND (c1.Conferences_conferenceId = ? OR c2.Conferences_conferenceId = ?) AND (t1.gender = ? AND t2.gender = ?) ;'
+      , [springFall,year,yearPlusOne,conference,conference,gender,gender], (error, results, fields) => {
         if (error){
           console.log("test");
           connection.release();
@@ -314,7 +315,27 @@ module.exports = {
 
   },
 
+  getMatchsByCurrentYear(req, res, next) {
 
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('SELECT * FROM SimpleMatches sm WHERE YEAR(sm.date) = YEAR(now());', (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+
+    });
+
+  },
 
 
 };
