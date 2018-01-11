@@ -141,13 +141,13 @@ module.exports = {
     return new Promise((resolve,reject) => {
       db.pool.getConnection((error, connection) => {
         if (error){
-          reject(error);
+          return reject(error);
           //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         var query = connection.query('Select 1 from Users Where email = ?', email, (error, results, fields) => {
           if (error){
             connection.release();
-            reject(error);
+            return reject(error);
             //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
           //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
@@ -177,13 +177,14 @@ module.exports = {
 
       }*/
       db.pool.getConnection((error, connection) => {
+        console.log(error);
         if (error){
-          reject(error);
+          return reject(error);
         }
         var query = connection.query('Select * from Users  u Left Join Players p on u.userId = p.Users_userId Left Join Coaches c on u.userId = c.Users_userId Where email = ?', email, (error, results, fields) => {
           if (error){
             connection.release();
-            reject(error);
+            return reject(error);
           }
           connection.release(); // CLOSE THE CONNECTION
           if(results.length > 0){
@@ -203,7 +204,7 @@ module.exports = {
       var objectValue = JSON.parse(results);
       bcrypt.compare(req.body.password, objectValue[0].password, function(err, res) {
         if(err){
-          reject(err);
+          return reject(err);
         }
         if(res){
           resolve(objectValue);

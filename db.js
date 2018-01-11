@@ -3,11 +3,11 @@ var mysql = require('mysql');
 
 // Connection string parameters.
 var pool = mysql.createPool({
-  host     : 'sutdbtest.ct79avbur6ul.us-east-1.rds.amazonaws.com',
-  user     : 'SUTeam',
-  password : 'bddsutteam',
-  database : 'mydb',
-  port : '3306',
+  host     : process.env.DB_HOST,
+  user     : process.env.DB_USER,
+  password : process.env.DB_PASSWORD,
+  database : process.env.DB_DATABASE,
+  port : process.env.DB_PORT,
   connectionLimit : 10
 });
 
