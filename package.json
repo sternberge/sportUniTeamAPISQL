@@ -25,6 +25,7 @@
     "express-validator": "^4.3.0",
     "jsonwebtoken": "^8.1.0",
     "jwt-decode": "^2.2.0",
+    "lodash": "^4.17.4",
     "mysql": "^2.15.0",
     "promise": "^8.0.1"
   },

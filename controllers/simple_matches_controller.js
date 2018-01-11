@@ -42,7 +42,6 @@ module.exports = {
     const locationState = req.body.locationState;
     const Tournaments_tournamentId = req.body.Tournaments_tournamentId;
     const homeAway = req.body.homeAway;
-    const isRanked = req.body.isRanked;
     const springMatchType =req.body.springMatchType;
 
 
@@ -51,8 +50,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query('INSERT INTO SimpleMatches (winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,isRanked,springMatchType) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,isRanked,springMatchType], (error, results, fields) => {
+      var query = connection.query('INSERT INTO SimpleMatches (winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,springMatchType) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [winner,loser,score,date,time,springFall,springPosition,round,locationCity,locationState,Tournaments_tournamentId,homeAway,springMatchType], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));

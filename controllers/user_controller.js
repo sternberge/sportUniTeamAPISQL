@@ -180,7 +180,7 @@ module.exports = {
         if (error){
           reject(error);
         }
-        var query = connection.query('Select * from Users Where email = ?', email, (error, results, fields) => {
+        var query = connection.query('Select * from Users  u Left Join Players p on u.userId = p.Users_userId Left Join Coaches c on u.userId = c.Users_userId Where email = ?', email, (error, results, fields) => {
           if (error){
             connection.release();
             reject(error);
