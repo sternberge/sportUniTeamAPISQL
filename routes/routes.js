@@ -13,6 +13,7 @@ const SimpleMatchesController = require('../controllers/simple_matches_controlle
 const DoubleMatchesController = require('../controllers/double_matches_controller');
 const TournamentsController = require('../controllers/tournaments_controller');
 const LeaguesController = require('../controllers/leagues_controller');
+const SpringMatchesController = require('../controllers/spring_matches_controller');
 
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
@@ -157,5 +158,6 @@ module.exports = (app) => {
   app.get('/api/dropDownList/getAllPlayers/:gender',DropDownListController.getAllPlayers)
 
 
-
+  //SpringMatches
+    app.get('/api/springMatches/getSpringMatchsByYearGender/:year/:gender',SpringMatchesController.getSpringMatchsByYearGender)
 };
