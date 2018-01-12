@@ -39,7 +39,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query('SELECT sm.*,concat(u1.firstName,\' \',u1.lastName) as winnerName,concat(u2.firstName,\' \',u2.lastName) as loserName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Teams t1 on t1.teamId = p1.playerId INNER JOIN Teams t2 on t2.teamId = p2.playerId INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId WHERE sm.springId = ? ORDER BY sm.springPosition;',[springId], (error, results, fields) => {
+      var query = connection.query('SELECT sm.*,concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Teams t1 on t1.teamId = p1.playerId INNER JOIN Teams t2 on t2.teamId = p2.playerId INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId WHERE sm.springId = ? ORDER BY sm.springPosition;',[springId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
