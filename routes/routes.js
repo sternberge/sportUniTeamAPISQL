@@ -17,6 +17,8 @@ const SpringMatchesController = require('../controllers/spring_matches_controlle
 
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
+const springResultController = require ('../controllers/spring_result_controller');
+
 const AuthenticateController = require ('../controllers/authenticate_controller');
 
 //Very important : keep the order of the drop down list because the server will
@@ -167,5 +169,10 @@ module.exports = (app) => {
 
     app.get('/api/springMatches/test/:springId',SpringMatchesController.test);
     app.get('/api/springMatches/testFinal/:gender/:springId/:conferenceId/:year',SpringMatchesController.testFinal);
+
+    //SpringResult
+    app.post('/api/springResult',springResultController.create);
+
+
 
 };
