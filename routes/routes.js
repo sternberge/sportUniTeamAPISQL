@@ -116,6 +116,7 @@ module.exports = (app) => {
   app.put('/api/simpleMatches/:simpleMatch_id', SimpleMatchesController.edit);
 
   //DoublesMatches
+  app.post('/api/doubleMatches', DoubleMatchesController.createDoubleMatch);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGender/:year/:springFall/:gender',DoubleMatchesController.getMatchsByYearSpringFallGender);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderConference/:year/:springFall/:gender/:conferenceId',DoubleMatchesController.getMatchsByYearSpringFallGenderConference);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderCollege/:year/:springFall/:gender/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderCollege);
