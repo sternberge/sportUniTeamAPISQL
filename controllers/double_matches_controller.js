@@ -75,19 +75,22 @@ module.exports = {
     var playerId2 = req.body.playerId2;
     var playerId3 = req.body.playerId3;
     var playerId4 = req.body.playerId4;
-
+    // Check de l'existance des deux couples de joueurs entres
     Promise.all([module.exports.checkDoubleTeamExistency(playerId1,playerId2),module.exports.checkDoubleTeamExistency(playerId3,playerId4)])
     .then((values) => {
+      // Si les deux couples n'existent pas --> Creation des deux nouvelles equipes
       if(values[0] == false && values[1] == false){
         console.log("Appel de la seconde methode");
         return Promise.all([module.exports.createDoubleTeam(playerId1,playerId2),module.exports.createDoubleTeam(playerId3,playerId4)])
       }
+      // Si une des deux equipes existent deja
       else if(values[0] != false && values[1] == false){
-        return Promise.all([module.exports.createDoubleTeam(playerId3,playerId4),values[0]]);
+        return Promise.all([values[0],module.exports.createDoubleTeam(playerId3,playerId4)]);
       }
       else if(values[0] == false && values[1] != false){
         return Promise.all([module.exports.createDoubleTeam(playerId1,playerId2),values[1]]);
       }
+      // Si les deux equipes existent
       else{
         console.log(values);
         return Promise.resolve(values);
@@ -96,6 +99,9 @@ module.exports = {
     .then((resultats)=>{
       console.log(resultats[0]);
       module.exports.createDoubleMatch2(req,resultats[0],resultats[1]);
+    })
+    .then(() => {
+      res.send(JSON.stringify({"status": 200, "error": null, "response": "Your match has been added"}));
     })
     .catch((error) => {
       res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
