@@ -125,6 +125,7 @@ module.exports = {
     const tournamentId = req.body.tournamentId;
     const homeAway = req.body.homeAway;
     const springMatchType = req.body.springMatchType;
+    const springId = req.body.springId;
 
 
     db.pool.getConnection((error, connection) => {
@@ -132,7 +133,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query('INSERT INTO DoubleMatches (winnerDouble, loserDouble, score, date, time,springFall, springPosition, round, locationCity, locationState, Tournaments_tournamentId, homeAway, springMatchType) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [winnerDouble,loserDouble,score,date,time,springFall,springPosition,round,locationCity, locationState, tournamentId,homeAway, springMatchType], (error, results, fields) => {
+      var query = connection.query('INSERT INTO DoubleMatches (winnerDouble, loserDouble, score, date, time,springFall, springPosition, round, locationCity, locationState, Tournaments_tournamentId, homeAway, springMatchType, springId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [winnerDouble,loserDouble,score,date,time,springFall,springPosition,round,locationCity, locationState, tournamentId,homeAway, springMatchType,springId], (error, results, fields) => {
 
         if (error){
           connection.release();

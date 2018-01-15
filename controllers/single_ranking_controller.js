@@ -87,7 +87,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current national ranking order
   getSingleRankingsNationalByDivisionGender(req, res, next){
 	const leagueName = req.params.leagueName;
@@ -100,8 +100,8 @@ module.exports = {
       }
       var query = connection.query(`SELECT sr.rankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
 		u.firstName, u.lastName, p.status, c.name
-		FROM SingleRanking sr 
-		inner join Players p on sr.Players_playerId = p.playerId 
+		FROM SingleRanking sr
+		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
 		inner join Teams t on t.teamId = p.Teams_teamId
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
@@ -117,7 +117,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current regional ranking order
   getSingleRankingsByRegionDivisionGender(req, res, next){
 	const regionId = req.params.regionId;
@@ -131,8 +131,8 @@ module.exports = {
       }
       var query = connection.query(`SELECT sr.rankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
 		u.firstName, u.lastName, p.status, c.name
-		FROM SingleRanking sr 
-		inner join Players p on sr.Players_playerId = p.playerId 
+		FROM SingleRanking sr
+		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
 		inner join Teams t on t.teamId = p.Teams_teamId
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
@@ -148,7 +148,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current ranking order by conference
   getSingleRankingsByConferenceDivisionGender(req, res, next){
 	const conferenceId = req.params.conferenceId;
@@ -162,8 +162,8 @@ module.exports = {
       }
       var query = connection.query(`SELECT sr.rankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
 		u.firstName, u.lastName, p.status, c.name
-		FROM SingleRanking sr 
-		inner join Players p on sr.Players_playerId = p.playerId 
+		FROM SingleRanking sr
+		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
 		inner join Teams t on t.teamId = p.Teams_teamId
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
@@ -179,4 +179,74 @@ module.exports = {
       });
     });
   },
+
+
+  getSingleBestMatches(req, res){
+    return new Promise(function (resolve, reject) {
+    playerId = req.body.playerId;
+    limiteRequest = Number(req.body.limite);
+    type= req.body.type;
+    date=req.body.date;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`Select * from SimpleMatches s
+        Left Outer Join Players p on s.loser = p.playerId
+        Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
+        Left Outer Join RankPointsRules r on r.opponentRank=sr.rank Where s.winner = ? and sr.type = ? and s.date > ? order by r.opponentRank Asc limit ?`, [playerId,type,date,limiteRequest], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return reject(error);
+        }
+        connection.release(); // CLOSE THE CONNECTION
+        return resolve(results);
+      });
+    });
+  });
+  },
+
+
+  getSingleBestLossesMatches(req, res){
+    return new Promise(function (resolve, reject) {
+    playerId = req.body.playerId;
+    limiteRequest = Number(req.body.limite);
+    type= req.body.type;
+    date=req.body.date;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`Select * from SimpleMatches s
+        Left Outer Join Players p on s.winner = p.playerId
+        Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
+        Left Outer Join RankPointsRules r on r.opponentRank=sr.rank Where s.loser = ? and sr.type = ? and s.date > ? order by r.opponentRank Asc limit ?`, [playerId,type,date,limiteRequest], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return reject(error);
+        }
+        connection.release(); // CLOSE THE CONNECTION
+        console.log(results);
+        return resolve(results);
+      });
+    });
+  });
+},
+
+
+  calculateRanking(req, res, next){
+    module.exports.getSingleBestMatches(req,res)
+    .then(() => {
+      module.exports.getSingleBestLossesMatches(req,res);
+    })
+    .then((results) => {
+      console.log(results);
+      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+    })
+    .catch((error) => {
+      res.send("Problem occurs");
+    });
+  }
 };

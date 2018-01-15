@@ -14,7 +14,7 @@ const DoubleMatchesController = require('../controllers/double_matches_controlle
 const TournamentsController = require('../controllers/tournaments_controller');
 const LeaguesController = require('../controllers/leagues_controller');
 const SpringMatchesController = require('../controllers/spring_matches_controller');
-
+const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
 const springResultController = require ('../controllers/spring_result_controller');
@@ -91,11 +91,11 @@ module.exports = (app) => {
   app.get('/api/rankRulesPoints/:rankRulesPoints_id', RankRulesPointsController.find);
   app.put('/api/rankRulesPoints/:rankRulesPoints_id', RankRulesPointsController.edit);*/
 
-  //Ranking
+  // Single Ranking
   //Get the ranking
-  /*
-  app.get('/api/ranking/getRanking', RankingController.getRanking);
-  app.post('/api/ranking', RankingController.create);
+
+  app.post('/api/ranking/getRanking', SingleRankingController.calculateRanking);
+  /*app.post('/api/ranking', RankingController.create);
   app.delete('/api/ranking/:ranking_id',RankingController.delete);
   app.get('/api/ranking/:ranking_id', RankingController.find);
   app.put('/api/ranking/:ranking_id', RankingController.edit);
