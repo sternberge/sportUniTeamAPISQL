@@ -98,8 +98,8 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT dr.rankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2
+      var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -132,8 +132,8 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT dr.rankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2
+      var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -166,8 +166,8 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT dr.rankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2
+      var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -177,7 +177,7 @@ module.exports = {
 		inner join Teams t on t.teamId = p1.Teams_teamId
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
-		WHERE u1.gender LIKE ? AND dr.type = 'R' AND c.Conferences_conferenceId = ? AND l.leagueName LIKE ?
+		WHERE u1.gender LIKE ? AND dr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueName LIKE ?
 		ORDER BY dr.rank ASC`, gender, conferenceId, leagueName, (error, results, fields) => {
         if (error){
           connection.release();

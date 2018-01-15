@@ -91,13 +91,13 @@ module.exports = (app) => {
   app.get('/api/rankRulesPoints/:rankRulesPoints_id', RankRulesPointsController.find);
   app.put('/api/rankRulesPoints/:rankRulesPoints_id', RankRulesPointsController.edit);*/
 
-  //Ranking
-  //Get the ranking
-  app.get('/api/ranking/getRanking', RankingController.getRanking);
-  app.post('/api/ranking', RankingController.create);
-  app.delete('/api/ranking/:ranking_id',RankingController.delete);
-  app.get('/api/ranking/:ranking_id', RankingController.find);
-  app.put('/api/ranking/:ranking_id', RankingController.edit);
+  //Rankings
+  //SingleRankings
+  app.get('/api/singleRankings/getRanking', RankingController.getRanking);
+  app.post('/api/singleRankings', RankingController.create);
+  app.delete('/api/singleRankings/:ranking_id',RankingController.delete);
+  app.get('/api/singleRankings/:ranking_id', RankingController.find);
+  app.put('/api/singleRankings/:ranking_id', RankingController.edit);
 
   //SimpleMatches
   app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall/:gender', SimpleMatchesController.getAllMatchsByYear);
