@@ -21,6 +21,14 @@ const springResultController = require ('../controllers/spring_result_controller
 
 const AuthenticateController = require ('../controllers/authenticate_controller');
 
+const SingleRankingController = require ('../controllers/single_ranking_controller');
+const DoubleRankingController = require ('../controllers/double_ranking_controller');
+const TeamRankingController = require ('../controllers/team_ranking_controller');
+
+const SingleRankingHistoryController = require ('../controllers/single_ranking_history_controller');
+const DoubleRankingHistoryController = require ('../controllers/double_ranking_history_controller');
+const TeamRankingHistoryController = require ('../controllers/team_ranking_history_controller');
+
 //Very important : keep the order of the drop down list because the server will
 //interpret the order, if you put the generateDropDownList at the end
 //the server will first execute getCollege and will be stuck avoiding
@@ -91,15 +99,59 @@ module.exports = (app) => {
   app.get('/api/rankRulesPoints/:rankRulesPoints_id', RankRulesPointsController.find);
   app.put('/api/rankRulesPoints/:rankRulesPoints_id', RankRulesPointsController.edit);*/
 
-  // Single Ranking
-  //Get the ranking
 
-  app.post('/api/ranking/getRanking', SingleRankingController.calculateRanking);
-  /*app.post('/api/ranking', RankingController.create);
-  app.delete('/api/ranking/:ranking_id',RankingController.delete);
-  app.get('/api/ranking/:ranking_id', RankingController.find);
-  app.put('/api/ranking/:ranking_id', RankingController.edit);
-*/
+
+  //Rankings
+
+  //SingleRanking
+    app.post('/api/ranking/getRanking', SingleRankingController.calculateRanking);
+  app.post('/api/singleRanking', SingleRankingController.create);
+  app.delete('/api/singleRanking/:singleRankingId', SingleRankingController.delete);
+  app.get('/api/singleRanking/:singleRankingId', SingleRankingController.find);
+  app.put('/api/singleRanking/:singleRankingId', SingleRankingController.edit);
+  app.get('/api/singleRanking/getSingleRankingsNationalByDivisionGender/:leagueId/:gender', SingleRankingController.getSingleRankingsNationalByDivisionGender);
+  app.get('/api/singleRanking/getSingleRankingsByRegionDivisionGender/:leagueId/:gender/:regionId', SingleRankingController.getSingleRankingsByRegionDivisionGender);
+  app.get('/api/singleRanking/getSingleRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', SingleRankingController.getSingleRankingsByConferenceDivisionGender);
+
+  //DoubleRanking
+  app.post('/api/doubleRanking', DoubleRankingController.create);
+  app.delete('/api/doubleRanking/:doubleRankingId', DoubleRankingController.delete);
+  app.get('/api/doubleRanking/:doubleRankingId', DoubleRankingController.find);
+  app.put('/api/doubleRanking/:doubleRankingId', DoubleRankingController.edit);
+  app.get('/api/doubleRanking/getDoubleRankingsNationalByDivisionGender/:leagueId/:gender', DoubleRankingController.getDoubleRankingsNationalByDivisionGender);
+  app.get('/api/doubleRanking/getDoubleRankingsByRegionDivisionGender/:leagueId/:gender/:regionId', DoubleRankingController.getDoubleRankingsByRegionDivisionGender);
+  app.get('/api/doubleRanking/getDoubleRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', DoubleRankingController.getDoubleRankingsByConferenceDivisionGender);
+
+  //TeamRanking
+  app.post('/api/teamRanking', TeamRankingController.create);
+  app.delete('/api/teamRanking/:teamRankingId', TeamRankingController.delete);
+  app.get('/api/teamRanking/:teamRankingId', TeamRankingController.find);
+  app.put('/api/teamRanking/:teamRankingId', TeamRankingController.edit);
+  app.get('/api/teamRanking/getTeamRankingsNationalByDivisionGender/:leagueId/:gender', TeamRankingController.getTeamRankingsNationalByDivisionGender);
+  app.get('/api/teamRanking/getTeamRankingsByRegionDivisionGender/:leagueId/:gender/:regionId', TeamRankingController.getTeamRankingsByRegionDivisionGender);
+  app.get('/api/teamRanking/getTeamRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', TeamRankingController.getTeamRankingsByConferenceDivisionGender);
+
+  //Ranking Histories
+
+  //SingleRankingHistory
+  app.post('/api/singleRankingHistory', SingleRankingHistoryController.create);
+  app.delete('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.delete);
+  app.get('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.find);
+  app.put('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.edit);
+
+  //DoubleRankingHistory
+  app.post('/api/doubleRankingHistory', DoubleRankingHistoryController.create);
+  app.delete('/api/doubleRankingHistory/:doubleRankingHistoryId', DoubleRankingHistoryController.delete);
+  app.get('/api/doubleRankingHistory/:doubleRankingHistoryId', DoubleRankingHistoryController.find);
+  app.put('/api/doubleRankingHistory/:doubleRankingHistoryId', DoubleRankingHistoryController.edit);
+
+  //TeamRankingHistory
+  app.post('/api/teamRankingHistory', TeamRankingHistoryController.create);
+  app.delete('/api/teamRankingHistory/:teamRankingHistoryId', TeamRankingHistoryController.delete);
+  app.get('/api/teamRankingHistory/:teamRankingHistoryId', TeamRankingHistoryController.find);
+  app.put('/api/teamRankingHistory/:teamRankingHistoryId', TeamRankingHistoryController.edit);
+
+
   //SimpleMatches
   app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall/:gender', SimpleMatchesController.getAllMatchsByYear);
   app.get('/api/simpleMatches/getMatchsByPlayer/:playerId', SimpleMatchesController.getMatchsByPlayer);

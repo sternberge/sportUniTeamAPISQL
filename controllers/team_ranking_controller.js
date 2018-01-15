@@ -54,7 +54,7 @@ module.exports = {
   },
 
   edit(req, res, next) {
-    const teamRankingId = req.params.TeamRankingId;
+    const teamRankingId = req.params.teamRankingId;
     const teamRankingProperties = req.body;
     db.pool.getConnection((error, connection) => {
       if (error){
@@ -89,7 +89,7 @@ module.exports = {
   },
   //Get the current national ranking order
   getTeamRankingsNationalByDivisionGender(req, res, next){
-	const leagueName = req.params.leagueName;
+	const leagueId = req.params.leagueId;
 	const gender = req.params.gender;
 
     db.pool.getConnection((error, connection) => {
@@ -97,15 +97,15 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT tr.rankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
-		c.name
+      var query = connection.query(`SELECT tr.teamRankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
+		col.collegeId, col.name
 		FROM TeamRanking tr
 		inner join Teams t on t.teamId = tr.Teams_teamId
 		inner join Colleges col on col.collegeId = t.Colleges_collegeId
-		inner join Leagues l on l.leagueId = c.Leagues_leagueId
+		inner join Leagues l on l.leagueId = col.Leagues_leagueId
 		inner join Conferences conf on conf.conferenceId = Conferences_conferenceId
-		WHERE t.gender LIKE ? AND tr.type = 'N' AND l.leagueName LIKE ?
-		ORDER BY tr.rank ASC`, gender, leagueName, (error, results, fields) => {
+		WHERE t.gender LIKE ? AND tr.type = 'N' AND l.leagueId LIKE ?
+		ORDER BY tr.rank ASC`, gender, leagueId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -119,7 +119,7 @@ module.exports = {
   //Get the current regional ranking order
   getTeamRankingsByRegionDivisionGender(req, res, next){
 	const regionId = req.params.regionId;
-	const leagueName = req.params.leagueName;
+	const leagueId = req.params.leagueId;
 	const gender = req.params.gender;
 
     db.pool.getConnection((error, connection) => {
@@ -127,15 +127,15 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT tr.rankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
-		c.name
+      var query = connection.query(`SELECT tr.teamRankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
+		col.collegeId, col.name
 		FROM TeamRanking tr
 		inner join Teams t on t.teamId = tr.Teams_teamId
 		inner join Colleges col on col.collegeId = t.Colleges_collegeId
-		inner join Leagues l on l.leagueId = c.Leagues_leagueId
+		inner join Leagues l on l.leagueId = col.Leagues_leagueId
 		inner join Conferences conf on conf.conferenceId = Conferences_conferenceId
-		WHERE t.gender LIKE ? AND tr.type = 'R' AND col.Regions_regionId = ? AND l.leagueName LIKE ?
-		ORDER BY tr.rank ASC`, gender, regionId, leagueName, (error, results, fields) => {
+		WHERE t.gender LIKE ? AND tr.type = 'R' AND col.Regions_regionId = ? AND l.leagueId LIKE ?
+		ORDER BY tr.rank ASC`, gender, regionId, leagueId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -149,7 +149,7 @@ module.exports = {
   //Get the current regional ranking order
   getTeamRankingsByConferenceDivisionGender(req, res, next){
 	const conferenceId = req.params.conferenceId;
-	const leagueName = req.params.leagueName;
+	const leagueId = req.params.leagueId;
 	const gender = req.params.gender;
 
     db.pool.getConnection((error, connection) => {
@@ -157,15 +157,15 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT tr.rankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
-		c.name
+      var query = connection.query(`SELECT tr.teamRankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
+		col.collegeId, col.name
 		FROM TeamRanking tr
 		inner join Teams t on t.teamId = tr.Teams_teamId
 		inner join Colleges col on col.collegeId = t.Colleges_collegeId
-		inner join Leagues l on l.leagueId = c.Leagues_leagueId
+		inner join Leagues l on l.leagueId = col.Leagues_leagueId
 		inner join Conferences conf on conf.conferenceId = Conferences_conferenceId
-		WHERE t.gender LIKE ? AND tr.type = 'R' AND col.Conferences_conferenceId = ? AND l.leagueName LIKE ?
-		ORDER BY tr.rank ASC`, gender, conferenceId, leagueName, (error, results, fields) => {
+		WHERE t.gender LIKE ? AND tr.type = 'C' AND col.Conferences_conferenceId = ? AND l.leagueId LIKE ?
+		ORDER BY tr.rank ASC`, gender, conferenceId, leagueId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
