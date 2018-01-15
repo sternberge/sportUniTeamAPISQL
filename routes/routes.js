@@ -25,6 +25,10 @@ const SingleRankingController = require ('../controllers/single_ranking_controll
 const DoubleRankingController = require ('../controllers/double_ranking_controller');
 const TeamRankingController = require ('../controllers/team_ranking_controller');
 
+const SingleRankingHistoryController = require ('../controllers/single_ranking_history_controller');
+const DoubleRankingHistoryController = require ('../controllers/double_ranking_history_controller');
+const TeamRankingHistoryController = require ('../controllers/team_ranking_history_controller');
+
 //Very important : keep the order of the drop down list because the server will
 //interpret the order, if you put the generateDropDownList at the end
 //the server will first execute getCollege and will be stuck avoiding
@@ -123,6 +127,26 @@ module.exports = (app) => {
   app.get('/api/teamRanking/getTeamRankingsNationalByDivisionGender/:leagueId/:gender', TeamRankingController.getTeamRankingsNationalByDivisionGender);
   app.get('/api/teamRanking/getTeamRankingsByRegionDivisionGender/:leagueId/:gender/:regionId', TeamRankingController.getTeamRankingsByRegionDivisionGender);
   app.get('/api/teamRanking/getTeamRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', TeamRankingController.getTeamRankingsByConferenceDivisionGender);
+  
+  //Ranking Histories
+  
+  //SingleRankingHistory
+  app.post('/api/singleRankingHistory', SingleRankingHistoryController.create);
+  app.delete('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.delete);
+  app.get('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.find);
+  app.put('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.edit);
+  
+  //DoubleRankingHistory
+  app.post('/api/doubleRankingHistory', DoubleRankingHistoryController.create);
+  app.delete('/api/doubleRankingHistory/:doubleRankingHistoryId', DoubleRankingHistoryController.delete);
+  app.get('/api/doubleRankingHistory/:doubleRankingHistoryId', DoubleRankingHistoryController.find);
+  app.put('/api/doubleRankingHistory/:doubleRankingHistoryId', DoubleRankingHistoryController.edit);
+  
+  //TeamRankingHistory
+  app.post('/api/teamRankingHistory', TeamRankingHistoryController.create);
+  app.delete('/api/teamRankingHistory/:teamRankingHistoryId', TeamRankingHistoryController.delete);
+  app.get('/api/teamRankingHistory/:teamRankingHistoryId', TeamRankingHistoryController.find);
+  app.put('/api/teamRankingHistory/:teamRankingHistoryId', TeamRankingHistoryController.edit);
 
   //SimpleMatches
   app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall/:gender', SimpleMatchesController.getAllMatchsByYear);
