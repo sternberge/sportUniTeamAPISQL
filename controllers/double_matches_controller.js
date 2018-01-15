@@ -322,8 +322,9 @@ INNER JOIN Colleges c2 on c2.collegeId = t2.Colleges_collegeId
 INNER JOIN Colleges c3 on c3.collegeId = t3.Colleges_collegeId
 INNER JOIN Colleges c4 on c4.collegeId = t4.Colleges_collegeId
 WHERE dm.springFall = ? AND dm.date >= '?-09-01' AND dm.date <= '?-06-30'
-AND (dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?) AND (dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?)
-OR  (dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?) AND (dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?)`, [springFall,year,yearPlusOne,playerId1,playerId1,playerId2,playerId2,playerId2,playerId2,playerId1,playerId1], (error, results, fields) => {
+AND (dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?) OR (dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?)
+AND (dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?) OR (dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?)
+`, [springFall,year,yearPlusOne,playerId1,playerId1,playerId1,playerId1,playerId2,playerId2,playerId2,playerId2], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
