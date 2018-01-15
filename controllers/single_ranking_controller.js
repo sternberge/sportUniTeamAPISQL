@@ -90,7 +90,7 @@ module.exports = {
   
   //Get the current national ranking order
   getSingleRankingsNationalByDivisionGender(req, res, next){
-	const leagueName = req.params.leagueName;
+	const leagueId = req.params.leagueId;
 	const gender = req.params.gender;
 
     db.pool.getConnection((error, connection) => {
@@ -106,8 +106,8 @@ module.exports = {
 		inner join Teams t on t.teamId = p.Teams_teamId
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
-		WHERE u.gender LIKE ? AND sr.type LIKE 'N' AND l.leagueName LIKE ?
-		ORDER BY sr.rank ASC`, gender, leagueName, (error, results, fields) => {
+		WHERE u.gender LIKE ? AND sr.type LIKE 'N' AND l.leagueId LIKE ?
+		ORDER BY sr.rank ASC`, gender, leagueId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -121,7 +121,7 @@ module.exports = {
   //Get the current regional ranking order
   getSingleRankingsByRegionDivisionGender(req, res, next){
 	const regionId = req.params.regionId;
-	const leagueName = req.params.leagueName;
+	const leagueId = req.params.leagueId;
 	const gender = req.params.gender;
 
     db.pool.getConnection((error, connection) => {
@@ -137,8 +137,8 @@ module.exports = {
 		inner join Teams t on t.teamId = p.Teams_teamId
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
-		WHERE u.gender LIKE ? AND sr.type = 'R' AND c.Regions_regionId = ? AND l.leagueName LIKE ?
-		ORDER BY sr.rank ASC`, gender, regionId, leagueName, (error, results, fields) => {
+		WHERE u.gender LIKE ? AND sr.type = 'R' AND c.Regions_regionId = ? AND l.leagueId LIKE ?
+		ORDER BY sr.rank ASC`, gender, regionId, leagueId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -152,7 +152,7 @@ module.exports = {
   //Get the current ranking order by conference
   getSingleRankingsByConferenceDivisionGender(req, res, next){
 	const conferenceId = req.params.conferenceId;
-	const leagueName = req.params.leagueName;
+	const leagueId = req.params.leagueId;
 	const gender = req.params.gender;
 
     db.pool.getConnection((error, connection) => {
@@ -168,8 +168,8 @@ module.exports = {
 		inner join Teams t on t.teamId = p.Teams_teamId
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
-		WHERE u.gender LIKE ? AND sr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueName LIKE ?
-		ORDER BY sr.rank ASC`, gender, conferenceId, leagueName, (error, results, fields) => {
+		WHERE u.gender LIKE ? AND sr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueId LIKE ?
+		ORDER BY sr.rank ASC`, gender, conferenceId, leagueId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
