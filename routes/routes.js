@@ -8,7 +8,7 @@ const BudgetController = require('../controllers/budget_controller');
 const RankDatesController = require('../controllers/rank_dates_controller');
 const RankRulesController = require('../controllers/rank_rules_controller');
 const RankRulesPointsController = require('../controllers/rank_rules_points_controller');
-const RankingController = require('../controllers/ranking_controller');
+
 const SimpleMatchesController = require('../controllers/simple_matches_controller');
 const DoubleMatchesController = require('../controllers/double_matches_controller');
 const TournamentsController = require('../controllers/tournaments_controller');
@@ -93,12 +93,13 @@ module.exports = (app) => {
 
   //Ranking
   //Get the ranking
+  /*
   app.get('/api/ranking/getRanking', RankingController.getRanking);
   app.post('/api/ranking', RankingController.create);
   app.delete('/api/ranking/:ranking_id',RankingController.delete);
   app.get('/api/ranking/:ranking_id', RankingController.find);
   app.put('/api/ranking/:ranking_id', RankingController.edit);
-
+*/
   //SimpleMatches
   app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall/:gender', SimpleMatchesController.getAllMatchsByYear);
   app.get('/api/simpleMatches/getMatchsByPlayer/:playerId', SimpleMatchesController.getMatchsByPlayer);
