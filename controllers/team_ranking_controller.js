@@ -54,7 +54,7 @@ module.exports = {
   },
 
   edit(req, res, next) {
-    const teamRankingId = req.params.TeamRankingId;
+    const teamRankingId = req.params.teamRankingId;
     const teamRankingProperties = req.body;
     db.pool.getConnection((error, connection) => {
       if (error){
