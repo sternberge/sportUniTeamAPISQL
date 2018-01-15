@@ -1,9 +1,6 @@
 var db = require('./../db');
 
-
 module.exports = {
-
-
   create(req, res, next) {
 
     const springResultProperties = req.body;
@@ -24,7 +21,6 @@ module.exports = {
         return (results.insertId);
       });
     });
-
   },
 
   };

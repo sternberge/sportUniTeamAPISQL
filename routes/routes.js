@@ -16,12 +16,10 @@ const LeaguesController = require('../controllers/leagues_controller');
 const SpringMatchesController = require('../controllers/spring_matches_controller');
 const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DropDownListController = require ('../controllers/drop_down_list_controller');
-
 const springResultController = require ('../controllers/spring_result_controller');
 
 const AuthenticateController = require ('../controllers/authenticate_controller');
 
-const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DoubleRankingController = require ('../controllers/double_ranking_controller');
 const TeamRankingController = require ('../controllers/team_ranking_controller');
 
