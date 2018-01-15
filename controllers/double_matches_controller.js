@@ -301,8 +301,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query(`
-        SELECT concat(u1.firstName,' ',u1.lastName) as winnerName1,concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1, concat(u4.firstName,' ',u4.lastName) as loserName2,dm.*,c1.Conferences_conferenceId
+      var query = connection.query(`SELECT concat(u1.firstName,' ',u1.lastName) as winnerName1,concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1, concat(u4.firstName,' ',u4.lastName) as loserName2,dm.*,c1.Conferences_conferenceId
 FROM DoubleMatches dm
 INNER JOIN DoubleTeams dt1 on dm.winnerDouble = dt1.doubleTeamId
 INNER JOIN DoubleTeams dt2 on dm.loserDouble = dt2.doubleTeamId
@@ -324,10 +323,9 @@ INNER JOIN DoubleTeams dt2 on dm.loserDouble = dt2.doubleTeamId
  INNER JOIN Colleges c4 on c4.collegeId = t4.Colleges_collegeId
  WHERE dm.springFall = ? AND dm.date >= '?-09-01' AND dm.date <= '?-06-30'
  AND ( (p1.playerId = ? OR p2.playerId = ? )
- AND (p3.playerId = ? OR p4.playerId = ? )
- OR  ( p3.playerId = ? OR p4.playerId = ? )
- AND (p1.playerId = ? OR p2.playerId = ? ) )
-      `, [springFall,year,yearPlusOne,playerId1,playerId1,playerId1,playerId1,playerId2,playerId2,playerId2,playerId2], (error, results, fields) => {
+ OR (p3.playerId = ? OR p4.playerId = ? )
+ AND  ( p3.playerId = ? OR p4.playerId = ? )
+ OR (p1.playerId = ? OR p2.playerId = ? ) )`, [springFall,year,yearPlusOne,playerId1,playerId1,playerId1,playerId1,playerId2,playerId2,playerId2,playerId2], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
