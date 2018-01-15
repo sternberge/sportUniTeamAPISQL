@@ -8,7 +8,7 @@ const BudgetController = require('../controllers/budget_controller');
 const RankDatesController = require('../controllers/rank_dates_controller');
 const RankRulesController = require('../controllers/rank_rules_controller');
 const RankRulesPointsController = require('../controllers/rank_rules_points_controller');
-const RankingController = require('../controllers/ranking_controller');
+
 const SimpleMatchesController = require('../controllers/simple_matches_controller');
 const DoubleMatchesController = require('../controllers/double_matches_controller');
 const TournamentsController = require('../controllers/tournaments_controller');
