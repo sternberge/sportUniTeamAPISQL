@@ -119,7 +119,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-		u.firstName, u.lastName, p.status, c.name
+		u.firstName, u.lastName, p.status, c.name as collegeName
 		FROM SingleRanking sr
 		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
@@ -127,7 +127,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u.gender LIKE ? AND sr.type LIKE 'N' AND l.leagueId LIKE ?
-		ORDER BY sr.rank ASC`, gender, leagueId, (error, results, fields) => {
+		ORDER BY sr.rank ASC`, [gender, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -150,7 +150,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-		u.firstName, u.lastName, p.status, c.name
+		u.firstName, u.lastName, p.status, c.name as collegeName
 		FROM SingleRanking sr
 		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
@@ -158,7 +158,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u.gender LIKE ? AND sr.type = 'R' AND c.Regions_regionId = ? AND l.leagueId LIKE ?
-		ORDER BY sr.rank ASC`, gender, regionId, leagueId, (error, results, fields) => {
+		ORDER BY sr.rank ASC`, [gender, regionId, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -181,7 +181,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-		u.firstName, u.lastName, p.status, c.name
+		u.firstName, u.lastName, p.status, c.name as collegeName
 		FROM SingleRanking sr
 		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
@@ -189,7 +189,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u.gender LIKE ? AND sr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueId LIKE ?
-		ORDER BY sr.rank ASC`, gender, conferenceId, leagueId, (error, results, fields) => {
+		ORDER BY sr.rank ASC`, [gender, conferenceId, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));

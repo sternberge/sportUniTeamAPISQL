@@ -84,4 +84,24 @@ module.exports = {
         });
       });
     },
+
+    getTeamIdByGenderCollege(req, res, next) {
+      const gender = req.params.gender;
+      const collegeId = req.params.collegeId;
+
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        var query = connection.query('SELECT t.teamId FROM Teams t WHERE t.Colleges_collegeId = ? AND t.gender = ?;', [collegeId,gender], (error, results, fields) => {
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          console.log(query.sql);
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+      });
+    }
   };

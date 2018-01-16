@@ -182,6 +182,7 @@ module.exports = (app) => {
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1Player2/:year/:springFall/:tournamentId/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1Player2);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentCollege/:year/:springFall/:gender/:tournamentId/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentCollege);
   //Teams
+  app.get('/api/teams/getTeamIdByGenderCollege/:gender/:collegeId',TeamsController.getTeamIdByGenderCollege);
   app.post('/api/teams', TeamsController.create);
   app.delete('/api/teams/:team_id',TeamsController.delete);
   app.get('/api/teams/:team_id', TeamsController.find);
@@ -218,6 +219,11 @@ module.exports = (app) => {
     app.get('/api/springMatches/getSpringMatchsByYearGender/:year/:gender',SpringMatchesController.getSpringMatchsByYearGender);
     app.get('/api/springMatches/getSingleSpringMatchsBySpringId/:springId',SpringMatchesController.getSingleSpringMatchsBySpringId);
     app.get('/api/springMatches/getDoubleSpringMatchsBySpringId/:springId',SpringMatchesController.getDoubleSpringMatchsBySpringId);
+
+    app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConference/:year/:gender/:collegeId/:conferenceId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConference);
+    app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConferencePlayer/:year/:gender/:collegeId/:conferenceId/:playerId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConferencePlayer);
+
+
     app.get('/api/springMatches/test/:springId',SpringMatchesController.test);
     app.get('/api/springMatches/testFinal/:gender/:springId/:conferenceId/:year',SpringMatchesController.testFinal);
 

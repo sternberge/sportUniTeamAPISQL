@@ -39,7 +39,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query('SELECT sm.*,concat(u1.firstName,\' \',u1.lastName) as WinnerName,concat(u2.firstName,\' \',u2.lastName) as LoserName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Teams t1 on t1.teamId = p1.playerId INNER JOIN Teams t2 on t2.teamId = p2.playerId INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId WHERE sm.springId = ? ORDER BY sm.springPosition;',[springId], (error, results, fields) => {
+      var query = connection.query(`SELECT sm.*,concat(u1.firstName,' ',u1.lastName) as WinnerName,concat(u2.firstName,' ',u2.lastName) as LoserName FROM SimpleMatches sm INNER JOIN Players p1 on p1.playerId = sm.winner INNER JOIN Players p2 on p2.playerId = sm.loser INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId WHERE sm.springId = ? ORDER BY sm.springPosition;`,[springId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -63,7 +63,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query('SELECT dm.*,dt1.*,dt2.*,concat(u1.firstName,\' \',u1.lastName) as winnerName1,concat(u2.firstName,\' \',u2.lastName) as winnerName2,concat(u3.firstName,\' \',u3.lastName) as loserName1,concat(u4.firstName,\' \',u4.lastName) as loserName2,p1.playerId as winner1Id,p2.playerId as winner2Id,p3.playerId as loser1Id,p4.playerId as loser2Id FROM DoubleMatches dm INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble INNER JOIN Players p1 on p1.playerId = dt1.Players_playerId INNER JOIN Players p2 on p2.playerId = dt1.Players_playerId2 INNER JOIN Players p3 on p3.playerId = dt2.Players_playerId INNER JOIN Players p4 on p4.playerId = dt2.Players_playerId2 INNER JOIN Teams t1 on t1.teamId = p1.playerId INNER JOIN Teams t2 on t2.teamId = p2.playerId INNER JOIN Teams t3 on t3.teamId = p3.playerId INNER JOIN Teams t4 on t4.teamId = p4.playerId INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Users u3 on u3.userId = p3.Users_userId INNER JOIN Users u4 on u4.userId = p4.Users_userId WHERE dm.springId = ? ORDER BY dm.springPosition',[springId], (error, results, fields) => {
+      var query = connection.query(`SELECT dm.*,dt1.*,dt2.*,concat(u1.firstName,' ',u1.lastName) as winnerName1,concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1,concat(u4.firstName,' ',u4.lastName) as loserName2,p1.playerId as winner1Id,p2.playerId as winner2Id,p3.playerId as loser1Id,p4.playerId as loser2Id FROM DoubleMatches dm INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble INNER JOIN Players p1 on p1.playerId = dt1.Players_playerId INNER JOIN Players p2 on p2.playerId = dt1.Players_playerId2 INNER JOIN Players p3 on p3.playerId = dt2.Players_playerId INNER JOIN Players p4 on p4.playerId = dt2.Players_playerId2 INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId INNER JOIN Teams t3 on t3.teamId = p3.Teams_teamId INNER JOIN Teams t4 on t4.teamId = p4.Teams_teamId INNER JOIN Users u1 on u1.userId = p1.Users_userId INNER JOIN Users u2 on u2.userId = p2.Users_userId INNER JOIN Users u3 on u3.userId = p3.Users_userId INNER JOIN Users u4 on u4.userId = p4.Users_userId WHERE dm.springId = ? ORDER BY dm.springPosition`,[springId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -215,6 +215,92 @@ INNER JOIN Colleges co1 on co1.name = final5.college1Name
 INNER JOIN Colleges co2 on co2.name = final5.college2Name
 WHERE co1.Conferences_conferenceId LIKE ? AND final5.date >= \'?-09-01\' AND final5.date <= \'?-06-30\'
 `,  [gender,springId,gender,springId,conferenceId,year,yearPlusOne],(error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+
+        console.log(query.sql);
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+    });
+  },
+
+  getSpringMatchesByDateGenderCollegeConference(req, res, next) {
+  const year =  Number(req.params.year);
+  var yearPlusOne=Number(year)+1;
+
+  const gender= req.params.gender;
+  const collegeId= req.params.collegeId;
+  const conferenceId= req.params.conferenceId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+
+      var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date,u.gender
+FROM SpringResult sr
+INNER JOIN 	Colleges c1 on sr.winnerId = c1.collegeId
+INNER JOIN 	Colleges c2 on sr.loserId = c2.collegeId
+INNER JOIN  SimpleMatches sm on sm.springId = sr.springId
+INNER JOIN 	Players p on p.playerId = sm.winner
+INNER JOIN Users u on u.userId = p.Users_userId
+INNER JOIN 	DoubleMatches dm on dm.springId = sr.springId
+WHERE u.gender LIKE ?
+AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
+AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
+AND substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <= '?-06-30'
+`,[gender,collegeId,collegeId,conferenceId,conferenceId,year,yearPlusOne], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+
+        console.log(query.sql);
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+    });
+  },
+
+  getSpringMatchesByDateGenderCollegeConferencePlayer(req, res, next) {
+  const year =  Number(req.params.year);
+  var yearPlusOne=Number(year)+1;
+
+  const gender= req.params.gender;
+  const collegeId= req.params.collegeId;
+  const conferenceId= req.params.conferenceId;
+  const playerId = req.params.playerId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+
+      var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date
+FROM SpringResult sr
+INNER JOIN Colleges c1 on sr.winnerId = c1.collegeId
+INNER JOIN Colleges c2 on sr.loserId = c2.collegeId
+INNER JOIN SimpleMatches sm on sm.springId = sr.springId
+INNER JOIN Players p1 on p1.playerId = sm.winner
+INNER JOIN Users u1 on u1.userId = p1.Users_userId
+INNER JOIN Players p2 on p2.playerId = sm.loser
+INNER JOIN Users u2 on u2.userId = p1.Users_userId
+INNER JOIN DoubleMatches dm on dm.springId = sr.springId
+INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+WHERE u1.gender LIKE ?
+AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
+AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
+AND substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <= '?-06-30'
+AND (p1.playerId = ? OR p2.playerId = ? OR dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? OR dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?)
+`,[gender,collegeId,collegeId,conferenceId,conferenceId,year,yearPlusOne,playerId,playerId,playerId,playerId,playerId,playerId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));

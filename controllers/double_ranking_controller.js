@@ -99,7 +99,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2,
+		c.name as collegeName
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -110,7 +111,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u1.gender LIKE ? AND dr.type = 'N' AND l.leagueId LIKE ?
-		ORDER BY dr.rank ASC`, gender, leagueId, (error, results, fields) => {
+		ORDER BY dr.rank ASC`, [gender, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -133,7 +134,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2,
+		c.name as collegeName
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -144,7 +146,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u1.gender LIKE ? AND dr.type = 'R' AND c.Regions_regionId = ? AND l.leagueId LIKE ?
-		ORDER BY dr.rank ASC`, gender, regionId, leagueId, (error, results, fields) => {
+		ORDER BY dr.rank ASC`, [gender, regionId, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -167,7 +169,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2,
+		c.name as collegeName
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -178,7 +181,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u1.gender LIKE ? AND dr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueId LIKE ?
-		ORDER BY dr.rank ASC`, gender, conferenceId, leagueId, (error, results, fields) => {
+		ORDER BY dr.rank ASC`, [gender, conferenceId, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
