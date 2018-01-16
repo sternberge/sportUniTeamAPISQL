@@ -317,26 +317,31 @@ module.exports = {
   },
 
   getMatchsByCurrentYear(req, res, next) {
-
+    const gender = req.params.gender;
+    const springFall = req.params.springFall;
 
     db.pool.getConnection((error, connection) => {
 
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT * FROM SimpleMatches sm WHERE YEAR(sm.date) = YEAR(now())  ORDER BY sm.date DESC;', (error, results, fields) => {
-        if (error){
-          connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-        connection.release(); // CLOSE THE CONNECTION
+      var query = connection.query(`SELECT * FROM SimpleMatches sm
+        INNER JOIN Players p on p.playerId = sm.winner
+        INNER JOIN Users u on p.Users_userId= u.userId
+        WHERE YEAR(sm.date) = YEAR(now()) AND u.gender = ? AND sm.springFall = ?
+        ORDER BY sm.date DESC `,[gender,springFall] ,(error, results, fields) => {
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+
+
       });
 
-
-    });
-
-  },
+    },
 
 
-};
+  };
