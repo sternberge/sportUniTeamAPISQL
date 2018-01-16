@@ -98,7 +98,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT tr.teamRankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
-		col.collegeId, col.name
+		col.collegeId, col.name as collegeName
 		FROM TeamRanking tr
 		inner join Teams t on t.teamId = tr.Teams_teamId
 		inner join Colleges col on col.collegeId = t.Colleges_collegeId
@@ -128,7 +128,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT tr.teamRankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
-		col.collegeId, col.name
+		col.collegeId, col.name as collegeName
 		FROM TeamRanking tr
 		inner join Teams t on t.teamId = tr.Teams_teamId
 		inner join Colleges col on col.collegeId = t.Colleges_collegeId
@@ -158,7 +158,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT tr.teamRankingId, tr.Teams_teamId, tr.rank, tr.rankPoints, tr.previousRank, tr.differencePoints, conf.conferenceId, conf.conferenceLabel,
-		col.collegeId, col.name
+		col.collegeId, col.name as collegeName
 		FROM TeamRanking tr
 		inner join Teams t on t.teamId = tr.Teams_teamId
 		inner join Colleges col on col.collegeId = t.Colleges_collegeId

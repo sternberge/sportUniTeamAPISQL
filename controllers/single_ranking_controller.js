@@ -99,7 +99,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-		u.firstName, u.lastName, p.status, c.name
+		u.firstName, u.lastName, p.status, c.name as collegeName
 		FROM SingleRanking sr
 		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
@@ -130,7 +130,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-		u.firstName, u.lastName, p.status, c.name
+		u.firstName, u.lastName, p.status, c.name as collegeName
 		FROM SingleRanking sr
 		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
@@ -161,7 +161,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-		u.firstName, u.lastName, p.status, c.name
+		u.firstName, u.lastName, p.status, c.name as collegeName
 		FROM SingleRanking sr
 		inner join Players p on sr.Players_playerId = p.playerId
 		inner join Users u on u.userId = p.Users_userId
