@@ -228,5 +228,44 @@ WHERE co1.Conferences_conferenceId LIKE ? AND final5.date >= \'?-09-01\' AND fin
     });
   },
 
+  getSpringMatchesByDateGenderCollegeConference(req, res, next) {
+  const year =  Number(req.params.year);
+  var yearPlusOne=Number(year)+1;
+
+  const gender= req.params.gender;
+  const collegeId= req.params.collegeId;
+  const conferenceId= req.params.conferenceId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+
+      var query = connection.query(`SELECT DISTINCT c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date
+FROM SpringResult sr
+INNER JOIN 	Colleges c1 on sr.winnerId = c1.collegeId
+INNER JOIN 	Colleges c2 on sr.loserId = c2.collegeId
+INNER JOIN  SimpleMatches sm on sm.springId = sr.springId
+INNER JOIN 	Players p on p.playerId = sm.winner
+INNER JOIN Users u on u.userId = p.Users_userId
+WHERE substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <= '?-06-30'
+AND u.gender like ?
+AND sr.loserId LIKE ? OR sr.winnerId LIKE ?
+AND c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ?
+`,[year,yearPlusOne,gender,collegeId,collegeId,conferenceId,conferenceId], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+
+        console.log(query.sql);
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+    });
+  },
+
 
 };
