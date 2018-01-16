@@ -162,7 +162,7 @@ module.exports = (app) => {
   app.get('/api/simpleMatches/getMatchsByPlayerTournamentSpringFallYearGender/:playerId/:tournamentId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByPlayerTournamentSpringFallYearGender);
   app.get('/api/simpleMatches/getMatchsByConferenceSpringFallYear/:conferenceId/:springFall/:year/:gender', SimpleMatchesController.getMatchsByConferenceSpringFallYear);
 
-  app.get('/api/simpleMatches/getMatchsByCurrentYear',SimpleMatchesController.getMatchsByCurrentYear);
+  app.get('/api/simpleMatches/getMatchsByCurrentYear/:gender/:springFall',SimpleMatchesController.getMatchsByCurrentYear);
 
   app.post('/api/simpleMatches', SimpleMatchesController.create);
   app.delete('/api/simpleMatches/:simpleMatch_id',SimpleMatchesController.delete);
