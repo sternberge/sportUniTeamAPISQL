@@ -8,7 +8,7 @@ const BudgetController = require('../controllers/budget_controller');
 const RankDatesController = require('../controllers/rank_dates_controller');
 const RankRulesController = require('../controllers/rank_rules_controller');
 const RankRulesPointsController = require('../controllers/rank_rules_points_controller');
-
+const SpringResultController = require('../controllers/spring_result_controller');
 const SimpleMatchesController = require('../controllers/simple_matches_controller');
 const DoubleMatchesController = require('../controllers/double_matches_controller');
 const TournamentsController = require('../controllers/tournaments_controller');
@@ -16,7 +16,7 @@ const LeaguesController = require('../controllers/leagues_controller');
 const SpringMatchesController = require('../controllers/spring_matches_controller');
 const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DropDownListController = require ('../controllers/drop_down_list_controller');
-const springResultController = require ('../controllers/spring_result_controller');
+
 
 const AuthenticateController = require ('../controllers/authenticate_controller');
 
@@ -151,6 +151,7 @@ module.exports = (app) => {
 
 
   //SimpleMatches
+  app.get('/api/simpleMatches/getMatchesBySpringId/:springId', SimpleMatchesController.findSimpleMatchPerSpringId);
   app.get('/api/simpleMatches/getAllMatchsByYear/:year/:springFall/:gender', SimpleMatchesController.getAllMatchsByYear);
   app.get('/api/simpleMatches/getMatchsByPlayer/:playerId', SimpleMatchesController.getMatchsByPlayer);
   app.get('/api/simpleMatches/getMatchsByPlayerSpringFall/:playerId/:springFall', SimpleMatchesController.getMatchsByPlayerSpringFall);
@@ -170,6 +171,7 @@ module.exports = (app) => {
 
   //DoublesMatches
   app.post('/api/doubleMatches', DoubleMatchesController.createDoubleMatch);
+  app.get('/api/doubleMatches/getMatchesBySpringId/:springId', DoubleMatchesController.findDoubleMatchPerSpringId);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGender/:year/:springFall/:gender',DoubleMatchesController.getMatchsByYearSpringFallGender);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderConference/:year/:springFall/:gender/:conferenceId',DoubleMatchesController.getMatchsByYearSpringFallGenderConference);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderCollege/:year/:springFall/:gender/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderCollege);
@@ -216,13 +218,12 @@ module.exports = (app) => {
     app.get('/api/springMatches/getSpringMatchsByYearGender/:year/:gender',SpringMatchesController.getSpringMatchsByYearGender);
     app.get('/api/springMatches/getSingleSpringMatchsBySpringId/:springId',SpringMatchesController.getSingleSpringMatchsBySpringId);
     app.get('/api/springMatches/getDoubleSpringMatchsBySpringId/:springId',SpringMatchesController.getDoubleSpringMatchsBySpringId);
-
-
     app.get('/api/springMatches/test/:springId',SpringMatchesController.test);
     app.get('/api/springMatches/testFinal/:gender/:springId/:conferenceId/:year',SpringMatchesController.testFinal);
 
     //SpringResult
-    app.post('/api/springResult',springResultController.create);
+    app.post('/api/springResult',SpringResultController.create);
+    app.get('/api/springResult/calculateWinnerLoser/:springId',SpringResultController.checkWinnerLoserSpring);
 
 
 

@@ -27,6 +27,35 @@ module.exports = {
     });
   },
 
+  findSimpleMatchPerSpringId (req, res) {
+    return new Promise(function (resolve, reject) {
+    const springId = req.params.springId;
+    db.pool.getConnection((error, connection) => {
+      if (error){
+        reject(error);
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      // L'ajout du '?' permet d'éviter les injections sql
+      var query = connection.query('SELECT * FROM SimpleMatches WHERE springId = ?', springId, (error, results, fields) => {
+        if (error){
+          connection.release();
+          reject(error);
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        else if (results.length > 0){
+          resolve(results);
+          connection.release(); // CLOSE THE CONNECTION
+        }
+        else{
+          reject(error);
+          res.send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
+          connection.release(); // CLOSE THE CONNECTION
+        }
+      });
+    });
+  });
+  },
+
   create(req, res, next) {
 
 

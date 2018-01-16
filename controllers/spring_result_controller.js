@@ -1,5 +1,6 @@
 var db = require('./../db');
-
+const SimpleMatchesController = require('../controllers/simple_matches_controller');
+const DoubleMatchesController = require('../controllers/double_matches_controller');
 module.exports = {
   create(req, res, next) {
 
@@ -22,5 +23,21 @@ module.exports = {
       });
     });
   },
+
+
+
+  checkWinnerLoserSpring(req,res){
+    var nbPointsWinner = 0;
+    var nbPointsLoser = 0;
+
+    SimpleMatchesController.findSimpleMatchPerSpringId(req,res)
+    .then((resu)=> {
+      console.log("test");
+      console.log(resu[0]);
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+  }
 
   };

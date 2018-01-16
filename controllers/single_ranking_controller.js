@@ -71,6 +71,26 @@ module.exports = {
     });
   },
 
+  editWithPromise(playerRankingId,rankPoints) {
+    return new Promise(function (resolve, reject) {
+    const singleRankingId = playerRankingId;
+    const singleRankingProperties = rankPoints;
+    db.pool.getConnection((error, connection) => {
+      if (error){
+        return reject(error);
+      }
+      var query = connection.query('UPDATE SingleRanking SET rankPoints = ? WHERE singleRankingId = ?',[singleRankingProperties, singleRankingId], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return reject(error);
+        }
+        connection.release(); // CLOSE THE CONNECTION
+        resolve(results);
+      });
+    });
+  });
+  },
+
   delete(req, res, next) {
     const singleRankingId = req.params.singleRankingId;
     db.pool.getConnection((error, connection) => {
@@ -185,17 +205,20 @@ module.exports = {
     return new Promise(function (resolve, reject) {
     playerId = req.body.playerId;
     limiteRequest = Number(req.body.limite);
-    type= req.body.type;
+    singleRankingType= req.body.singleRankingType;
+    rankingType = req.body.rankingType;
     date=req.body.date;
     db.pool.getConnection((error, connection) => {
 
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`Select * from SimpleMatches s
-        Left Outer Join Players p on s.loser = p.playerId
-        Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
-        Left Outer Join RankPointsRules r on r.opponentRank=sr.rank Where s.winner = ? and sr.type = ? and s.date > ? order by r.opponentRank Asc limit ?`, [playerId,type,date,limiteRequest], (error, results, fields) => {
+      var query = connection.query(`Select s.homeAway, r.winOverRankPoints, sr.singleRankingId from SimpleMatches s
+Left Outer Join Players p on s.loser = p.playerId
+Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
+Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
+Where s.winner = ? and sr.type = ? and r.type = ? and s.date > ?
+order by r.opponentRank Asc limit ?`, [playerId,singleRankingType,rankingType,date,limiteRequest], (error, results, fields) => {
         if (error){
           connection.release();
           return reject(error);
@@ -208,45 +231,109 @@ module.exports = {
   },
 
 
-  getSingleBestLossesMatches(req, res){
+  getSingleBestLossesMatches(req, nbMatch){
     return new Promise(function (resolve, reject) {
     playerId = req.body.playerId;
-    limiteRequest = Number(req.body.limite);
-    type= req.body.type;
+    limiteRequest = Number(nbMatch);
+    singleRankingType= req.body.singleRankingType;
+    rankingType = req.body.rankingType;
     date=req.body.date;
     db.pool.getConnection((error, connection) => {
-
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`Select * from SimpleMatches s
-        Left Outer Join Players p on s.winner = p.playerId
-        Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
-        Left Outer Join RankPointsRules r on r.opponentRank=sr.rank Where s.loser = ? and sr.type = ? and s.date > ? order by r.opponentRank Asc limit ?`, [playerId,type,date,limiteRequest], (error, results, fields) => {
+      var query = connection.query(`Select s.homeAway, r.lossToRankPoints, sr.singleRankingId from SimpleMatches s
+Left Outer Join Players p on s.winner = p.playerId
+Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
+Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
+Where s.loser = ? and sr.type = ?  and r.type = ? and s.date > ?
+order by r.opponentRank Asc limit ?`, [playerId,singleRankingType,rankingType,date,limiteRequest], (error, results, fields) => {
         if (error){
           connection.release();
           return reject(error);
         }
         connection.release(); // CLOSE THE CONNECTION
-        console.log(results);
+        //console.log(results);
         return resolve(results);
       });
     });
   });
 },
 
+getSingleRankingPerPlayerId(req){
+  return new Promise(function (resolve, reject) {
+  playerId = req.body.playerId;
+  singleRankingType= req.body.singleRankingType;
+  db.pool.getConnection((error, connection) => {
+    if (error){
+      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+    }
+    var query = connection.query(`Select sr.singleRankingId from SingleRanking sr
+Left Outer Join Players p on sr.Players_playerId= p.playerId
+Where p.playerId = ? and sr.type = ?`, [playerId,singleRankingType], (error, results, fields) => {
+      if (error){
+        connection.release();
+        return reject(error);
+      }
+      connection.release(); // CLOSE THE CONNECTION
+      //console.log(results);
+      return resolve(results[0].singleRankingId);
+    });
+  });
+});
+},
+
 
   calculateRanking(req, res, next){
+    var winPoints = 0;
+    var losePoints = 0;
+    var nbWinMatches = 0;
+    var nbLoseMatches = 0;
+    var rankPoints = 0;
+    var i = 0;
     module.exports.getSingleBestMatches(req,res)
-    .then(() => {
-      module.exports.getSingleBestLossesMatches(req,res);
+    .then((results1) => {
+      console.log("Nombre de match gagnés : ",results1.length);
+      for(i=0; i<results1.length; i++ ){
+        winPoints += results1[i].winOverRankPoints;
+      }
+      console.log("Points gangés au cours de ce(s) matchs : ",winPoints);
+      nbWinMatches = results1.length;
+      return Promise.resolve(results1);
     })
     .then((results) => {
-      console.log(results);
-      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+      if(results.length < req.body.limite){
+        nbLoseMatches = req.body.limite - nbWinMatches;
+        console.log("Nombre de match perdus si le joeurs a joué plus de match que la limite : ",nbLoseMatches);
+        return module.exports.getSingleBestLossesMatches(req,nbLoseMatches);
+      }
+      else{
+        return Promise.resolve(null);
+      }
+    })
+    .then((results2) => {
+      if(results2 != null){
+        var i =0;
+        console.log("Le joeur a perdu le nombre suivant de match : ",results2.length);
+        for(i=0; i<nbLoseMatches; i++ ){
+          console.log("Match perdu numero :", i+1);
+          losePoints += results2[i].lossToRankPoints;
+        }
+      }
+      rankPoints = winPoints / (nbWinMatches + losePoints);
+      console.log("Nombre points totaux : ",rankPoints);
+      return(module.exports.getSingleRankingPerPlayerId(req));
+    })
+    .then((playerRankingId) => {
+      console.log("Player Ranking Id par type selectionné (N,R,...) : ",playerRankingId);
+      return(module.exports.editWithPromise(playerRankingId,rankPoints));
+    })
+    .then((results) => {
+      console.log("Resultats du nouveau ranking : ",rankPoints);
+      res.send("Nouveau ranking MAJ !");
     })
     .catch((error) => {
-      res.send("Problem occurs");
+      res.send(error);
     });
   }
 };
