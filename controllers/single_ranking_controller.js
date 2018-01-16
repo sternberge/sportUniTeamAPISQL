@@ -107,7 +107,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u.gender LIKE ? AND sr.type LIKE 'N' AND l.leagueId LIKE ?
-		ORDER BY sr.rank ASC`, gender, leagueId, (error, results, fields) => {
+		ORDER BY sr.rank ASC`, [gender, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -138,7 +138,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u.gender LIKE ? AND sr.type = 'R' AND c.Regions_regionId = ? AND l.leagueId LIKE ?
-		ORDER BY sr.rank ASC`, gender, regionId, leagueId, (error, results, fields) => {
+		ORDER BY sr.rank ASC`, [gender, regionId, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -169,7 +169,7 @@ module.exports = {
 		inner join Colleges c on c.collegeId = t.Colleges_collegeId
 		inner join Leagues l on l.leagueId = c.Leagues_leagueId
 		WHERE u.gender LIKE ? AND sr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueId LIKE ?
-		ORDER BY sr.rank ASC`, gender, conferenceId, leagueId, (error, results, fields) => {
+		ORDER BY sr.rank ASC`, [gender, conferenceId, leagueId], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
