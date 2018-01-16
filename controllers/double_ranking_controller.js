@@ -99,7 +99,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2,
+		c.name
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -133,7 +134,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2,
+		c.name
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
@@ -167,7 +169,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
       var query = connection.query(`SELECT dr.doubleRankingId, dr.DoubleTeams_doubleTeamId, dr.rank, dr.rankPoints, dr.differenceRank, dr.differencePoints,
-		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
+		u1.firstName as firstNamePlayer1, u1.lastName as lastNamePlayer1, p1.status as statusPlayer1, u2.firstName as firstNamePlayer2, u2.lastName as lastNamePlayer2, p2.status as statusPlayer2,
+		c.name
 		FROM DoubleRanking dr
 		inner join DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
 		inner join Players p1 on p1.playerId = dt.Players_playerId
