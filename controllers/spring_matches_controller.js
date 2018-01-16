@@ -268,5 +268,51 @@ AND substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <
     });
   },
 
+  getSpringMatchesByDateGenderCollegeConferencePlayer(req, res, next) {
+  const year =  Number(req.params.year);
+  var yearPlusOne=Number(year)+1;
+
+  const gender= req.params.gender;
+  const collegeId= req.params.collegeId;
+  const conferenceId= req.params.conferenceId;
+  const playerId = req.params.playerId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+
+      var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date
+FROM SpringResult sr
+INNER JOIN Colleges c1 on sr.winnerId = c1.collegeId
+INNER JOIN Colleges c2 on sr.loserId = c2.collegeId
+INNER JOIN SimpleMatches sm on sm.springId = sr.springId
+INNER JOIN Players p1 on p1.playerId = sm.winner
+INNER JOIN Users u1 on u1.userId = p1.Users_userId
+INNER JOIN Players p2 on p2.playerId = sm.loser
+INNER JOIN Users u2 on u2.userId = p1.Users_userId
+INNER JOIN DoubleMatches dm on dm.springId = sr.springId
+INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+WHERE u1.gender LIKE ?
+AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
+AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
+AND substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <= '?-06-30'
+AND (p1.playerId = ? OR p2.playerId = ? OR dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? OR dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?)
+`,[gender,collegeId,collegeId,conferenceId,conferenceId,year,yearPlusOne,playerId,playerId,playerId,playerId,playerId,playerId], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+
+        console.log(query.sql);
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+    });
+  },
+
 
 };

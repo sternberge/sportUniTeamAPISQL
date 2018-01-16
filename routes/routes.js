@@ -218,6 +218,7 @@ module.exports = (app) => {
     app.get('/api/springMatches/getSingleSpringMatchsBySpringId/:springId',SpringMatchesController.getSingleSpringMatchsBySpringId);
     app.get('/api/springMatches/getDoubleSpringMatchsBySpringId/:springId',SpringMatchesController.getDoubleSpringMatchsBySpringId);
     app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConference/:year/:gender/:collegeId/:conferenceId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConference);
+    app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConferencePlayer/:year/:gender/:collegeId/:conferenceId/:playerId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConferencePlayer);
 
     app.get('/api/springMatches/test/:springId',SpringMatchesController.test);
     app.get('/api/springMatches/testFinal/:gender/:springId/:conferenceId/:year',SpringMatchesController.testFinal);
