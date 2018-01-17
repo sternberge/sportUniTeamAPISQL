@@ -167,17 +167,9 @@ module.exports = {
   // check de l'email pour la création et l'update du User
   checkEmailExistence(email){
     return new Promise((resolve,reject) => {
-      // Check de l'email
-      /*req.checkBody('email','Email cannot be empty').notEmpty();
-      req.checkBody('email','Your email is not valid').isEmail();
-      var errors = req.validationErrors();
-      if(errors){
-        console.log("test");
-        reject(errors);
 
-      }*/
       db.pool.getConnection((error, connection) => {
-        console.log(error);
+
         if (error){
           return reject(error);
         }

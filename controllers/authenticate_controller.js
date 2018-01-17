@@ -19,8 +19,9 @@ module.exports.authenticate = function (informations) {
       user.status = informations[0].status;
     }
     if(informations[0].coachId != null){
+      user.coachId = informations[0].coachId;
       user.coachType = informations[0].coachType;
-    }    
+    }
     //console.log(user);
     var token = jwt.sign(user, process.env.SECRET_TOKENKEY, {
       expiresIn: 4000
