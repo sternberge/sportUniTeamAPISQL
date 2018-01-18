@@ -1,6 +1,6 @@
 var db = require('./../db');
 const PlayerController = require('../controllers/player_controller');
-
+var blueBird = require('bluebird');
 module.exports = {
 
   find (req, res) {
@@ -337,7 +337,7 @@ module.exports = {
 
               calculateRanking(req,res){
                 var playerId = 0;
-                var i;
+                var i,j;
                 PlayerController.getAllPlayerId()
                 .then((allPlayers) => {
                   //console.log(allPlayers);
@@ -355,10 +355,16 @@ module.exports = {
                     for (i = 0; i < rankingTypes.length; i++){
                     rankingType = rankingTypes[i];
                   }*/
+                  var rankingTypes = ["N", "R", "C"];
                   var rankingType = "R";
                   var playerId = 2;
                   var limiteRequest = 5;
                   var date = "2017-01-01";
+                  var promise[];
+
+                  /*for(i=0;i<rankingType.length;i++){
+                    blueBird.each(testTab,module.exports.calculateRankingPerPlayer(item,limiteRequest,rankingType,date,res));
+                  }*/
 
                   return Promise.all([testTab.map(player => { return module.exports.calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
 
@@ -366,17 +372,6 @@ module.exports = {
 
               })
               .then((param) => {
-                console.log("Second then ________________________________________");
-                var testTab = [];
-                for(i=0; i<3; i++){
-                  testTab.push(allPlayers[i]);
-                }                
-                console.log(testTab);
-                var rankingType = "N";
-                var limiteRequest = 5;
-                var date = "2017-01-01";
-
-                return Promise.all([testTab.map(player => { return module.exports.calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
 
               })
               .catch((error) => {
