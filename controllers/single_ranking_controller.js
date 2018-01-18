@@ -365,9 +365,9 @@ module.exports = {
                   /*for(i=0;i<rankingType.length;i++){
                     blueBird.each(testTab,module.exports.calculateRankingPerPlayer(item,limiteRequest,rankingType,date,res));
                   }*/
-                  return Promise.all(result.rows.map(function (row) {
-                    return db.remove(row.doc);
-                  }));
+                  /*return Promise.all(result.rows.map(function (row) {
+    return db.remove(row.doc);
+  }));*/
                   return Promise.all([testTab.map(player => { return module.exports.calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
 
               //  }
