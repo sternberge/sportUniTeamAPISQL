@@ -315,7 +315,7 @@ module.exports = {
                     }
                   }
                   rankPoints = winPoints / (nbWinMatches + losePoints);
-                  rankPoints = 26;
+                  rankPoints = 12;
                   console.log("Nombre points totaux : ",rankPoints,"pour le joueur",playerId);
                   return(module.exports.getSingleRankingPerPlayerId(playerId,rankingType));
                 })
@@ -334,8 +334,18 @@ module.exports = {
                   //res.send(error);
                 });
               },
+			  
+			  calculateRanking(res){
+				var rankingTypes = ["N", "R", "C"];
+				var results = Promise.all([rankingTypes.map(rankingType => { return module.exports.calculateRankingPerTypeAndPlayer(rankingType, res)})]);
+				
+				results.then(function () {console.log("les rankings ont été mis à jour !");})
+				  .catch((error) => {
+					console.log(error);
+				  })
+			  },
 
-              calculateRanking(req,res){
+              calculateRankingPerTypeAndPlayer(rankingType, res){
                 var playerId = 0;
                 var i,j;
                 PlayerController.getAllPlayerId()
@@ -345,35 +355,11 @@ module.exports = {
                   for(i=0; i<3; i++){
                     testTab.push(allPlayers[i]);
                   }
-                  //testTab.reverse();
-                  console.log(testTab);
-                  //for(i=0; i<allPlayers.length; i++){
-                  //for(i=0; i<3; i++){
-                    /*playerId = allPlayers[i].playerId;
-                    var rankingTypes = ["N", "R", "C"];*/
-                    /*var rankingType = "";
-                    for (i = 0; i < rankingTypes.length; i++){
-                    rankingType = rankingTypes[i];
-                  }*/
-                  var rankingTypes = ["N", "R", "C"];
-                  var rankingType = "R";
-                  var playerId = 2;
+
                   var limiteRequest = 5;
                   var date = "2017-01-01";
-                  var promise=[];
 
-                  /*for(i=0;i<rankingType.length;i++){
-                    blueBird.each(testTab,module.exports.calculateRankingPerPlayer(item,limiteRequest,rankingType,date,res));
-                  }*/
-                  /*return Promise.all(result.rows.map(function (row) {
-    return db.remove(row.doc);
-  }));*/
                   return Promise.all([testTab.map(player => { return module.exports.calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
-
-              //  }
-
-              })
-              .then((param) => {
 
               })
               .catch((error) => {
