@@ -88,4 +88,72 @@ module.exports = {
       });
     });
   },
+  
+  getCurrentSingleRankings(){
+	return new Promise (function (resolve, reject) {
+		db.pool.getConnection((error, connection) => {
+		  if (error){
+			return reject(error);
+		  }
+		  var query = connection.query(`SELECT * FROM SingleRanking`, (error, results, fields) => {
+			if (error){
+			  connection.release();
+			  return reject(error);
+			}
+			resolve(results);
+			connection.release(); // CLOSE THE CONNECTION
+			});
+		});
+	});
+  },
+  
+  
+  archiveCurrentSingleRanking(req, res, next){
+	module.exports.getCurrentSingleRankings()
+	.then((currentSingleRankings) => {
+		return new Promise ( (resolve, reject) => {
+			//console.log(currentSingleRankings);
+			const currentDate = new Date();
+			db.pool.getConnection((error, connection) => {
+			  if (error){
+				console.log("erreur 1");
+				reject(error);
+				//return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+			  }
+			  for (var i=0; i < currentSingleRankings.length; i++){
+				var playerId = currentSingleRankings[i].Players_playerId;
+				var rank = currentSingleRankings[i].rank;
+				var rankPoints = currentSingleRankings[i].rankPoints;
+				var differenceRank = currentSingleRankings[i].differenceRank;
+				var differencePoints = currentSingleRankings[i].differencePoints;
+				var type = currentSingleRankings[i].type;
+				console.log(currentDate);
+				
+				var query = connection.query(`INSERT INTO SingleRankingHistory (Players_playerId, rank, rankPoints, differenceRank, differencePoints, type, date) 
+				VALUES(?, ?, ?, ?, ?, ?, ?)`, [playerId, rank, rankPoints, differenceRank, differencePoints, type, currentDate], (error, results, fields) => {
+				if (error){
+				  console.log("erreur 2");
+				  connection.release();
+				  return reject(error);
+				  //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+				}
+				});
+			  }
+			  
+			//res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+			connection.release(); // CLOSE THE CONNECTION
+			resolve();
+			});
+		});
+		
+	})
+	.then((results) => {
+		res.send("singleRankings have been archived");
+	})
+	.catch((error) => {
+		console.log("erreur 3");
+		console.log(error);
+	});
+  },
+  
 };

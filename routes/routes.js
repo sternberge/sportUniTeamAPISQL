@@ -132,6 +132,7 @@ module.exports = (app) => {
   //Ranking Histories
 
   //SingleRankingHistory
+  app.get('/api/singleRankingHistory/archive', SingleRankingHistoryController.archiveCurrentSingleRanking);
   app.post('/api/singleRankingHistory', SingleRankingHistoryController.create);
   app.delete('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.delete);
   app.get('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.find);
