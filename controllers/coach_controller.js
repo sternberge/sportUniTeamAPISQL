@@ -95,7 +95,35 @@ module.exports = {
         connection.release(); // CLOSE THE CONNECTION
       });
     });
-  }
+  },
+
+
+
+getCoachInformationByCoachId(req,res,next){
+  const coachId = req.params.coachId;
+
+  db.pool.getConnection((error, connection) => {
+
+    if (error){
+      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+    }
+    var query = connection.query(`SELECT u.firstName,u.lastName,u.birthday,u.phone,co.name,conf.conferenceLabel,l.leagueName,t.gender as teamGender FROM Coaches c
+INNER JOIN Users u on c.Users_userId = u.userId
+INNER JOIN Teams t on t.Coaches_coachId = c.coachId or t.Coaches_headCoachId = c.coachId
+INNER JOIN Colleges co on co.collegeId = t.teamId
+INNER JOIN Conferences conf on conf.conferenceId = co.Conferences_conferenceId
+INNER JOIN Leagues l on l.leagueId = co.Leagues_leagueId
+WHERE c.coachId = ? `,coachId,(error, results, fields) => {
+      if (error){
+        connection.release();
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      console.log(query.sql);
+      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+      connection.release(); // CLOSE THE CONNECTION
+    });
+  });
+},
 
 
 };
