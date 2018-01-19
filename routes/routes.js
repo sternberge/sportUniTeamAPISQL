@@ -62,8 +62,8 @@ module.exports = (app) => {
   app.delete('/api/players/:player_id', PlayerController.deletePlayer);
   app.get('/api/players/:player_id', PlayerController.findPlayerById);
   //Generate drop down lists for players
-  app.get('/api/players/generateOtherPlayerDropDownList/:coach_id', PlayerController.generateOtherPlayerDropDownList);
-  app.get('/api/players/generateMyPlayerDropDownList/:coach_id', PlayerController.generateMyPlayerDropDownList);
+  app.get('/api/players/generateOtherPlayerDropDownList/:coach_id/:gender', PlayerController.generateOtherPlayerDropDownList);
+  app.get('/api/players/generateMyPlayerDropDownList/:coach_id/:gender', PlayerController.generateMyPlayerDropDownList);
   app.get('/api/players/getPlayerNameFromId/:playerId',PlayerController.getPlayerNameFromId)
 
 
