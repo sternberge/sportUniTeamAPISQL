@@ -1,7 +1,7 @@
 var db = require('./../db');
 const UserController = require('../controllers/user_controller');
 var expressValidator = require('express-validator');
-
+const RankRulesController = require('../controllers/rank_rules_controller');
 
 module.exports = {
 
@@ -32,34 +32,58 @@ module.exports = {
 
 
   createPlayer(req, res, next) {
+    // Check si l'email n'est pas deja dans la bdd
     UserController.checkEmailUnicity(req.body.email)
+    //Creation du User
     .then(() => UserController.createUserWithPromise(req, res, next))
+    //Creation du Player à l'aide du userId passé en parametre
     .then((userId)=>{
-      db.pool.getConnection((error, connection) => {
-        //erreur de connection
-        if (error){
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        var playerTeam = req.body.playerTeam;
-        var playerStatus = req.body.playerStatus;
-
-        //requete d'insertion
-        var query = connection.query('INSERT INTO Players (Teams_teamId,Users_userId,status) VALUES  (?,?,?)',
-        [playerTeam, userId, playerStatus], (error, results, fields) => {
-          //erreur d'insertion
-          if (error){
-            connection.release();
-            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-          }
-          return res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          connection.release(); // CLOSE THE CONNECTION
-        });
-      });
+      return module.exports.insertPlayer(userId,req);
     })
+    //
+    .then((response)=>{
+      //Recupere les derniers classements des 3 types
+      var rankingType = ["S","D","T"];
+      return Promise.all(rankingType.map((rank) => {
+        RankRulesController.getLastRankingPerType(rank);
+      }));
+
+    })
+    .then(function(response) {
+      console.log(response);
+      console.log("Second then");
+      res.send(JSON.stringify({"status": 200, "error": null, "response": response}));
+    })
+    //Les erreurs survenues plus haut sont catch ici
     .catch((err) => {
       res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
     });
   },
+
+  insertPlayer(userId,req){
+    return new Promise((resolve,reject) => {
+    db.pool.getConnection((error, connection) => {
+      //erreur de connection
+      if (error){
+        return reject(error);
+      }
+      var playerTeam = req.body.playerTeam;
+      var playerStatus = req.body.playerStatus;
+
+      //requete d'insertion
+      var query = connection.query('INSERT INTO Players (Teams_teamId,Users_userId,status) VALUES  (?,?,?)',
+      [playerTeam, userId, playerStatus], (error, results, fields) => {
+        //erreur d'insertion
+        if (error){
+          connection.release();
+          return reject(error);
+        }
+        resolve(results.insertId);
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  });
+},
 
   editPlayer(req, res, next) {
     const playerId = req.params.player_id;
