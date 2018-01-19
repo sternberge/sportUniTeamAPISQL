@@ -173,6 +173,30 @@ module.exports = {
   },
 
 
+  getCoachTeamGender(req,res,next){
+
+    const coachId = req.params.coachId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`SELECT group_concat(gender) AS teamGender FROM Teams
+      WHERE Coaches_coachId = ? OR Coaches_headCoachId = ?
+      GROUP BY Colleges_collegeId
+      `,[coachId,coachId],(error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        console.log(query.sql);
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  },
+
 
   getCoachInformationByCoachId(req,res,next){
     const coachId = req.params.coachId;
