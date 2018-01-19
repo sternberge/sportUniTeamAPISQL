@@ -49,6 +49,7 @@ module.exports = (app) => {
 
 
   //Coaches
+  app.get('/api/coaches/verifyCoach/:coachEmail',CoachController.verifyCoach);
   app.get('/api/coaches/getCoachInformationByCoachId/:coachId',CoachController.getCoachInformationByCoachId);
   app.post('/api/coaches', CoachController.createCoach);
   app.put('/api/coaches/:coach_id', CoachController.editCoach);
