@@ -119,7 +119,7 @@ module.exports = {
 
       transporter.sendMail({
         from: 'testservicenodemailer@gmail.com',
-        to: 'testservicenodemailer@gmail.com',
+        to: coachEmail,
         subject: 'SUT Team : Your password for the application',
         text: 'Please find your password for the application ' + password
       }, function(error, info){
