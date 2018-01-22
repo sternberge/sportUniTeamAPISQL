@@ -1,5 +1,90 @@
 var db = require('./../db');
+const RegionsController = require('../controllers/regions_controller');
+const ConferencesController = require('../controllers/conferences_controller');
 
+const updateTeamRankingOrder = (teamRankingId, rank) => {
+    return new Promise(function (resolve, reject) {
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return reject(error);
+        }
+        var query = connection.query(`UPDATE TeamRanking SET rank = ? WHERE teamRankingId = ?`,[rank, teamRankingId], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+      });
+    });
+}
+
+const getNewNationalRankingOrder = (leagueId, gender) => {
+    return new Promise(function (resolve, reject) {
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return reject(error);
+        }
+        var query = connection.query(`SELECT teamRankingId FROM TeamRanking tr
+			INNER JOIN Teams t on t.teamId = tr.Teams_teamId
+			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+			WHERE dr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender = ?
+			ORDER BY dr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+      });
+    });
+}
+
+const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
+    return new Promise(function (resolve, reject) {
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return reject(error);
+        }
+        var query = connection.query(`SELECT teamRankingId FROM TeamRanking tr
+			INNER JOIN Teams t on t.teamId = tr.Teams_teamId
+			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+			WHERE dr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Regions_regionId
+			ORDER BY dr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+      });
+    });
+}
+
+const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
+    return new Promise(function (resolve, reject) {
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return reject(error);
+        }
+        var query = connection.query(`SELECT teamRankingId FROM TeamRanking tr
+			INNER JOIN Teams t on t.teamId = tr.Teams_teamId
+			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+			WHERE dr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId
+			ORDER BY dr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+      });
+    });
+}
 
 module.exports = {
 
@@ -175,4 +260,14 @@ module.exports = {
       });
     });
   },
+  
+  getNewNationalRankingOrder,
+  
+  getNewRegionalRankingOrder,
+  
+  getNewConferenceRankingOrder,
+  
+  updateTeamRankingOrder,
+  
+  getNewConferenceRankingOrder
 };

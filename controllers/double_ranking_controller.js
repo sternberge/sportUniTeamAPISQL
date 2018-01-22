@@ -1,5 +1,114 @@
 var db = require('./../db');
+const PlayerController = require('../controllers/player_controller');
+const RegionsController = require('../controllers/regions_controller');
+const ConferencesController = require('../controllers/conferences_controller');
 
+const updateDoubleRankingOrder = (doubleRankingId, rank) => {
+    return new Promise(function (resolve, reject) {
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return reject(error);
+        }
+        var query = connection.query(`UPDATE DoubleRanking SET rank = ? WHERE doubleRankingId = ?`,[rank, doubleRankingId], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+      });
+    });
+}
+
+const getNewNationalRankingOrder = (leagueId, gender) => {
+	return new Promise(function (resolve, reject) {
+	  db.pool.getConnection((error, connection) => {
+		if (error){
+		  return reject(error);
+		}
+		var query = connection.query(`SELECT doubleRankingId FROM DoubleRanking dr
+			INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
+			INNER JOIN Players p on p.playerId = dt.Players_playerId
+			INNER JOIN Users u on u.userId = p.Users_userId
+			INNER JOIN Teams t on t.teamId = p.Teams_teamId
+			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+			WHERE dr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender = ?
+			ORDER BY dr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+	  });
+	});
+}
+
+const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
+    return new Promise(function (resolve, reject) {
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return reject(error);
+        }
+        var query = connection.query(`SELECT doubleRankingId FROM DoubleRanking dr
+			INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
+			INNER JOIN Players p on p.playerId = dt.Players_playerId
+			INNER JOIN Users u on u.userId = p.Users_userId
+			INNER JOIN Teams t on t.teamId = p.Teams_teamId
+			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+			WHERE dr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Regions_regionId = ?
+			ORDER BY dr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+      });
+    });
+}
+
+const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
+    return new Promise(function (resolve, reject) {
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return reject(error);
+        }
+        var query = connection.query(`SELECT doubleRankingId FROM DoubleRanking dr
+			INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
+			INNER JOIN Players p on p.playerId = dt.Players_playerId
+			INNER JOIN Users u on u.userId = p.Users_userId
+			INNER JOIN Teams t on t.teamId = p.Teams_teamId
+			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+			WHERE dr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId
+			ORDER BY dr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
+			  if (error){
+				connection.release();
+				return reject(error);
+			  }
+			  connection.release(); // CLOSE THE CONNECTION
+			  resolve(results);
+			});
+      });
+    });
+}
+  
+/*const calculateDoubleRankingPerType = () => {
+
+}
+
+const calculateDoubleRanking = (res) => {
+	var rankingTypes = ["N", "R", "C"];
+	
+	const promisesPerType = rankingTypes.map( rankingType => 
+		new Promise (resolve, reject) => {
+			
+		}
+	);
+}*/
 
 module.exports = {
 
@@ -191,4 +300,5 @@ module.exports = {
       });
     });
   },
+  
 };
