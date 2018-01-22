@@ -254,7 +254,7 @@ INNER JOIN Users u2 on u2.userId = p2.Users_userId
 INNER JOIN DoubleMatches dm on dm.springId = sr.springId
 LEFT JOIN TeamRanking tr1 on tr1.teamRankingId = p1.Teams_teamId
 LEFT JOIN TeamRanking tr2 on tr2.teamRankingId = p2.Teams_teamId
-WHERE u.gender LIKE ?
+WHERE u1.gender LIKE ?
 AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
 AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
 AND substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <= '?-06-30'
