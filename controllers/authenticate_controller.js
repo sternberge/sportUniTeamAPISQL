@@ -21,6 +21,7 @@ module.exports.authenticate = function (informations) {
     if(informations[0].coachId != null){
       user.coachId = informations[0].coachId;
       user.coachType = informations[0].coachType;
+      user.coachTeamNumber = informations[0].teamNumberOfTheCoach;
     }
     //console.log(user);
     var token = jwt.sign(user, process.env.SECRET_TOKENKEY, {

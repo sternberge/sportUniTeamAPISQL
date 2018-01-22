@@ -142,15 +142,12 @@ module.exports = {
       db.pool.getConnection((error, connection) => {
         if (error){
           return reject(error);
-          //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
         var query = connection.query('Select 1 from Users Where email = ?', email, (error, results, fields) => {
           if (error){
             connection.release();
             return reject(error);
-            //return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
-          //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           connection.release(); // CLOSE THE CONNECTION
           if(results.length > 0){
             reject("Email already used");
@@ -173,7 +170,7 @@ module.exports = {
         if (error){
           return reject(error);
         }
-        var query = connection.query('Select * from Users  u Left Join Players p on u.userId = p.Users_userId Left Join Coaches c on u.userId = c.Users_userId Where email = ?', email, (error, results, fields) => {
+        var query = connection.query('Select userId, firstName, lastName, u.gender, email, password, birthday, userType, phone, p.playerId, p.status, c.coachId, c.coachType, count(Coaches_coachId) as teamNumberOfTheCoach from Users  u Left Join Players p on u.userId = p.Users_userId Left Join Coaches c on u.userId = c.Users_userId Left Join Teams t on t.Coaches_coachId = c.coachId Where email = ?', email, (error, results, fields) => {
           if (error){
             connection.release();
             return reject(error);

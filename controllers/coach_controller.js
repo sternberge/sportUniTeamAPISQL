@@ -1,7 +1,24 @@
 var db = require('./../db');
 const UserController = require('../controllers/user_controller');
 var expressValidator = require('express-validator');
+var nodemailer = require('nodemailer');
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
 
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'testservicenodemailer@gmail.com',
+    pass: 'Super_PFE_2018'
+  }
+});
+
+var mailOptions = {
+  from: 'testservicenodemailer@gmail.com',
+  to: 'testservicenodemailer@gmail.com',
+  subject: 'Premier test d\'un email',
+  text: 'ceci est les password :'
+};
 
 module.exports = {
 
@@ -29,9 +46,8 @@ module.exports = {
     });
   },
 
-
-
   createCoach(req, res, next) {
+
     UserController.checkEmailUnicity(req.body.email)
     .then(() => UserController.createUserWithPromise(req, res, next))
     .then((userId)=>{
@@ -54,12 +70,71 @@ module.exports = {
           connection.release(); // CLOSE THE CONNECTION
 
         });
+
       });
     })
     .catch((err) => {
       return res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
     });
   },
+
+
+  verifyCoach(req, res, next) {
+
+    var coachEmail = req.params.coachEmail;
+    var password = "";
+    var hashGenerated = "";
+
+    db.pool.getConnection((error, connection) => {
+      //erreur de connection
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+
+
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+      for (var i = 0; i < 8; i++)
+      password += possible.charAt(Math.floor(Math.random() * possible.length));
+
+
+      bcrypt.hash(password, saltRounds, function(err, hash) {
+        console.log("Hash : " + hash);
+        hashGenerated = hash;
+
+        var query = connection.query('UPDATE Users SET password = ? WHERE email = ?',
+        [hashGenerated,coachEmail], (error, results, fields) => {
+
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+
+      });
+
+
+      transporter.sendMail({
+        from: 'testservicenodemailer@gmail.com',
+        to: coachEmail,
+        subject: 'SUT Team : Your password for the application',
+        text: 'Please find your password for the application ' + password
+      }, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response + ' password = ' + password);
+        }
+      });
+
+    });
+
+  },
+
+
 
   editCoach(req, res, next) {
     const coachId = req.params.coach_id;
@@ -98,32 +173,56 @@ module.exports = {
   },
 
 
+  getCoachTeamGender(req,res,next){
 
-getCoachInformationByCoachId(req,res,next){
-  const coachId = req.params.coachId;
+    const coachId = req.params.coachId;
 
-  db.pool.getConnection((error, connection) => {
+    db.pool.getConnection((error, connection) => {
 
-    if (error){
-      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-    }
-    var query = connection.query(`SELECT u.firstName,u.lastName,u.birthday,u.phone,co.name,conf.conferenceLabel,l.leagueName,t.gender as teamGender FROM Coaches c
-INNER JOIN Users u on c.Users_userId = u.userId
-INNER JOIN Teams t on t.Coaches_coachId = c.coachId or t.Coaches_headCoachId = c.coachId
-INNER JOIN Colleges co on co.collegeId = t.teamId
-INNER JOIN Conferences conf on conf.conferenceId = co.Conferences_conferenceId
-INNER JOIN Leagues l on l.leagueId = co.Leagues_leagueId
-WHERE c.coachId = ? `,coachId,(error, results, fields) => {
       if (error){
-        connection.release();
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      console.log(query.sql);
-      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-      connection.release(); // CLOSE THE CONNECTION
+      var query = connection.query(`SELECT group_concat(gender) AS teamGender FROM Teams
+      WHERE Coaches_coachId = ? OR Coaches_headCoachId = ?
+      GROUP BY Colleges_collegeId
+      `,[coachId,coachId],(error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        console.log(query.sql);
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
     });
-  });
-},
+  },
 
 
-};
+  getCoachInformationByCoachId(req,res,next){
+    const coachId = req.params.coachId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`SELECT u.firstName,u.lastName,u.birthday,u.phone,co.name,conf.conferenceLabel,l.leagueName,t.gender as teamGender FROM Coaches c
+        INNER JOIN Users u on c.Users_userId = u.userId
+        INNER JOIN Teams t on t.Coaches_coachId = c.coachId or t.Coaches_headCoachId = c.coachId
+        INNER JOIN Colleges co on co.collegeId = t.teamId
+        INNER JOIN Conferences conf on conf.conferenceId = co.Conferences_conferenceId
+        INNER JOIN Leagues l on l.leagueId = co.Leagues_leagueId
+        WHERE c.coachId = ? `,coachId,(error, results, fields) => {
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          console.log(query.sql);
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+      });
+    },
+
+
+  };

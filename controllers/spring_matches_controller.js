@@ -242,15 +242,19 @@ WHERE co1.Conferences_conferenceId LIKE ? AND final5.date >= \'?-09-01\' AND fin
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date,u.gender
+      var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date,u1.gender,p1.Teams_teamId as winnerTeamId,p2.Teams_teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
 FROM SpringResult sr
-INNER JOIN 	Colleges c1 on sr.winnerId = c1.collegeId
-INNER JOIN 	Colleges c2 on sr.loserId = c2.collegeId
-INNER JOIN  SimpleMatches sm on sm.springId = sr.springId
-INNER JOIN 	Players p on p.playerId = sm.winner
-INNER JOIN Users u on u.userId = p.Users_userId
-INNER JOIN 	DoubleMatches dm on dm.springId = sr.springId
-WHERE u.gender LIKE ?
+INNER JOIN Colleges c1 on sr.winnerId = c1.collegeId
+INNER JOIN Colleges c2 on sr.loserId = c2.collegeId
+INNER JOIN SimpleMatches sm on sm.springId = sr.springId
+INNER JOIN Players p1 on p1.playerId = sm.winner
+INNER JOIN Players p2 on p2.playerId = sm.loser
+INNER JOIN Users u1 on u1.userId = p1.Users_userId
+INNER JOIN Users u2 on u2.userId = p2.Users_userId
+INNER JOIN DoubleMatches dm on dm.springId = sr.springId
+LEFT JOIN TeamRanking tr1 on tr1.teamRankingId = p1.Teams_teamId
+LEFT JOIN TeamRanking tr2 on tr2.teamRankingId = p2.Teams_teamId
+WHERE u1.gender LIKE ?
 AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
 AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
 AND substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <= '?-06-30'
@@ -288,7 +292,7 @@ AND substring(sr.springId,1,10)  >= '?-09-01' AND substring(sr.springId,1,10)  <
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date
+      var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date,p1.Teams_teamId as winnerTeamId,p2.Teams_teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
 FROM SpringResult sr
 INNER JOIN Colleges c1 on sr.winnerId = c1.collegeId
 INNER JOIN Colleges c2 on sr.loserId = c2.collegeId
@@ -300,6 +304,8 @@ INNER JOIN Users u2 on u2.userId = p1.Users_userId
 INNER JOIN DoubleMatches dm on dm.springId = sr.springId
 INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
 INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+LEFT JOIN TeamRanking tr1 on tr1.teamRankingId = p1.Teams_teamId
+LEFT JOIN TeamRanking tr2 on tr2.teamRankingId = p2.Teams_teamId
 WHERE u1.gender LIKE ?
 AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
 AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )

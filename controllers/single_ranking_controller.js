@@ -55,6 +55,27 @@ module.exports = {
     });
   },
 
+
+  createInitialRanking(rank,playerId,type) {
+    return new Promise((reject,resolve)=> {
+    db.pool.getConnection((error, connection) => {
+      if (error){
+        return reject(error);
+      }
+
+      var query = connection.query('INSERT INTO SingleRanking (rank, rankPoints, Players_playerId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
+      [rank, 0, playerId, 0, 0, type], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return reject(error)
+        }
+        connection.release(); // CLOSE THE CONNECTION
+        resolve(results.insertId);
+      });
+    });
+    });
+  },
+
   edit(req, res, next) {
     const singleRankingId = req.params.singleRankingId;
     const singleRankingProperties = req.body;
@@ -588,22 +609,26 @@ module.exports = {
                 var nbLoseMatches = 0;
                 var rankPoints = 0;
                 var i = 0;
+                // Recupere les matchs gagnés par le joueur ainsi que le nb de points gagnés selon les adversaires(nbmax de match = limiteRequest)
                 module.exports.getSingleBestMatches(playerId,limiteRequest,rankingType,date)
                 .then((results1) => {
                   console.log("-----------------------------------------------------------");
                   console.log("Nombre de match gagnés : ",results1.length, " pour le playerId : ",playerId);
                   for(i=0; i<results1.length; i++ ){
+                    // Calcul du nb de points total gagnés
                     winPoints += results1[i].winOverRankPoints;
                   }
                   console.log("Points gangés au cours de ce(s) matchs : ",winPoints);
                   nbWinMatches = results1.length;
-                  return Promise.resolve(results1);
+                  return Promise.resolve(results1);// on envoie les matchs gagnés à la fonction suivante
                 })
                 .then((results) => {
                   console.log("-----------------------------------------------------------");
+                  // Si le joueur a gagné moins de match que la limite demandée
                   if(results.length < limiteRequest){
                     nbLoseMatches = limiteRequest - nbWinMatches;
                     console.log("Nombre de match perdus si le joeurs Id",playerId,"a joué plus de match que la limite : ",nbLoseMatches);
+                    //On recupere les "meilleurs" match perdu afin de completer
                     return module.exports.getSingleBestLossesMatches(playerId,rankingType,date,nbLoseMatches);
                   }
                   else{
@@ -612,6 +637,7 @@ module.exports = {
                 })
                 .then((results2) => {
                   console.log("-----------------------------------------------------------");
+                  //Si le resultat n'est pas null, le joueur a perdu des matchs, on calcule les points perdus
                   if(results2 != null){
                     var i =0;
                     console.log("Le joueur id ",playerId," a perdu le nombre suivant de match : ",results2.length);
@@ -620,14 +646,17 @@ module.exports = {
                       losePoints += results2[i].lossToRankPoints;
                     }
                   }
+                  //On calcule ses ranking points à l'aide de la formule
                   rankPoints = winPoints / (nbWinMatches + losePoints);
                   rankPoints = 13;
                   console.log("Nombre points totaux : ",rankPoints,"pour le joueur",playerId);
+                  //On recupere le ranking id du player
                   return(module.exports.getSingleRankingPerPlayerId(playerId,rankingType));
                 })
                 .then((playerRankingId) => {
                   console.log("-----------------------------------------------------------");
                   console.log("Player Ranking Id par type selectionné (N,R,...) : ",playerRankingId,"pour le joueur ",playerId);
+                  //on insert le nouveau ranking dans la table
                   return(module.exports.editWithPromise(playerRankingId,rankPoints));
                 })
                 .then((results) => {
@@ -640,6 +669,7 @@ module.exports = {
                   //res.send(error);
                 });
               },
+<<<<<<< HEAD
 			  
 			  calculateRanking(res){
 				var rankingTypes = ["N", "R", "C"];
@@ -678,10 +708,10 @@ module.exports = {
 
                   return Promise.all([testTab.map(player => { return module.exports.calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
 
-              })
-              .catch((error) => {
-                console.log(error);
-              })
+                })
+                .catch((error) => {
+                  console.log(error);
+                })
 
-            }
-          };
+              }
+            };

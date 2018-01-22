@@ -1,4 +1,5 @@
 var db = require('./../db');
+const RankRulesController = require('../controllers/rank_rules_controller');
 const PlayerController = require('../controllers/player_controller');
 const RegionsController = require('../controllers/regions_controller');
 const ConferencesController = require('../controllers/conferences_controller');
@@ -136,6 +137,40 @@ module.exports = {
     });
   },
 
+  createInitialRanking(rank,teamId,type) {
+    return new Promise((reject,resolve)=> {
+    db.pool.getConnection((error, connection) => {
+      if (error){
+        return reject(error);
+      }
+      var query = connection.query('INSERT INTO DoubleRanking (rank, rankPoints, DoubleTeams_doubleTeamId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
+      [rank, 0, teamId, 0, 0, type], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return reject(error)
+        }
+        connection.release(); // CLOSE THE CONNECTION
+        resolve(results.insertId);
+      });
+    });
+    });
+  },
+
+  async create3InitialRanking(teamId) {
+    var nonRankedValueDouble = await RankRulesController.getLastRankingPerType("D");
+    console.log("Valeur unranked pour classement simple :",nonRankedValueDouble);
+    //On cree 3 classements unranked Single pour le regional national et country
+    var type = ["R","N","C"];
+    const promisesPerType = type.map(type =>
+        module.exports.createInitialRanking(nonRankedValueDouble,teamId,type)
+        .catch((error)=>{
+           console.log(error);
+         })
+    );
+    await Promise.all(promisesPerType);
+  },
+
+
   create(req, res, next) {
     const rank = req.body.rank;
     const rankPoints = req.body.rankPoints;
@@ -196,7 +231,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current national ranking order
   getDoubleRankingsNationalByDivisionGender(req, res, next){
 	const leagueId = req.params.leagueId;
@@ -230,7 +265,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current regional ranking order
   getDoubleRankingsByRegionDivisionGender(req, res, next){
 	const regionId = req.params.regionId;
@@ -265,7 +300,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current ranking order by conference
   getDoubleRankingsByConferenceDivisionGender(req, res, next){
 	const conferenceId = req.params.conferenceId;

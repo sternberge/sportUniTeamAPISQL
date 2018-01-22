@@ -28,6 +28,7 @@
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.4",
     "mysql": "^2.15.0",
+    "nodemailer": "^4.4.1",
     "promise": "^8.0.1"
   },
   "devDependencies": {
