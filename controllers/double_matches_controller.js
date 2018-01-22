@@ -1,11 +1,10 @@
 var db = require('./../db');
-
-
+const RankRulesController = require('../controllers/rank_rules_controller');
+const DoubleRankingController = require('../controllers/double_ranking_controller');
 module.exports = {
 
   checkDoubleTeamExistency(playerId1, playerId2){
     return new Promise(function (resolve, reject) {
-
       db.pool.getConnection((error, connection) => {
         if (error){
           return reject(error);
@@ -30,7 +29,6 @@ module.exports = {
           }
           else{
             connection.release(); // CLOSE THE CONNECTION
-            console.log("method 1 OK");
             resolve(false);
           }
         });
@@ -70,45 +68,44 @@ module.exports = {
     });
   },
 
-  createDoubleMatch(req,res,next){
+  async createDoubleMatch(req,res,next){
     var playerId1 = req.body.playerId1;
     var playerId2 = req.body.playerId2;
     var playerId3 = req.body.playerId3;
     var playerId4 = req.body.playerId4;
+    try {
     // Check de l'existance des deux couples de joueurs entres
-    Promise.all([module.exports.checkDoubleTeamExistency(playerId1,playerId2),module.exports.checkDoubleTeamExistency(playerId3,playerId4)])
-    .then((values) => {
+    var doubleTeams = await Promise.all([module.exports.checkDoubleTeamExistency(playerId1,playerId2),module.exports.checkDoubleTeamExistency(playerId3,playerId4)])
       // Si les deux couples n'existent pas --> Creation des deux nouvelles equipes
-      if(values[0] == false && values[1] == false){
+      if(doubleTeams[0] == false && doubleTeams[1] == false){
         console.log("Appel de la seconde methode");
-        return Promise.all([module.exports.createDoubleTeam(playerId1,playerId2),module.exports.createDoubleTeam(playerId3,playerId4)])
+        doubleTeams = await Promise.all([module.exports.createDoubleTeam(playerId1,playerId2),module.exports.createDoubleTeam(playerId3,playerId4)])
+        // Creation des ranking initiaux pour les deux nouvelles equipes de double
+        const rankingTeam1 = DoubleRankingController.create3InitialRanking(doubleTeams[0]);
+        const rankingTeam2 = DoubleRankingController.create3InitialRanking(doubleTeams[1]);
       }
       // Si une des deux equipes existent deja
-      else if(values[0] != false && values[1] == false){
-        return Promise.all([values[0],module.exports.createDoubleTeam(playerId3,playerId4)]);
+      else if(doubleTeams[0] != false && doubleTeams[1] == false){
+        doubleTeams = await Promise.all([doubleTeams[0],module.exports.createDoubleTeam(playerId3,playerId4)]);
+        //Creation du ranking initial pour la nouvelle equipe de double
+        const rankingTeam2 = DoubleRankingController.create3InitialRanking(doubleTeams[1]);
       }
-      else if(values[0] == false && values[1] != false){
-        return Promise.all([module.exports.createDoubleTeam(playerId1,playerId2),values[1]]);
+      else if(doubleTeams[0] == false && doubleTeams[1] != false){
+        doubleTeams = await Promise.all([module.exports.createDoubleTeam(playerId1,playerId2),doubleTeams[1]]);
+        //Creation du ranking initial pour la nouvelle equipe de double
+        const rankingTeam1 = DoubleRankingController.create3InitialRanking(doubleTeams[0]);
       }
-      // Si les deux equipes existent
-      else{
-        console.log(values);
-        return Promise.resolve(values);
-      }
-    })
-    .then((resultats)=>{
-      console.log(resultats[0]);
-      return module.exports.createDoubleMatch2(req,resultats[0],resultats[1]);
-    })
-    .then((resultats) => {
+      // Creation du match double
+      var resultats = await module.exports.createDoubleMatch2(req,doubleTeams[0],doubleTeams[1]);
       console.log(resultats);
       res.send(JSON.stringify({"status": 200, "error": null, "response": "Your match has been added"}));
-    })
-    .catch((error) => {
+    }
+    catch(error){
       res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
-    });
+    }
   },
 
+// Creation du match double avec promise
   createDoubleMatch2(req,teamId1,teamId2){
     //const winnerDouble = req.body.winnerDouble;
     //const loserDouble = req.body.loserDouble;
@@ -142,7 +139,7 @@ module.exports = {
           }
           else if (results){
             connection.release(); // CLOSE THE CONNECTION
-            return resolve(results);// Convertion de la réponse en format JSON
+            return resolve(results);
           }
           else{
             connection.release(); // CLOSE THE CONNECTION

@@ -1,5 +1,5 @@
 var db = require('./../db');
-
+const RankRulesController = require('../controllers/rank_rules_controller');
 
 module.exports = {
 
@@ -27,15 +27,14 @@ module.exports = {
     });
   },
 
-  createInitialRanking(rank,playerId,type) {
+  createInitialRanking(rank,teamId,type) {
     return new Promise((reject,resolve)=> {
     db.pool.getConnection((error, connection) => {
       if (error){
         return reject(error);
       }
-
-      var query = connection.query('INSERT INTO DoubleRanking (rank, rankPoints, Teams_teamId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
-      [rank, 0, playerId, 0, 0, type], (error, results, fields) => {
+      var query = connection.query('INSERT INTO DoubleRanking (rank, rankPoints, DoubleTeams_doubleTeamId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
+      [rank, 0, teamId, 0, 0, type], (error, results, fields) => {
         if (error){
           connection.release();
           return reject(error)
@@ -46,6 +45,21 @@ module.exports = {
     });
     });
   },
+
+  async create3InitialRanking(teamId) {
+    var nonRankedValueDouble = await RankRulesController.getLastRankingPerType("D");
+    console.log("Valeur unranked pour classement simple :",nonRankedValueDouble);
+    //On cree 3 classements unranked Single pour le regional national et country
+    var type = ["R","N","C"];
+    const promisesPerType = type.map(type =>
+        module.exports.createInitialRanking(nonRankedValueDouble,teamId,type)
+        .catch((error)=>{
+           console.log(error);
+         })
+    );
+    await Promise.all(promisesPerType);
+  },
+
 
   create(req, res, next) {
     const rank = req.body.rank;
