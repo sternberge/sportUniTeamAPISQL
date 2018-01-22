@@ -98,9 +98,10 @@ module.exports = {
     })
     .then((resultats)=>{
       console.log(resultats[0]);
-      module.exports.createDoubleMatch2(req,resultats[0],resultats[1]);
+      return module.exports.createDoubleMatch2(req,resultats[0],resultats[1]);
     })
-    .then(() => {
+    .then((resultats) => {
+      console.log(resultats);
       res.send(JSON.stringify({"status": 200, "error": null, "response": "Your match has been added"}));
     })
     .catch((error) => {
@@ -141,11 +142,11 @@ module.exports = {
         }
         else if (results){
           connection.release(); // CLOSE THE CONNECTION
-          return resolve("yes")// Convertion de la réponse en format JSON
+          return resolve(results);
         }
         else{
           connection.release(); // CLOSE THE CONNECTION
-          reject("qsjdkld");
+          reject();
         }
       });
     });

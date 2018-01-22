@@ -27,6 +27,26 @@ module.exports = {
     });
   },
 
+  createInitialRanking(rank,playerId,type) {
+    return new Promise((reject,resolve)=> {
+    db.pool.getConnection((error, connection) => {
+      if (error){
+        return reject(error);
+      }
+
+      var query = connection.query('INSERT INTO DoubleRanking (rank, rankPoints, Teams_teamId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
+      [rank, 0, playerId, 0, 0, type], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return reject(error)
+        }
+        connection.release(); // CLOSE THE CONNECTION
+        resolve(results.insertId);
+      });
+    });
+    });
+  },
+
   create(req, res, next) {
     const rank = req.body.rank;
     const rankPoints = req.body.rankPoints;
@@ -87,7 +107,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current national ranking order
   getDoubleRankingsNationalByDivisionGender(req, res, next){
 	const leagueId = req.params.leagueId;
@@ -121,7 +141,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current regional ranking order
   getDoubleRankingsByRegionDivisionGender(req, res, next){
 	const regionId = req.params.regionId;
@@ -156,7 +176,7 @@ module.exports = {
       });
     });
   },
-  
+
   //Get the current ranking order by conference
   getDoubleRankingsByConferenceDivisionGender(req, res, next){
 	const conferenceId = req.params.conferenceId;
