@@ -170,7 +170,7 @@ module.exports = {
         if (error){
           return reject(error);
         }
-        var query = connection.query('Select * from Users  u Left Join Players p on u.userId = p.Users_userId Left Join Coaches c on u.userId = c.Users_userId Where email = ?', email, (error, results, fields) => {
+        var query = connection.query('Select userId, firstName, lastName, u.gender, email, password, birthday, userType, phone, p.playerId, p.status, c.coachId, c.coachType, count(Coaches_coachId) as teamNumberOfTheCoach from Users  u Left Join Players p on u.userId = p.Users_userId Left Join Coaches c on u.userId = c.Users_userId Left Join Teams t on t.Coaches_coachId = c.coachId Where email = ?', email, (error, results, fields) => {
           if (error){
             connection.release();
             return reject(error);
