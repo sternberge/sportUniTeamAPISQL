@@ -205,6 +205,26 @@ module.exports = {
     });
   },
 
+  addPhoneBirthdateToUserId(req, res, next){
+    const userId = req.params.userId;
+    const phoneNumber = req.body.phoneNumber;
+    const birthday = req.body.birthday;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`UPDATE Users SET phone = ?, birthday = ? WHERE UserId = ? `,[phoneNumber,birthday,Number(userId)], (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  },
+
   authentication (req, res, next){
     module.exports.checkEmailExistence(req.body.email)
     .then((results) => module.exports.checkPassword(results, req))
