@@ -2,7 +2,7 @@ var db = require('./../db');
 const RankRulesController = require('../controllers/rank_rules_controller');
 const DoubleRankingController = require('../controllers/double_ranking_controller');
 module.exports = {
-  
+
 
   checkDoubleTeamExistency(playerId1, playerId2){
     return new Promise(function (resolve, reject) {
@@ -246,6 +246,7 @@ module.exports = {
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
+        console.log(query.sql);
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
         connection.release(); // CLOSE THE CONNECTION
       });

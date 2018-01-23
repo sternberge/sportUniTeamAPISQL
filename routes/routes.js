@@ -70,6 +70,7 @@ module.exports = (app) => {
 
   //Users
   app.post('/api/users', UserController.createUser);
+  app.put('/api/users/modifyPassword/:userId',UserController.modifyPassword);
   app.put('/api/users/addPhoneBirthdateToUserId/:userId',UserController.addPhoneBirthdateToUserId)
   app.delete('/api/users/:user_id', UserController.deleteUser);
   app.get('/api/users/:user_id', UserController.findUserById);

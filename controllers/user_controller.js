@@ -225,6 +225,53 @@ module.exports = {
     });
   },
 
+  modifyPassword(req, res, next){
+    const oldPassword = req.body.oldPassword;
+    const newPassword = req.body.newPassword;
+    const userId = req.params.userId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+
+      var query1 = connection.query(`SELECT password FROM Users WHERE UserId = ? `,[userId], (error, results1, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+
+        let stringifyByJson = JSON.stringify(results1);
+        let parseByJson = JSON.parse(stringifyByJson);
+        let oldPasswordHash = parseByJson[0]['password'];
+
+        bcrypt.compare(oldPassword, oldPasswordHash, function(err, compareRes) {
+          if(compareRes == true)
+          {
+            bcrypt.hash(newPassword, saltRounds, function(err, hash) {
+              // Store hash in your password DB.
+              var query2 = connection.query(`UPDATE Users SET password = ? WHERE UserId = ? `,[hash,userId], (error, results2, fields) => {
+                res.send(JSON.stringify({"status": 200, "error": null, "response": results2}));
+
+                if (error){
+                  connection.release();
+                  return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                }
+              });
+            });
+          }
+          else {
+            console.log('Les mots de passe ne correspondent pas');
+            connection.release(); // CLOSE THE CONNECTION
+            return res.send(JSON.stringify({"status": 500, "error": 'Old password and new password are not the same', "response": null}));
+          }
+        });
+        //connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  },
+
   authentication (req, res, next){
     module.exports.checkEmailExistence(req.body.email)
     .then((results) => module.exports.checkPassword(results, req))
