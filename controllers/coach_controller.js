@@ -46,36 +46,39 @@ module.exports = {
     });
   },
 
-  createCoach(req, res, next) {
+  async createCoach(req, res) {
+    try{
+      //Ouverture de la transaction
+      var connection = await db.getConnectionForTransaction(db.pool);
+      // Check si l'email n'est pas deja en BDD
+      var emailOk = await UserController.checkEmailUnicity(connection,req.body.email);
+      //Creation du profil utilisateur
+      var userId =  await UserController.createUserWithPromise(connection,req);
+      //Creation du coach
+      await module.exports.createCoachProfile(connection,userId,req);
+      // Fermeture de la transaction
+      await db.closeConnectionTransaction(connection);
+      res.send(JSON.stringify({"status": 200, "error": null, "response": "Coach has been created"}));
+    }
+    catch(error){
+      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+    }
+  },
 
-    UserController.checkEmailUnicity(req.body.email)
-    .then(() => UserController.createUserWithPromise(req, res, next))
-    .then((userId)=>{
-      db.pool.getConnection((error, connection) => {
-        //erreur de connection
+
+  createCoachProfile(connection,userId,req){
+    return new Promise((resolve,reject)=>{
+      var coachType = req.body.coachType;
+      //requete d'insertion
+      var query = connection.query('INSERT INTO Coaches (Users_userId,coachType) VALUES  (?,?)',
+      [userId, coachType], (error, results, fields) => {
+        //erreur d'insertion
         if (error){
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          return reject(error);
         }
-        var coachType = req.body.coachType;
-        //requete d'insertion
-        var query = connection.query('INSERT INTO Coaches (Users_userId,coachType) VALUES  (?,?)',
-        [userId, coachType], (error, results, fields) => {
-          //erreur d'insertion
-          if (error){
-            connection.release();
-            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-          }
-
-          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          connection.release(); // CLOSE THE CONNECTION
-
-        });
-
+        resolve();
       });
     })
-    .catch((err) => {
-      return res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
-    });
   },
 
 

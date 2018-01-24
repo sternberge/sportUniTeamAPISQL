@@ -56,23 +56,16 @@ module.exports = {
   },
 
 
-  createInitialRanking(rank,playerId,type) {
+  createInitialRanking(connection,rank,playerId,type) {
     return new Promise((reject,resolve)=> {
-    db.pool.getConnection((error, connection) => {
-      if (error){
-        return reject(error);
-      }
 
       var query = connection.query('INSERT INTO SingleRanking (rank, rankPoints, Players_playerId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
       [rank, 0, playerId, 0, 0, type], (error, results, fields) => {
         if (error){
-          connection.release();
           return reject(error)
         }
-        connection.release(); // CLOSE THE CONNECTION
         resolve(results.insertId);
       });
-    });
     });
   },
 

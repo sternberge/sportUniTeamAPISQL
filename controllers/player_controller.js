@@ -63,62 +63,51 @@ res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
 });
 },*/
 
-async createPlayer(req,res,next) {
+async createPlayer(req,res) {
   try{
+    //Ouverture de la transaction
+    var connection = await db.getConnectionForTransaction(db.pool);
     //Check si l'email n'est pas deja existant
-    await UserController.checkEmailUnicity(req.body.email);
+    await UserController.checkEmailUnicity(connection,req.body.email);
     //Creation du profil utilisateur classique
-    const userId = await UserController.createUserWithPromise(req, res, next);
+    const userId = await UserController.createUserWithPromise(connection, req);
     //creation du player grace au userId crée juste avant
-    const playerId = await module.exports.insertPlayer(userId,req);
+    const playerId = await module.exports.insertPlayer(connection,userId,req);
     console.log("Le joueur cree a le player Id :",playerId);
     // On récupère le classement unranked pour le classements simples
-    var nonRankedValueSingle = await RankRulesController.getLastRankingPerType("S");
+    var nonRankedValueSingle = await RankRulesController.getLastRankingPerType(connection,"S");
     console.log("Valeur unranked pour classement simple :",nonRankedValueSingle);
     //On cree 3 classements unranked Single pour le regional national et country
     var type = ["R","N","C"];
     const promisesPerType = type.map(type =>
-        SingleRankingController.createInitialRanking(nonRankedValueSingle,playerId,type)
+        SingleRankingController.createInitialRanking(connection,nonRankedValueSingle,playerId,type)
         .catch((error)=>{
            console.log(error);
          })
     );
     const resu = await Promise.all(promisesPerType);
+    // Fermeture de la transaction
+    await db.closeConnectionTransaction(connection);
     res.send(JSON.stringify({"status": 200, "error": null, "response": "Player has been created"}));
-    // Promise.all(promisesPerType)
-    // .then(()=>{
-    //   console.log("Apres le all");
-    // })
-    //res.send("Player has been created");
-
   }
   catch(error){
     //console.log(error);
-    res.sendStatus(200).send(error);
+    res.send(error);
   }
 },
 
-insertPlayer(userId,req){
+insertPlayer(connection,userId,req){
   return new Promise((resolve,reject) => {
-    db.pool.getConnection((error, connection) => {
-      //erreur de connection
-      if (error){
-        return reject(error);
-      }
       var playerTeam = req.body.playerTeam;
       var playerStatus = req.body.playerStatus;
-
       //requete d'insertion
       var query = connection.query('INSERT INTO Players (Teams_teamId,Users_userId,status) VALUES  (?,?,?)',
       [playerTeam, userId, playerStatus], (error, results, fields) => {
         //erreur d'insertion
         if (error){
-          connection.release();
           return reject(error);
         }
         resolve(results.insertId);
-        connection.release(); // CLOSE THE CONNECTION
-      });
     });
   });
 },

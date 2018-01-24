@@ -33,18 +33,24 @@ module.exports = {
 
 
 
-  createUser(req, res, next){
-    module.exports.checkEmailUnicity(req.body.email)
-    .then(() => module.exports.createUserWithPromise(req, res, next))
-    .then(() => {
+  async createUser(req, res){
+    try{
+      //Ouverture de la transaction
+      var connection = await db.getConnectionForTransaction(db.pool);
+      // Check si l'email n'est pas deja en BDD
+      var emailOk = await module.exports.checkEmailUnicity(connection,req.body.email);
+      //Creation du profil utilisateur
+      var create =  await module.exports.createUserWithPromise(connection,req);
+      //Fermeture de la transaction
+      var closeConnection = await db.closeConnectionTransaction(connection);
       res.send(JSON.stringify({"status": 200, "error": null, "response": "User has been created"}));
-    })
-    .catch((error) => {
-      res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
-    })
+    }
+    catch(error){
+        res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
+    }
   },
 
-  createUserWithPromise(req,res,next){
+  createUserWithPromise(connection,req){
 
     return new Promise(function (resolve, reject) {
 
@@ -60,8 +66,7 @@ module.exports = {
       var errors = req.validationErrors();
 
       if(errors){
-        reject(errors);
-        return res.send(errors);
+        return reject(errors);
       }
 
       else{
@@ -74,27 +79,17 @@ module.exports = {
         const userType= req.body.userType;
         const phone = req.body.phone;
 
-        db.pool.getConnection((error, connection) => {
-          if (error){
-            reject(error);
-            return; // Pour sortir de la methode
-          }
           //hash of the password and insert in the database
           bcrypt.hash(password, saltRounds, function(err, hash) {
             // Store hash in your password DB.
             var query = connection.query('INSERT INTO Users (firstName,lastName,gender,email,password,birthday,userType,phone) VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
             [firstName,lastName,gender,email,hash,birthday,userType,phone], (error, results, fields) => {
               if (error){
-                connection.release();
-                reject(error);
-                return; // pour sortir de la methode
+                return reject(error);
               }
-              //res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-              connection.release(); // CLOSE THE CONNECTION
               resolve(results.insertId);
             });
           });
-        });
       }
     })
   },
@@ -137,26 +132,18 @@ module.exports = {
   },
 
   // check de l'email pour la création et l'update du User
-  checkEmailUnicity(email){
+  checkEmailUnicity(connection,email){
     return new Promise((resolve,reject) => {
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return reject(error);
-        }
         var query = connection.query('Select 1 from Users Where email = ?', email, (error, results, fields) => {
           if (error){
-            connection.release();
             return reject(error);
           }
-          connection.release(); // CLOSE THE CONNECTION
           if(results.length > 0){
             reject("Email already used");
-
           }
           else{
             resolve();
           }
-        });
       });
     });
   },
