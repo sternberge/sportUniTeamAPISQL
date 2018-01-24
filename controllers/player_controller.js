@@ -3,7 +3,7 @@ const UserController = require('../controllers/user_controller');
 var expressValidator = require('express-validator');
 const RankRulesController = require('../controllers/rank_rules_controller');
 const SingleRankingController = require('../controllers/single_ranking_controller');
-
+const TeamController = require('../controllers/teams_controller');
 module.exports = {
 
   findPlayerById (req, res) {
@@ -31,44 +31,17 @@ module.exports = {
   },
 
 
-
-  /*createPlayer(req, res, next) {
-  // Check si l'email n'est pas deja dans la bdd
-  UserController.checkEmailUnicity(req.body.email)
-  //Creation du User
-  .then(() => UserController.createUserWithPromise(req, res, next))
-  //Creation du Player à l'aide du userId passé en parametre
-  .then((userId)=>{
-  return module.exports.insertPlayer(userId,req);
-})
-//
-.then((response)=>{
-//Recupere les derniers classements des 3 types
-var rankingType = ["S","D","T"];
-Promise.all(rankingType.map((rank) => {
-RankRulesController.getLastRankingPerType(rank);
-})).then((response)=>{
-console.log(response);
-})
-
-})
-.then(function(response) {
-console.log(response);
-console.log("Second then");
-res.send(JSON.stringify({"status": 200, "error": null, "response": response}));
-})
-//Les erreurs survenues plus haut sont catch ici
-.catch((err) => {
-res.send(JSON.stringify({"status": 500, "error": err, "response": null}));
-});
-},*/
-
 async createPlayer(req,res) {
   try{
     //Ouverture de la transaction
     var connection = await db.getConnectionForTransaction(db.pool);
     //Check si l'email n'est pas deja existant
     await UserController.checkEmailUnicity(connection,req.body.email);
+    // Check cohérence genre team du joueur et genre du joueur
+    const gender = await TeamController.findTeamById(connection,req);
+    if(gender != req.body.gender){
+      throw "Gender incorrect";
+    }
     //Creation du profil utilisateur classique
     const userId = await UserController.createUserWithPromise(connection, req);
     //creation du player grace au userId crée juste avant
