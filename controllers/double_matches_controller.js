@@ -1,6 +1,7 @@
 var db = require('./../db');
 const RankRulesController = require('../controllers/rank_rules_controller');
 const DoubleRankingController = require('../controllers/double_ranking_controller');
+const PlayerController = require('../controllers/player_controller');
 module.exports = {
 
 
@@ -69,14 +70,25 @@ module.exports = {
     });
   },
 
-  async createDoubleMatch(req,res,next){
+  async checkPlayersSameTeam(playerId1,playerId2,playerId3,playerId4){
+    // On recupere les teamId de chacun des joueurs
+    var teamsId = await Promise.all([PlayerController.getPlayerTeamId(playerId1),PlayerController.getPlayerTeamId(playerId2),PlayerController.getPlayerTeamId(playerId3),PlayerController.getPlayerTeamId(playerId4)])
+    //Si les couples de joeurs ne sont pas dans la meme equipe
+    if(teamsId[0]!=teamsId[1] || teamsId[2]!=teamsId[3]){
+      throw "Players of a double match should be in the same team";
+    }
+  },
+
+  async createDoubleMatch(req,res){
     var playerId1 = req.body.playerId1;
     var playerId2 = req.body.playerId2;
     var playerId3 = req.body.playerId3;
     var playerId4 = req.body.playerId4;
     try {
-    // Check de l'existance des deux couples de joueurs entres
-    var doubleTeams = await Promise.all([module.exports.checkDoubleTeamExistency(playerId1,playerId2),module.exports.checkDoubleTeamExistency(playerId3,playerId4)])
+      //Check si les players de double son dans la meme equipe
+      var teamId = await module.exports.checkPlayersSameTeam(playerId1,playerId2,playerId3,playerId4);
+      //Check de l'existance des deux couples de joueurs entres
+      var doubleTeams = await Promise.all([module.exports.checkDoubleTeamExistency(playerId1,playerId2),module.exports.checkDoubleTeamExistency(playerId3,playerId4)])
       // Si les deux couples n'existent pas --> Creation des deux nouvelles equipes
       if(doubleTeams[0] == false && doubleTeams[1] == false){
         console.log("Appel de la seconde methode");
@@ -106,7 +118,7 @@ module.exports = {
     }
   },
 
-// Creation du match double avec promise
+  // Creation du match double avec promise
   createDoubleMatch2(req,teamId1,teamId2){
     //const winnerDouble = req.body.winnerDouble;
     //const loserDouble = req.body.loserDouble;
