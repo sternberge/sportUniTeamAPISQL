@@ -641,7 +641,7 @@ module.exports = {
                   }
                   //On calcule ses ranking points à l'aide de la formule
                   rankPoints = winPoints / (nbWinMatches + losePoints);
-                  rankPoints = 13;
+                  rankPoints = 23;
                   console.log("Nombre points totaux : ",rankPoints,"pour le joueur",playerId);
                   //On recupere le ranking id du player
                   return(module.exports.getSingleRankingPerPlayerId(playerId,rankingType));
@@ -666,23 +666,24 @@ module.exports = {
 
 			  calculateRanking(res){
 				var rankingTypes = ["N", "R", "C"];
-				/*var results = Promise.all([rankingTypes.map(rankingType => { return module.exports.calculateRankingPerTypeAndPlayer(rankingType, res)})]);
+				var results = Promise.all([rankingTypes.map(rankingType => { return module.exports.calculateRankingPerTypeAndPlayer(rankingType, res)})]);
 
 				results.then(function () {console.log("les rankings ont été mis à jour !");})
-				  .catch((error) => {
+				  // .catch((error) => {
+					// console.log(error);
+				  // }).then( (resolve) => {
+					// return module.exports.orderNationalRankingByRankPoints();
+					// })
+          .catch((error) => {
 					console.log(error);
-				  }).then( (resolve) => {
-					return module.exports.orderNationalRankingByRankPoints();
-					}).catch((error) => {
-					console.log(error);
-				  })*/
+				  })
 
 				  //var test = module.exports.orderNationalRankingByRankPoints()
 				  //var test = module.exports.orderRegionalRankingByRankPoints()
-				  var test = module.exports.orderConferenceRankingByRankPoints()
-				  .catch((error) => {
-					console.log(error);
-				  });
+				  //var test = module.exports.orderConferenceRankingByRankPoints()
+				  // .catch((error) => {
+					// console.log(error);
+				  // });
 			  },
 
               calculateRankingPerTypeAndPlayer(rankingType, res){

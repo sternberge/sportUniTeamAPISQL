@@ -320,6 +320,96 @@ const calculateDoubleRanking = async (req, res) => {
 
 }
 
+/*const createNewDoubleRanking = async (req, res) => {
+
+}*/
+
+const orderNationalRanking = async (leagueId, gender) => {
+  return new Promise( async (resolve, reject) => {
+    const newNationalRanking = [];
+    try{
+      newNationalRanking = await getNewNationalRankingOrder(leagueId, gender);
+      console.log(`New national ranking order fetched for league ${leagueId} and gender ${gender}`);
+    } catch(err){
+      console.log(err);
+      return reject(`Could not fetch new national ranking order for league ${leagueId} and gender ${gender}`);
+    }
+
+    try{
+      const updateDoubleRankingOrderPromises = newNationalRanking.map( (doubleTeamNationalRank, rank) =>
+        updateDoubleRankingOrder(doubleTeamNationalRank.doubleRankingId, rank + 1)
+      );
+    } catch(err){
+      
+    }
+    updateDoubleRankingOrder = (doubleRankingId, rank)
+
+    resolve(`National Double Ranking ordering done for league ${leagueId} and gender ${gender}`);
+  });
+}
+
+const orderRankingPerGender = async (leagueId) => {
+  return new Promise( async (resolve, reject) => {
+    const genders = ["M", "F"];
+
+    const orderNationalRankingPerGenderPromises = genders.map(gender =>
+      orderNationalRanking(leagueId, gender)
+    );
+
+    const orderRegionalRankingPerGenderPromises = genders.map(gender =>
+      orderRegionalRanking(leagueId, gender)
+    );
+
+    const orderConferenceRankingPerGenderPromises = genders.map(gender =>
+      orderConferenceRanking(leagueId, gender)
+    );
+
+    try{
+      await Promise.all(orderNationalRankingPerGenderPromises);
+      console.log(`National Double Ranking ordered for all genders and league ${leagueId}`);
+    } catch(err){
+      console.log(err);
+      return reject(`National Double Ranking ordering failed for league ${leagueId}`);
+    }
+
+    try{
+      await Promise.all(orderRegionalRankingPerGenderPromises);
+      console.log(`Regional Double Ranking ordered for all genders and league ${leagueId}`);
+    } catch(err){
+      console.log(err);
+      return reject(`Regional Double Ranking ordering failed for league ${leagueId}`);
+    }
+
+    try{
+      await Promise.all(orderConferenceRankingPerGenderPromises);
+      console.log(`Conference Double Ranking ordered for all genders and league ${leagueId}`);
+    } catch(err){
+      console.log(err);
+      return reject(`Conference Double Ranking ordering failed for league ${leagueId}`);
+    }
+
+    resolve(`Double Ranking ordering done for league ${leagueId}`);
+  });
+}
+
+const orderDoubleRanking = async (req, res) => {
+  const leagues = [1, 2, 3, 4, 5];
+
+  try{
+    const orderRankingPerLeaguePromises = leagues.map(leagueId =>
+      orderRankingPerGender(leagueId)
+    );
+    await Promise.all(orderRankingPerLeaguePromises);
+    console.log("New Double Ranking ordered for all leagues");
+    res.send(JSON.stringify({"status": 200, "error": null, "response": "New Double Ranking ordered for all leagues"}));
+  } catch(err){
+    console.log("New Double Ranking ordering failed");
+    console.log(err);
+    res.send(JSON.stringify({"status": 500, "error": err, "response": "New Double Ranking ordering failed"}));
+  }
+
+}
+
 module.exports = {
 
   /*calculateDoubleRanking,

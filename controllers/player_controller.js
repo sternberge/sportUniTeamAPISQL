@@ -1,9 +1,3 @@
-var db = require('./../db');
-const UserController = require('../controllers/user_controller');
-var expressValidator = require('express-validator');
-const RankRulesController = require('../controllers/rank_rules_controller');
-const SingleRankingController = require('../controllers/single_ranking_controller');
-const TeamController = require('../controllers/teams_controller');
 module.exports = {
 
   findPlayerById (req, res) {
@@ -206,3 +200,10 @@ getAllPlayerId(){
   });
 }
 };
+
+var db = require('./../db');
+const UserController = require('../controllers/user_controller');
+var expressValidator = require('express-validator');
+const RankRulesController = require('../controllers/rank_rules_controller');
+const TeamController = require('../controllers/teams_controller');
+const SingleRankingController = require('../controllers/single_ranking_controller');
