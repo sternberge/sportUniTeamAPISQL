@@ -66,7 +66,7 @@ module.exports = (app) => {
   app.get('/api/players/generateOtherPlayerDropDownList/:coach_id/:gender', PlayerController.generateOtherPlayerDropDownList);
   app.get('/api/players/generateMyPlayerDropDownList/:coach_id/:gender', PlayerController.generateMyPlayerDropDownList);
   app.get('/api/players/getPlayerNameFromId/:playerId',PlayerController.getPlayerNameFromId)
-
+  app.get('/api/players/getPlayerInformationByPlayerId/:playerId',PlayerController.getPlayerInformationByPlayerId);
 
   //Users
   app.post('/api/users', UserController.createUser);
