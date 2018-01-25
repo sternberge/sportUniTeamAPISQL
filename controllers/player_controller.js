@@ -6,6 +6,31 @@ const SingleRankingController = require('../controllers/single_ranking_controlle
 const TeamController = require('../controllers/teams_controller');
 module.exports = {
 
+  getPlayerTeamId (playerId){
+    return new Promise((resolve,reject)=>{
+    db.pool.getConnection((error, connection) => {
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      // L'ajout du '?' permet d'éviter les injections sql
+      var query = connection.query('SELECT Teams_teamId FROM Players WHERE playerID = ?', playerId, (error, results, fields) => {
+        if (error){
+          connection.release();
+          return reject(error);
+        }
+        else if (results.length > 0){
+          resolve(results[0].Teams_teamId);
+          connection.release(); // CLOSE THE CONNECTION
+        }
+        else{
+          reject();
+          connection.release(); // CLOSE THE CONNECTION
+        }
+      });
+    });
+  });
+  },
+
   findPlayerById (req, res) {
     const playerId = req.params.player_id;
     db.pool.getConnection((error, connection) => {
