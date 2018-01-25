@@ -33,7 +33,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as playerName FROM Players p  INNER JOIN Teams t on p.Teams_teamId = t.teamId   INNER JOIN Users u on p.Users_userId = u.userId  WHERE Colleges_collegeId = ? AND u.gender LIKE ?;', [collegeId,gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as fullName FROM Players p  INNER JOIN Teams t on p.Teams_teamId = t.teamId   INNER JOIN Users u on p.Users_userId = u.userId  WHERE Colleges_collegeId = ? AND u.gender LIKE ?;', [collegeId,gender], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -54,7 +54,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT DISTINCT request.playerId, request.PlayerName as playerName from (SELECT DISTINCT p1.playerId, concat(u1.firstName,\'  \',lastName) as PlayerName FROM SimpleMatches sm INNER JOIN Players p1 on sm.winner = p1.playerId INNER JOIN Users u1 on u1.userId = p1.playerId WHERE sm.Tournaments_tournamentId = ?  AND u1.gender LIKE ? UNION ALL SELECT DISTINCT p2.playerId, concat(u2.firstName,\'  \',u2.lastName) as PlayerName FROM  SimpleMatches sm INNER JOIN Players p2 on sm.loser = p2.playerId INNER JOIN Users u2 on u2.userId = p2.playerId WHERE sm.Tournaments_tournamentId = ? AND u2.gender LIKE ?) as request', [tournamentId,gender,tournamentId,gender], (error, results, fields) => {
+      var query = connection.query('SELECT DISTINCT request.playerId, request.PlayerName as fullName from (SELECT DISTINCT p1.playerId, concat(u1.firstName,\'  \',lastName) as PlayerName FROM SimpleMatches sm INNER JOIN Players p1 on sm.winner = p1.playerId INNER JOIN Users u1 on u1.userId = p1.playerId WHERE sm.Tournaments_tournamentId = ?  AND u1.gender LIKE ? UNION ALL SELECT DISTINCT p2.playerId, concat(u2.firstName,\'  \',u2.lastName) as PlayerName FROM  SimpleMatches sm INNER JOIN Players p2 on sm.loser = p2.playerId INNER JOIN Users u2 on u2.userId = p2.playerId WHERE sm.Tournaments_tournamentId = ? AND u2.gender LIKE ?) as request', [tournamentId,gender,tournamentId,gender], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -75,7 +75,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as playerName FROM Players p INNER JOIN Teams t on p.Teams_teamId = t.teamId INNER JOIN Colleges c ON c.collegeId = t.Colleges_collegeId INNER JOIN Users u on p.Users_userId = u.userId WHERE c.Conferences_conferenceId = ? AND u.gender LIKE ?;', [conferenceId,gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as fullName FROM Players p INNER JOIN Teams t on p.Teams_teamId = t.teamId INNER JOIN Colleges c ON c.collegeId = t.Colleges_collegeId INNER JOIN Users u on p.Users_userId = u.userId WHERE c.Conferences_conferenceId = ? AND u.gender LIKE ?;', [conferenceId,gender], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -139,7 +139,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as playerName FROM Players p INNER JOIN Users u on p.Users_userId = u.userId Where u.gender LIKE ?;',gender, (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as fullName FROM Players p INNER JOIN Users u on p.Users_userId = u.userId Where u.gender LIKE ?;',gender, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -151,6 +151,102 @@ module.exports = {
     });
   },
 
+  getPlayersFromConferenceCollegeTournamentGender(req, res, next) {
+    const conferenceId = req.params.conferenceId;
+    const collegeId = req.params.collegeId;
+    const tournamentId =req.params.tournamentId;
+    const gender = req.params.gender;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      if(tournamentId == '_')
+      {
+      var query = connection.query(`SELECT p.playerId,concat(u.firstName,' ',u.lastName) as fullName FROM Players p
+      INNER JOIN Teams t on t.teamId = p.Teams_teamId
+      INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+      INNER JOIN Users u on u.userId = p.Users_userId
+      WHERE c.Conferences_conferenceId LIKE ?
+      AND c.collegeId LIKE ?
+      AND u.gender LIKE ?
+      AND p.playerId IN  (select distinct playerId from (SELECT sm.Tournaments_tournamentId,p1.playerId FROM SimpleMatches sm
+        INNER JOIN Players p1 on p1.playerId = sm.winner
+        UNION ALL
+        SELECT sm.Tournaments_tournamentId, p2.playerId FROM SimpleMatches sm
+        INNER JOIN Players p2 on p2.playerId = sm.loser
+        UNION ALL
+        SELECT dm.Tournaments_tournamentId, dt1.Players_playerId FROM DoubleMatches dm
+        INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+        INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+        UNION ALL
+        SELECT dm.Tournaments_tournamentId,dt1.Players_playerId2 FROM DoubleMatches dm
+        INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+        INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+        UNION ALL
+        SELECT  dm.Tournaments_tournamentId,dt2.Players_playerId FROM DoubleMatches dm
+        INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+        INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+        UNION ALL
+        SELECT  dm.Tournaments_tournamentId,dt2.Players_playerId2 FROM DoubleMatches dm
+        INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+        INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble) as final
+        where Tournaments_tournamentId LIKE ? OR  Tournaments_tournamentId IS NULL )
+        order by fullName
+        `,[conferenceId,collegeId,gender,tournamentId], (error, results, fields) => {
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+      }
+      else {
+        var query = connection.query(`SELECT p.playerId,concat(u.firstName,' ',u.lastName) as fullName FROM Players p
+        INNER JOIN Teams t on t.teamId = p.Teams_teamId
+        INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+        INNER JOIN Users u on u.userId = p.Users_userId
+        WHERE c.Conferences_conferenceId LIKE ?
+        AND c.collegeId LIKE ?
+        AND u.gender LIKE ?
+        AND p.playerId IN  (select distinct playerId from (SELECT sm.Tournaments_tournamentId,p1.playerId FROM SimpleMatches sm
+          INNER JOIN Players p1 on p1.playerId = sm.winner
+          UNION ALL
+          SELECT sm.Tournaments_tournamentId, p2.playerId FROM SimpleMatches sm
+          INNER JOIN Players p2 on p2.playerId = sm.loser
+          UNION ALL
+          SELECT dm.Tournaments_tournamentId, dt1.Players_playerId FROM DoubleMatches dm
+          INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+          INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+          UNION ALL
+          SELECT dm.Tournaments_tournamentId,dt1.Players_playerId2 FROM DoubleMatches dm
+          INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+          INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+          UNION ALL
+          SELECT  dm.Tournaments_tournamentId,dt2.Players_playerId FROM DoubleMatches dm
+          INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+          INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+          UNION ALL
+          SELECT  dm.Tournaments_tournamentId,dt2.Players_playerId2 FROM DoubleMatches dm
+          INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+          INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble) as final
+          where Tournaments_tournamentId LIKE ?)
+          order by fullName
+          `,[conferenceId,collegeId,gender,tournamentId], (error, results, fields) => {
+            if (error){
+              connection.release();
+              return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+            }
+            res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+            connection.release(); // CLOSE THE CONNECTION
+          });
+      }
+
+      });
+    }
 
 
-};
+
+  };

@@ -27,6 +27,24 @@ module.exports = {
     });
   },
 
+  findTeamById (connection,req) {
+    return new Promise((resolve,reject)=>{
+      const teamId = req.body.playerTeam;
+        // L'ajout du '?' permet d'éviter les injections sql
+        var query = connection.query('SELECT gender FROM Teams WHERE teamId = ?', teamId, (error, results, fields) => {
+          if (error){
+            return reject(error);
+          }
+          else if (results.length > 0){
+            resolve(results[0].gender);
+          }
+          else{
+            reject("Id inexistant");
+          }
+      });
+    });
+  },
+
   create(req, res, next) {
         const gender = req.body.gender;
         const Colleges_collegeId = req.body.Colleges_collegeId;
