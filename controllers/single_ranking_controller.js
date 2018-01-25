@@ -3,6 +3,115 @@ const PlayerController = require('../controllers/player_controller');
 const RegionsController = require('../controllers/regions_controller');
 const ConferencesController = require('../controllers/conferences_controller');
 var blueBird = require('bluebird');
+
+
+
+const calculateRankingPerPlayer = async (playerId,limiteRequest,rankingType,date,res) => {
+  var winPoints = 0;
+  var losePoints = 0;
+  var nbWinMatches = 0;
+  var nbLoseMatches = 0;
+  var rankPoints = 0;
+  var i = 0;
+  // Recupere les matchs gagnés par le joueur ainsi que le nb de points gagnés selon les adversaires(nbmax de match = limiteRequest)
+  module.exports.getSingleBestMatches(playerId,limiteRequest,rankingType,date)
+  .then((results1) => {
+    console.log("-----------------------------------------------------------");
+    console.log("Nombre de match gagnés : ",results1.length, " pour le playerId : ",playerId);
+    for(i=0; i<results1.length; i++ ){
+      // Calcul du nb de points total gagnés
+      winPoints += results1[i].winOverRankPoints;
+    }
+    console.log("Points gangés au cours de ce(s) matchs : ",winPoints);
+    nbWinMatches = results1.length;
+    return Promise.resolve(results1);// on envoie les matchs gagnés à la fonction suivante
+  })
+  .then((results) => {
+    console.log("-----------------------------------------------------------");
+    // Si le joueur a gagné moins de match que la limite demandée
+    if(results.length < limiteRequest){
+      nbLoseMatches = limiteRequest - nbWinMatches;
+      console.log("Nombre de match perdus si le joeurs Id",playerId,"a joué plus de match que la limite : ",nbLoseMatches);
+      //On recupere les "meilleurs" match perdu afin de completer
+      return module.exports.getSingleBestLossesMatches(playerId,rankingType,date,nbLoseMatches);
+    }
+    else{
+      return Promise.resolve(null);
+    }
+  })
+  .then((results2) => {
+    console.log("-----------------------------------------------------------");
+    //Si le resultat n'est pas null, le joueur a perdu des matchs, on calcule les points perdus
+    if(results2 != null){
+      var i =0;
+      console.log("Le joueur id ",playerId," a perdu le nombre suivant de match : ",results2.length);
+      for(i=0; i<results2.length; i++ ){
+        console.log("Match perdu numero :", i+1);
+        losePoints += results2[i].lossToRankPoints;
+      }
+    }
+    //On calcule ses ranking points à l'aide de la formule
+    rankPoints = winPoints / (nbWinMatches + losePoints);
+    rankPoints = 12;
+    console.log("Nombre points totaux : ",rankPoints,"pour le joueur",playerId);
+    //On recupere le ranking id du player
+    return(module.exports.getSingleRankingPerPlayerId(playerId,rankingType));
+  })
+  .then((playerRankingId) => {
+    console.log("-----------------------------------------------------------");
+    console.log("Player Ranking Id par type selectionné (N,R,...) : ",playerRankingId,"pour le joueur ",playerId);
+    //on insert le nouveau ranking dans la table
+    return(module.exports.editWithPromise(playerRankingId,rankPoints));
+  })
+  .then((results) => {
+    console.log("-----------------------------------------------------------");
+    console.log("Resultats du nouveau ranking : ",rankPoints," pour le playerId",playerId);
+    //res.send("Nouveau ranking MAJ !");
+    return Promise.resolve("OK");
+  })
+  .catch((error) => {
+    //res.send(error);
+  });
+}
+
+
+const calculateRanking = async (req,res)=>{
+  var rankingTypes = ["N", "R", "C"];
+  try{
+    const promisesPerTypeCalculation = rankingTypes.map(rankingType =>
+      calculateRankingPerTypeAndPlayer(rankingType, res));
+    await Promise.all(promisesPerTypeCalculation);
+    console.log("New Double Ranking Points calculated for all types");
+    res.send(JSON.stringify({"status": 200, "error": null, "response": null}));
+    //var test = module.exports.orderNationalRankingByRankPoints()
+    //var test = module.exports.orderRegionalRankingByRankPoints()
+    //var test = module.exports.orderConferenceRankingByRankPoints()
+  }
+  catch(error){
+    console.log(error);
+    res.send(JSON.stringify({"status": 500, "error": null, "response": null}))
+  }
+}
+
+const calculateRankingPerTypeAndPlayer = async (rankingType, res)=>{
+  let playerId = 0;
+  let i,j;
+  try{
+    let allPlayers = await PlayerController.getAllPlayerId();
+    let testTab = [];
+    for(i=0; i<3; i++){
+      testTab.push(allPlayers[i]);
+    }
+    var limiteRequest = 5;
+    var date = "2017-01-01";
+    return Promise.all([testTab.map(player => { return calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
+  }
+  catch(error){
+    res.send(JSON.stringify({"status": 500, "error": error, "response": null}))
+    console.log(error);
+  }
+}
+
 module.exports = {
 
   find (req, res) {
@@ -131,298 +240,298 @@ module.exports = {
           return reject(error);
         }
         var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
-			INNER JOIN Players p on p.playerId = sr.Players_playerId
-			INNER JOIN Teams t on t.teamId = p.Teams_teamId
-			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-			WHERE sr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender LIKE ?
-			ORDER BY sr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
-			  if (error){
-				connection.release();
-				return reject(error);
-			  }
-			  connection.release(); // CLOSE THE CONNECTION
-			  resolve(results);
-			});
+          INNER JOIN Players p on p.playerId = sr.Players_playerId
+          INNER JOIN Teams t on t.teamId = p.Teams_teamId
+          INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+          WHERE sr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender LIKE ?
+          ORDER BY sr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
+            if (error){
+              connection.release();
+              return reject(error);
+            }
+            connection.release(); // CLOSE THE CONNECTION
+            resolve(results);
+          });
+        });
       });
-    });
-  },
+    },
 
-  updateSingleRankingOrder(singleRankingId, rank) {
-    return new Promise(function (resolve, reject) {
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return reject(error);
-        }
-        var query = connection.query(`UPDATE SingleRanking SET rank = ? WHERE singleRankingId = ?`,[rank, singleRankingId], (error, results, fields) => {
-			  if (error){
-				connection.release();
-				return reject(error);
-			  }
-			  connection.release(); // CLOSE THE CONNECTION
-			  resolve(results);
-			});
+    updateSingleRankingOrder(singleRankingId, rank) {
+      return new Promise(function (resolve, reject) {
+        db.pool.getConnection((error, connection) => {
+          if (error){
+            return reject(error);
+          }
+          var query = connection.query(`UPDATE SingleRanking SET rank = ? WHERE singleRankingId = ?`,[rank, singleRankingId], (error, results, fields) => {
+            if (error){
+              connection.release();
+              return reject(error);
+            }
+            connection.release(); // CLOSE THE CONNECTION
+            resolve(results);
+          });
+        });
       });
-    });
-  },
+    },
 
 
 
-  getNewRegionalRankingOrder(leagueId, gender, regionId) {
-    return new Promise(function (resolve, reject) {
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return reject(error);
-        }
-        var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
-			INNER JOIN Players p on p.playerId = sr.Players_playerId
-			INNER JOIN Teams t on t.teamId = p.Teams_teamId
-			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-			WHERE sr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender LIKE ? AND c.Regions_regionId = ?
-			ORDER BY sr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
-			  if (error){
-				connection.release();
-				return reject(error);
-			  }
-			  connection.release(); // CLOSE THE CONNECTION
-			  resolve(results);
-			});
+    getNewRegionalRankingOrder(leagueId, gender, regionId) {
+      return new Promise(function (resolve, reject) {
+        db.pool.getConnection((error, connection) => {
+          if (error){
+            return reject(error);
+          }
+          var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+            INNER JOIN Players p on p.playerId = sr.Players_playerId
+            INNER JOIN Teams t on t.teamId = p.Teams_teamId
+            INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+            WHERE sr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender LIKE ? AND c.Regions_regionId = ?
+            ORDER BY sr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
+              if (error){
+                connection.release();
+                return reject(error);
+              }
+              connection.release(); // CLOSE THE CONNECTION
+              resolve(results);
+            });
+          });
+        });
+      },
+
+      getNewConferenceRankingOrder(leagueId, gender, conferenceId) {
+        return new Promise(function (resolve, reject) {
+          db.pool.getConnection((error, connection) => {
+            if (error){
+              return reject(error);
+            }
+            var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+              INNER JOIN Players p on p.playerId = sr.Players_playerId
+              INNER JOIN Teams t on t.teamId = p.Teams_teamId
+              INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+              WHERE sr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId = ?
+              ORDER BY sr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
+                if (error){
+                  connection.release();
+                  return reject(error);
+                }
+                connection.release(); // CLOSE THE CONNECTION
+                resolve(results);
+              });
+            });
+          });
+        },
+
+        orderNationalRankingByRankPoints() {
+          return new Promise(function (resolve, reject) {
+
+            var leagues = [1, 2, 3, 4, 5];
+            var genders = ["M", "F"];
+
+            //Create a new promise for each league
+            const promisesPerLeague = leagues.map( leagueId =>
+              new Promise( (resolve, reject) => {
+
+                //Order National Ranking for each gender
+                const promisesPerGender = genders.map( gender =>
+                  new Promise( (resolve, reject) => {
+                    module.exports.getNewNationalRankingOrder(leagueId, gender)
+                    .then( (nationalRankingByLeagueGender) => {
+
+                      //Update each player's national singleRanking Rank
+                      const promisesPerPlayer = nationalRankingByLeagueGender.map( (playerNationalRank, rank) =>
+                      new Promise( (resolve, reject) => {
+                        module.exports.updateSingleRankingOrder(playerNationalRank.singleRankingId, rank + 1)
+                        .then( () => resolve() )
+                        .catch((error) => {
+                          console.log(error);
+                        });
+                      })
+                    );
+
+                    //When the national ranking has been updated for the players in the database
+                    Promise.all(promisesPerPlayer).then( () => {
+                      console.log(`National ranking done for league ${leagueId} and gender ${gender}`);
+                      resolve();
+                    });
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+
+
+                })
+              );
+
+              //When the national ranking has been update for both genders
+              Promise.all(promisesPerGender).then( () => {
+                console.log(`National ranking done for league ${leagueId}`);
+                resolve();
+              });
+
+            }).catch((error) => {
+              console.log(error);
+            })
+          );
+
+          //When the national ranking has been updated for all leagues
+          Promise.all(promisesPerLeague).then( () => console.log("National ranking done") );
+
+        }).catch((error) => {
+          console.log(error);
+        });
+
+      },
+
+      orderRegionalRankingByRankPoints() {
+        return new Promise(function (resolve, reject) {
+
+          var leagues = [1, 2, 3, 4, 5];
+          var genders = ["M", "F"];
+
+          RegionsController.getRegionIds()
+          .then( (regions) => {
+            //Create a new promise for each league
+            const promisesPerLeague = leagues.map( leagueId =>
+              new Promise( (resolve, reject) => {
+
+                //Order Regional Ranking for each gender
+                const promisesPerGender = genders.map( gender =>
+                  new Promise( (resolve, reject) => {
+
+                    //Order Regional Ranking for each region
+                    const promisesPerRegion = regions.map( region =>
+                      new Promise( (resolve, reject) => {
+                        module.exports.getNewRegionalRankingOrder(leagueId, gender, region.regionId)
+                        .then( (regionalRankingByLeagueGenderRegion) => {
+
+                          //Update each player's regional singleRanking Rank
+                          const promisesPerPlayer = regionalRankingByLeagueGenderRegion.map( (playerRegionalRank, rank) =>
+                          new Promise( (resolve, reject) => {
+                            module.exports.updateSingleRankingOrder(playerRegionalRank.singleRankingId, rank + 1)
+                            .then( () => resolve() )
+                            .catch((error) => {
+                              console.log(error);
+                            });
+                          })
+                        );
+
+                        //When the regional ranking has been updated for the players in the database
+                        Promise.all(promisesPerPlayer).then( () => {
+                          console.log(`Regional ranking done for league ${leagueId}, gender ${gender} and region ${region.regionId}`);
+                          resolve();
+                        });
+                      })
+                      .catch((error) => {
+                        console.log(error);
+                      });
+                    })
+                  );
+
+                  //When the regional ranking has been updated for all regions
+                  Promise.all(promisesPerRegion).then( () => {
+                    console.log(`Regional ranking done for league ${leagueId} and gender ${gender}`);
+                    resolve();
+                  });
+
+
+                })
+              );
+
+              //When the regional ranking has been update for both genders
+              Promise.all(promisesPerGender).then( () => {
+                console.log(`Regional ranking done for league ${leagueId}`);
+                resolve();
+              });
+
+            }).catch((error) => {
+              console.log(error);
+            })
+          );
+
+          //When the regional ranking has been updated for all leagues
+          Promise.all(promisesPerLeague).then( () => console.log("Regional ranking done") );
+
+        }).catch((error) => {
+          console.log(error);
+        });
+      })
+
+    },
+
+    orderConferenceRankingByRankPoints() {
+      return new Promise(function (resolve, reject) {
+
+        var leagues = [1, 2, 3, 4, 5];
+        var genders = ["M", "F"];
+
+        ConferencesController.getConferenceIds()
+        .then( (conferences) => {
+          //Create a new promise for each league
+          const promisesPerLeague = leagues.map( leagueId =>
+            new Promise( (resolve, reject) => {
+
+              //Order Conference Ranking for each gender
+              const promisesPerGender = genders.map( gender =>
+                new Promise( (resolve, reject) => {
+
+                  //Order Conference Ranking for each conference
+                  const promisesPerConference = conferences.map( conference =>
+                    new Promise( (resolve, reject) => {
+                      module.exports.getNewConferenceRankingOrder(leagueId, gender, conference.conferenceId)
+                      .then( (conferenceRankingByLeagueGenderConference) => {
+
+                        //Update each player's conference singleRanking Rank
+                        const promisesPerPlayer = conferenceRankingByLeagueGenderConference.map( (playerConferenceRank, rank) =>
+                        new Promise( (resolve, reject) => {
+                          module.exports.updateSingleRankingOrder(playerConferenceRank.singleRankingId, rank + 1)
+                          .then( () => resolve() )
+                          .catch((error) => {
+                            console.log(error);
+                          });
+                        })
+                      );
+
+                      //When the national ranking has been updated for the players in the database
+                      Promise.all(promisesPerPlayer).then( () => {
+                        console.log(`Conference ranking done for league ${leagueId}, gender ${gender} and conference ${conference.conferenceId}`);
+                        resolve();
+                      });
+                    })
+                    .catch((error) => {
+                      console.log(error);
+                    });
+                  })
+                );
+
+                //When the conference ranking has been updated for all regions
+                Promise.all(promisesPerConference).then( () => {
+                  console.log(`Conference ranking done for league ${leagueId} and gender ${gender}`);
+                  resolve();
+                });
+
+
+              })
+            );
+
+            //When the conference ranking has been update for both genders
+            Promise.all(promisesPerGender).then( () => {
+              console.log(`Conference ranking done for league ${leagueId}`);
+              resolve();
+            });
+
+          }).catch((error) => {
+            console.log(error);
+          })
+        );
+
+        //When the conference ranking has been updated for all leagues
+        Promise.all(promisesPerLeague).then( () => console.log("Conference ranking done") );
+
+      }).catch((error) => {
+        console.log(error);
       });
-    });
-  },
-
-  getNewConferenceRankingOrder(leagueId, gender, conferenceId) {
-    return new Promise(function (resolve, reject) {
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return reject(error);
-        }
-        var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
-			INNER JOIN Players p on p.playerId = sr.Players_playerId
-			INNER JOIN Teams t on t.teamId = p.Teams_teamId
-			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-			WHERE sr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId = ?
-			ORDER BY sr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
-			  if (error){
-				connection.release();
-				return reject(error);
-			  }
-			  connection.release(); // CLOSE THE CONNECTION
-			  resolve(results);
-			});
-      });
-    });
-  },
-
-  orderNationalRankingByRankPoints() {
-    return new Promise(function (resolve, reject) {
-
-		var leagues = [1, 2, 3, 4, 5];
-		var genders = ["M", "F"];
-
-		//Create a new promise for each league
-		const promisesPerLeague = leagues.map( leagueId =>
-			new Promise( (resolve, reject) => {
-
-				//Order National Ranking for each gender
-				const promisesPerGender = genders.map( gender =>
-					new Promise( (resolve, reject) => {
-						module.exports.getNewNationalRankingOrder(leagueId, gender)
-							.then( (nationalRankingByLeagueGender) => {
-
-								//Update each player's national singleRanking Rank
-								const promisesPerPlayer = nationalRankingByLeagueGender.map( (playerNationalRank, rank) =>
-									new Promise( (resolve, reject) => {
-										module.exports.updateSingleRankingOrder(playerNationalRank.singleRankingId, rank + 1)
-										.then( () => resolve() )
-										.catch((error) => {
-											console.log(error);
-										});
-									})
-								);
-
-								//When the national ranking has been updated for the players in the database
-								Promise.all(promisesPerPlayer).then( () => {
-									console.log(`National ranking done for league ${leagueId} and gender ${gender}`);
-									resolve();
-								});
-							})
-							.catch((error) => {
-								console.log(error);
-							});
-
-
-					})
-				);
-
-				//When the national ranking has been update for both genders
-				Promise.all(promisesPerGender).then( () => {
-					console.log(`National ranking done for league ${leagueId}`);
-					resolve();
-				});
-
-			}).catch((error) => {
-				console.log(error);
-			})
-		);
-
-		//When the national ranking has been updated for all leagues
-		Promise.all(promisesPerLeague).then( () => console.log("National ranking done") );
-
-	}).catch((error) => {
-			console.log(error);
-		});
-
-  },
-
-  orderRegionalRankingByRankPoints() {
-    return new Promise(function (resolve, reject) {
-
-		var leagues = [1, 2, 3, 4, 5];
-		var genders = ["M", "F"];
-
-		RegionsController.getRegionIds()
-		.then( (regions) => {
-			//Create a new promise for each league
-			const promisesPerLeague = leagues.map( leagueId =>
-				new Promise( (resolve, reject) => {
-
-					//Order Regional Ranking for each gender
-					const promisesPerGender = genders.map( gender =>
-						new Promise( (resolve, reject) => {
-
-							//Order Regional Ranking for each region
-							const promisesPerRegion = regions.map( region =>
-								new Promise( (resolve, reject) => {
-									module.exports.getNewRegionalRankingOrder(leagueId, gender, region.regionId)
-									.then( (regionalRankingByLeagueGenderRegion) => {
-
-										//Update each player's regional singleRanking Rank
-										const promisesPerPlayer = regionalRankingByLeagueGenderRegion.map( (playerRegionalRank, rank) =>
-											new Promise( (resolve, reject) => {
-												module.exports.updateSingleRankingOrder(playerRegionalRank.singleRankingId, rank + 1)
-												.then( () => resolve() )
-												.catch((error) => {
-													console.log(error);
-												});
-											})
-										);
-
-										//When the regional ranking has been updated for the players in the database
-										Promise.all(promisesPerPlayer).then( () => {
-											console.log(`Regional ranking done for league ${leagueId}, gender ${gender} and region ${region.regionId}`);
-											resolve();
-										});
-									})
-									.catch((error) => {
-										console.log(error);
-									});
-								})
-							);
-
-							//When the regional ranking has been updated for all regions
-							Promise.all(promisesPerRegion).then( () => {
-								console.log(`Regional ranking done for league ${leagueId} and gender ${gender}`);
-								resolve();
-							});
-
-
-						})
-					);
-
-					//When the regional ranking has been update for both genders
-					Promise.all(promisesPerGender).then( () => {
-						console.log(`Regional ranking done for league ${leagueId}`);
-						resolve();
-					});
-
-				}).catch((error) => {
-					console.log(error);
-				})
-			);
-
-			//When the regional ranking has been updated for all leagues
-			Promise.all(promisesPerLeague).then( () => console.log("Regional ranking done") );
-
-		}).catch((error) => {
-				console.log(error);
-			});
-	})
-
-  },
-
-  orderConferenceRankingByRankPoints() {
-    return new Promise(function (resolve, reject) {
-
-		var leagues = [1, 2, 3, 4, 5];
-		var genders = ["M", "F"];
-
-		ConferencesController.getConferenceIds()
-		.then( (conferences) => {
-			//Create a new promise for each league
-			const promisesPerLeague = leagues.map( leagueId =>
-				new Promise( (resolve, reject) => {
-
-					//Order Conference Ranking for each gender
-					const promisesPerGender = genders.map( gender =>
-						new Promise( (resolve, reject) => {
-
-							//Order Conference Ranking for each conference
-							const promisesPerConference = conferences.map( conference =>
-								new Promise( (resolve, reject) => {
-									module.exports.getNewConferenceRankingOrder(leagueId, gender, conference.conferenceId)
-									.then( (conferenceRankingByLeagueGenderConference) => {
-
-										//Update each player's conference singleRanking Rank
-										const promisesPerPlayer = conferenceRankingByLeagueGenderConference.map( (playerConferenceRank, rank) =>
-											new Promise( (resolve, reject) => {
-												module.exports.updateSingleRankingOrder(playerConferenceRank.singleRankingId, rank + 1)
-												.then( () => resolve() )
-												.catch((error) => {
-													console.log(error);
-												});
-											})
-										);
-
-										//When the national ranking has been updated for the players in the database
-										Promise.all(promisesPerPlayer).then( () => {
-											console.log(`Conference ranking done for league ${leagueId}, gender ${gender} and conference ${conference.conferenceId}`);
-											resolve();
-										});
-									})
-									.catch((error) => {
-										console.log(error);
-									});
-								})
-							);
-
-							//When the conference ranking has been updated for all regions
-							Promise.all(promisesPerConference).then( () => {
-								console.log(`Conference ranking done for league ${leagueId} and gender ${gender}`);
-								resolve();
-							});
-
-
-						})
-					);
-
-					//When the conference ranking has been update for both genders
-					Promise.all(promisesPerGender).then( () => {
-						console.log(`Conference ranking done for league ${leagueId}`);
-						resolve();
-					});
-
-				}).catch((error) => {
-					console.log(error);
-				})
-			);
-
-			//When the conference ranking has been updated for all leagues
-			Promise.all(promisesPerLeague).then( () => console.log("Conference ranking done") );
-
-		}).catch((error) => {
-				console.log(error);
-			});
-	})
+    })
 
   },
 
@@ -593,119 +702,7 @@ module.exports = {
                   });
                 });
               },
-
-
-              calculateRankingPerPlayer(playerId,limiteRequest,rankingType,date,res){
-                var winPoints = 0;
-                var losePoints = 0;
-                var nbWinMatches = 0;
-                var nbLoseMatches = 0;
-                var rankPoints = 0;
-                var i = 0;
-                // Recupere les matchs gagnés par le joueur ainsi que le nb de points gagnés selon les adversaires(nbmax de match = limiteRequest)
-                module.exports.getSingleBestMatches(playerId,limiteRequest,rankingType,date)
-                .then((results1) => {
-                  console.log("-----------------------------------------------------------");
-                  console.log("Nombre de match gagnés : ",results1.length, " pour le playerId : ",playerId);
-                  for(i=0; i<results1.length; i++ ){
-                    // Calcul du nb de points total gagnés
-                    winPoints += results1[i].winOverRankPoints;
-                  }
-                  console.log("Points gangés au cours de ce(s) matchs : ",winPoints);
-                  nbWinMatches = results1.length;
-                  return Promise.resolve(results1);// on envoie les matchs gagnés à la fonction suivante
-                })
-                .then((results) => {
-                  console.log("-----------------------------------------------------------");
-                  // Si le joueur a gagné moins de match que la limite demandée
-                  if(results.length < limiteRequest){
-                    nbLoseMatches = limiteRequest - nbWinMatches;
-                    console.log("Nombre de match perdus si le joeurs Id",playerId,"a joué plus de match que la limite : ",nbLoseMatches);
-                    //On recupere les "meilleurs" match perdu afin de completer
-                    return module.exports.getSingleBestLossesMatches(playerId,rankingType,date,nbLoseMatches);
-                  }
-                  else{
-                    return Promise.resolve(null);
-                  }
-                })
-                .then((results2) => {
-                  console.log("-----------------------------------------------------------");
-                  //Si le resultat n'est pas null, le joueur a perdu des matchs, on calcule les points perdus
-                  if(results2 != null){
-                    var i =0;
-                    console.log("Le joueur id ",playerId," a perdu le nombre suivant de match : ",results2.length);
-                    for(i=0; i<results2.length; i++ ){
-                      console.log("Match perdu numero :", i+1);
-                      losePoints += results2[i].lossToRankPoints;
-                    }
-                  }
-                  //On calcule ses ranking points à l'aide de la formule
-                  rankPoints = winPoints / (nbWinMatches + losePoints);
-                  rankPoints = 23;
-                  console.log("Nombre points totaux : ",rankPoints,"pour le joueur",playerId);
-                  //On recupere le ranking id du player
-                  return(module.exports.getSingleRankingPerPlayerId(playerId,rankingType));
-                })
-                .then((playerRankingId) => {
-                  console.log("-----------------------------------------------------------");
-                  console.log("Player Ranking Id par type selectionné (N,R,...) : ",playerRankingId,"pour le joueur ",playerId);
-                  //on insert le nouveau ranking dans la table
-                  return(module.exports.editWithPromise(playerRankingId,rankPoints));
-                })
-                .then((results) => {
-                  console.log("-----------------------------------------------------------");
-                  console.log("Resultats du nouveau ranking : ",rankPoints," pour le playerId",playerId);
-                  //res.send("Nouveau ranking MAJ !");
-                  return Promise.resolve("OK");
-                })
-                .catch((error) => {
-                  //res.send(error);
-                });
-              },
-
-
-			  calculateRanking(res){
-				var rankingTypes = ["N", "R", "C"];
-				var results = Promise.all([rankingTypes.map(rankingType => { return module.exports.calculateRankingPerTypeAndPlayer(rankingType, res)})]);
-
-				results.then(function () {console.log("les rankings ont été mis à jour !");})
-				  // .catch((error) => {
-					// console.log(error);
-				  // }).then( (resolve) => {
-					// return module.exports.orderNationalRankingByRankPoints();
-					// })
-          .catch((error) => {
-					console.log(error);
-				  })
-
-				  //var test = module.exports.orderNationalRankingByRankPoints()
-				  //var test = module.exports.orderRegionalRankingByRankPoints()
-				  //var test = module.exports.orderConferenceRankingByRankPoints()
-				  // .catch((error) => {
-					// console.log(error);
-				  // });
-			  },
-
-              calculateRankingPerTypeAndPlayer(rankingType, res){
-                var playerId = 0;
-                var i,j;
-                PlayerController.getAllPlayerId()
-                .then((allPlayers) => {
-                  //console.log(allPlayers);
-                  var testTab = [];
-                  for(i=0; i<3; i++){
-                    testTab.push(allPlayers[i]);
-                  }
-
-                  var limiteRequest = 5;
-                  var date = "2017-01-01";
-
-                  return Promise.all([testTab.map(player => { return module.exports.calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
-
-                })
-                .catch((error) => {
-                  console.log(error);
-                })
-
-              }
+              calculateRankingPerPlayer,
+              calculateRanking,
+              calculateRankingPerTypeAndPlayer
             };
