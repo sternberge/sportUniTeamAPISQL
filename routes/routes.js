@@ -107,7 +107,7 @@ module.exports = (app) => {
   //Rankings
 
   //SingleRanking
-    app.post('/api/ranking/getRanking', SingleRankingController.calculateRanking);
+    app.post('/api/singleRanking/getRanking', SingleRankingController.calculateRanking);
   app.post('/api/singleRanking', SingleRankingController.create);
   app.delete('/api/singleRanking/:singleRankingId', SingleRankingController.delete);
   app.get('/api/singleRanking/:singleRankingId', SingleRankingController.find);
@@ -117,6 +117,7 @@ module.exports = (app) => {
   app.get('/api/singleRanking/getSingleRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', SingleRankingController.getSingleRankingsByConferenceDivisionGender);
 
   //DoubleRanking
+  app.get('/api/doubleRanking/getRanking', DoubleRankingController.calculateDoubleRanking);
   app.post('/api/doubleRanking', DoubleRankingController.create);
   app.delete('/api/doubleRanking/:doubleRankingId', DoubleRankingController.delete);
   app.get('/api/doubleRanking/:doubleRankingId', DoubleRankingController.find);

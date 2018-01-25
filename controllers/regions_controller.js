@@ -21,6 +21,5 @@ const getRegionIds = () => {
 
 
 module.exports = {
-
 	getRegionIds
 };
