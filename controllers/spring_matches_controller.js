@@ -63,7 +63,7 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query(`SELECT dm.*,dt1.*,dt2.*,concat(u1.firstName,' ',u1.lastName) as winnerName1,concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1,concat(u4.firstName,' ',u4.lastName) as loserName2,p1.playerId as winner1Id,p2.playerId as winner2Id,p3.playerId as loser1Id,p4.playerId as loser2Id ,c1.name as winnerCollege, c2.name as loserCollege
+      var query = connection.query(`SELECT dm.*,dt1.*,dt2.*,concat(u1.firstName,' ',u1.lastName) as winnerName1,concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1,concat(u4.firstName,' ',u4.lastName) as loserName2,p1.playerId as winner1Id,p2.playerId as winner2Id,p3.playerId as loser1Id,p4.playerId as loser2Id ,c1.name as winnerCollegeName, c2.name as loserCollegeName,c1.collegeId as winnerCollege,c2.collegeId as loserColleger
       FROM DoubleMatches dm
       INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
       INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
