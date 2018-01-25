@@ -388,7 +388,7 @@ module.exports = {
   },
 
   async create3InitialRanking(teamId) {
-    var nonRankedValueDouble = await RankRulesController.getLastRankingPerType("D");
+    var nonRankedValueDouble = await RankRulesController.getLastRankingPerType2("D");
     console.log("Valeur unranked pour classement simple :", nonRankedValueDouble);
     //On cree 3 classements unranked Single pour le regional national et country
     var type = ["R", "N", "C"];

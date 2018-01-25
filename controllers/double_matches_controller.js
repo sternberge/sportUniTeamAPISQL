@@ -87,8 +87,8 @@ module.exports = {
     try {
       //Check si les players de double son dans la meme equipe
       var teamId = await module.exports.checkPlayersSameTeam(playerId1,playerId2,playerId3,playerId4);
-    //Check de l'existance des deux couples de joueurs entres
-    var doubleTeams = await Promise.all([module.exports.checkDoubleTeamExistency(playerId1,playerId2),module.exports.checkDoubleTeamExistency(playerId3,playerId4)])
+      //Check de l'existance des deux couples de joueurs entres
+      var doubleTeams = await Promise.all([module.exports.checkDoubleTeamExistency(playerId1,playerId2),module.exports.checkDoubleTeamExistency(playerId3,playerId4)])
       // Si les deux couples n'existent pas --> Creation des deux nouvelles equipes
       if(doubleTeams[0] == false && doubleTeams[1] == false){
         console.log("Appel de la seconde methode");
@@ -118,7 +118,7 @@ module.exports = {
     }
   },
 
-// Creation du match double avec promise
+  // Creation du match double avec promise
   createDoubleMatch2(req,teamId1,teamId2){
     //const winnerDouble = req.body.winnerDouble;
     //const loserDouble = req.body.loserDouble;
