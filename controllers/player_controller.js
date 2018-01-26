@@ -11,7 +11,7 @@ module.exports = {
           }));
         }
         // L'ajout du '?' permet d'éviter les injections sql
-        var query = connection.query('SELECT Teams_teamId FROM Players WHERE playerID = ?', playerId, (error, results, fields) => {
+        var query = connection.query('SELECT Teams_teamId FROM Players WHERE playerId = ?', playerId, (error, results, fields) => {
           if (error) {
             connection.release();
             return reject(error);
