@@ -15,26 +15,22 @@ const calculateRankingPerPlayer = async (playerId,limiteRequest,rankingType,date
   let i = 0;
   let bestLoseMatchs = 0;
   try{
-  // Recupere les matchs gagnés par le joueur ainsi que le nb de points gagnés selon les adversaires(nbmax de match = limiteRequest)
-  const bestMatches = await getSingleBestMatches(playerId,limiteRequest,rankingType,date);
-  nbWinMatches = bestMatches.length;
-  console.log("-----------------------------------------------------------");
-  console.log("Nombre de match gagnés : ",nbWinMatches, " pour le playerId : ",playerId);
-  for(i=0; i<nbWinMatches; i++ ){
-    // Calcul du nb de points total gagnés
-    winPoints += bestMatches[i].winOverRankPoints;
-  }
-  console.log("Points gangés au cours de ce(s) matchs : ",winPoints);
-  console.log("-----------------------------------------------------------");
-  // Si le joueur a gagné moins de match que la limite demandée
-  if(nbWinMatches < limiteRequest){
-    nbLoseMatches = limiteRequest - nbWinMatches;
-    console.log("Nombre de match perdus si le joeurs Id",playerId,"a joué plus de match que la limite : ",nbLoseMatches);
-    //On recupere les "meilleurs" match perdu afin de completer
-   bestLoseMatchs = await getSingleBestLossesMatches(playerId,rankingType,date,nbLoseMatches);
+    // Recupere les matchs gagnés par le joueur ainsi que le nb de points gagnés selon les adversaires(nbmax de match = limiteRequest)
+    const bestMatches = await getSingleBestMatches(playerId,limiteRequest,rankingType,date);
+    nbWinMatches = bestMatches.length;
+    console.log("Nombre de match gagnés : ",nbWinMatches, " pour le playerId : ",playerId);
+    for(i=0; i<nbWinMatches; i++ ){
+      // Calcul du nb de points total gagnés
+      winPoints += bestMatches[i].winOverRankPoints;
     }
-
-    console.log("-----------------------------------------------------------");
+    console.log("Points gangés au cours de ce(s) matchs : ",winPoints);
+    // Si le joueur a gagné moins de match que la limite demandée
+    if(nbWinMatches < limiteRequest){
+      nbLoseMatches = limiteRequest - nbWinMatches;
+      console.log("Nombre de match perdus si le joeurs Id",playerId,"a joué plus de match que la limite : ",nbLoseMatches);
+      //On recupere les "meilleurs" match perdu afin de completer
+      bestLoseMatchs = await getSingleBestLossesMatches(playerId,rankingType,date,nbLoseMatches);
+    }
     //Si le resultat n'est pas null, le joueur a perdu des matchs, on calcule les points perdus
     if(bestLoseMatchs != 0){
       let i =0;
@@ -51,11 +47,9 @@ const calculateRankingPerPlayer = async (playerId,limiteRequest,rankingType,date
     //On recupere le ranking id du player
     let playerRankingId = await getSingleRankingPerPlayerId(playerId,rankingType);
 
-    console.log("-----------------------------------------------------------");
     console.log("Player Ranking Id par type selectionné (N,R,...) : ",playerRankingId,"pour le joueur ",playerId);
     //on insert le nouveau ranking dans la table
     await editSingleRankingWithPromise(playerRankingId,rankPoints);
-    console.log("-----------------------------------------------------------");
     console.log("Resultats du nouveau ranking : ",rankPoints," pour le playerId",playerId);
   }
   catch(error){
@@ -85,296 +79,104 @@ const getSingleRankingPerPlayerId = (playerId,rankingType) => {
     });
   }
 
-const getSingleBestLossesMatches = (playerId,rankingType,date,nbMatch) => {
-  return new Promise(function (resolve, reject) {
-    limiteRequest = Number(nbMatch);
-    db.pool.getConnection((error, connection) => {
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      }
-      var query = connection.query(`Select s.homeAway, r.lossToRankPoints from SimpleMatches s
-        Left Outer Join Players p on s.winner = p.playerId
-        Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
-        Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
-        Where s.loser = ? and sr.type = ?  and r.type = 'S' and s.date > ?
-        order by r.opponentRank Asc limit ?`, [playerId,rankingType,date,limiteRequest], (error, results, fields) => {
-          if (error){
-            connection.release();
-            return reject(error);
-          }
-          connection.release(); // CLOSE THE CONNECTION
-          //console.log(results);
-          return resolve(results);
+  const getSingleBestLossesMatches = (playerId,rankingType,date,nbMatch) => {
+    return new Promise(function (resolve, reject) {
+      limiteRequest = Number(nbMatch);
+      db.pool.getConnection((error, connection) => {
+        if (error){
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        var query = connection.query(`Select s.homeAway, r.lossToRankPoints from SimpleMatches s
+          Left Outer Join Players p on s.winner = p.playerId
+          Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
+          Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
+          Where s.loser = ? and sr.type = ?  and r.type = 'S' and s.date > ?
+          order by r.opponentRank Asc limit ?`, [playerId,rankingType,date,limiteRequest], (error, results, fields) => {
+            if (error){
+              connection.release();
+              return reject(error);
+            }
+            connection.release(); // CLOSE THE CONNECTION
+            //console.log(results);
+            return resolve(results);
+          });
         });
       });
-    });
-  }
-
-// Fonction de calculs de tous les ranking des players selon les trois types (R,N,C)
-const calculateRanking = async (req,res)=>{
-  var rankingTypes = ["N", "R", "C"];
-  try{
-    const promisesPerTypeCalculation = rankingTypes.map(rankingType =>
-      calculateRankingPerTypeAndPlayer(rankingType, res));
-    await Promise.all(promisesPerTypeCalculation);
-    console.log("New Double Ranking Points calculated for all types");
-    res.send(JSON.stringify({"status": 200, "error": null, "response": null}));
-    //var test = module.exports.orderNationalRankingByRankPoints()
-    //var test = module.exports.orderRegionalRankingByRankPoints()
-    //var test = module.exports.orderConferenceRankingByRankPoints()
-  }
-  catch(error){
-    console.log(error);
-    res.send(JSON.stringify({"status": 500, "error": null, "response": null}))
-  }
-}
-
-const calculateRankingPerTypeAndPlayer = async (rankingType, res)=>{
-  let playerId = 0;
-  let i,j;
-  try{
-    let allPlayers = await PlayerController.getAllPlayerId();
-    let testTab = [];
-    for(i=0; i<3; i++){
-      testTab.push(allPlayers[i]);
     }
-    var limiteRequest = 5;
-    var date = "2017-01-01";
-    return Promise.all([testTab.map(player => { return calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
-  }
-  catch(error){
-    res.send(JSON.stringify({"status": 500, "error": error, "response": null}))
-    console.log(error);
-  }
-}
 
-const getSingleBestMatches = (playerId,limiteRequest,rankingType,date) => {
-  return new Promise(function (resolve, reject) {
-    limiteRequest = Number(limiteRequest);
-    db.pool.getConnection((error, connection) => {
-
-      if (error){
-        return reject(error);
+    // Fonction de calculs de tous les ranking des players selon les trois types (R,N,C)
+    const calculateRanking = async (req,res)=>{
+      var rankingTypes = ["N", "R", "C"];
+      try{
+        const promisesPerTypeCalculation = rankingTypes.map(rankingType =>
+          calculateRankingPerTypeAndPlayer(rankingType, res));
+          await Promise.all(promisesPerTypeCalculation);
+          console.log("New Double Ranking Points calculated for all types");
+          res.send(JSON.stringify({"status": 200, "error": null, "response": null}));
+          //var test = module.exports.orderNationalRankingByRankPoints()
+          //var test = module.exports.orderRegionalRankingByRankPoints()
+          //var test = module.exports.orderConferenceRankingByRankPoints()
+        }
+        catch(error){
+          console.log(error);
+          res.send(JSON.stringify({"status": 500, "error": null, "response": null}))
+        }
       }
-      var query = connection.query(`Select s.homeAway, r.winOverRankPoints from SimpleMatches s
-        Left Outer Join Players p on s.loser = p.playerId
-        Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
-        Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
-        Where s.winner = ? and sr.type = ? and r.type = 'S' and s.date > ?
-        order by r.opponentRank Asc limit ?`, [playerId,rankingType,date,limiteRequest], (error, results, fields) => {
-          if (error){
-            connection.release();
-            return reject(error);
+
+      const calculateRankingPerTypeAndPlayer = async (rankingType, res)=>{
+        let playerId = 0;
+        let i,j;
+        try{
+          let allPlayers = await PlayerController.getAllPlayerId();
+          let testTab = [];
+          for(i=0; i<3; i++){
+            testTab.push(allPlayers[i]);
           }
-          connection.release(); // CLOSE THE CONNECTION
-          return resolve(results);
-        });
-      });
-    });
-  }
-
-
-  const editSingleRankingWithPromise = (playerRankingId,rankPoints) => {
-    return new Promise(function (resolve, reject) {
-      const singleRankingId = playerRankingId;
-      const singleRankingProperties = rankPoints;
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return reject(error);
+          var limiteRequest = 5;
+          var date = "2017-01-01";
+          return Promise.all([testTab.map(player => { return calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
         }
-        var query = connection.query('UPDATE SingleRanking SET rankPoints = ? WHERE singleRankingId = ?',[singleRankingProperties, singleRankingId], (error, results, fields) => {
-          if (error){
-            connection.release();
-            return reject(error);
-          }
-          connection.release(); // CLOSE THE CONNECTION
-          resolve(results);
-        });
-      });
-    });
-  }
-
-module.exports = {
-
-  find (req, res) {
-    const singleRankingId = req.params.singleRankingId;
-    db.pool.getConnection((error, connection) => {
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      }
-      // L'ajout du '?' permet d'éviter les injections sql
-      var query = connection.query('SELECT * FROM SingleRanking WHERE singleRankingId = ?', singleRankingId, (error, results, fields) => {
-        if (error){
-          connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        catch(error){
+          res.send(JSON.stringify({"status": 500, "error": error, "response": null}))
+          console.log(error);
         }
-        else if (results.length > 0){
-          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          connection.release(); // CLOSE THE CONNECTION
-        }
-        else{
-          res.send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
-          connection.release(); // CLOSE THE CONNECTION
-        }
-      });
-    });
-  },
-
-  create(req, res, next) {
-    const rank = req.body.rank;
-    const rankPoints = req.body.rankPoints;
-    const Players_playerId = req.body.Players_playerId;
-    const differenceRank = req.body.differenceRank;
-    const differencePoints = req.body.differencePoints;
-    const type = req.body.type;
-
-    db.pool.getConnection((error, connection) => {
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var query = connection.query('INSERT INTO SingleRanking (rank, rankPoints, Players_playerId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
-      [rank, rankPoints, Players_playerId, differenceRank, differencePoints, type], (error, results, fields) => {
-        if (error){
-          connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-        connection.release(); // CLOSE THE CONNECTION
-        return (results.insertId);
-      });
-    });
-  },
+      const getSingleBestMatches = (playerId,limiteRequest,rankingType,date) => {
+        return new Promise(function (resolve, reject) {
+          limiteRequest = Number(limiteRequest);
+          db.pool.getConnection((error, connection) => {
 
-
-  createInitialRanking(connection,rank,playerId,type) {
-    return new Promise((reject,resolve)=> {
-
-      var query = connection.query('INSERT INTO SingleRanking (rank, rankPoints, Players_playerId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
-      [rank, 0, playerId, 0, 0, type], (error, results, fields) => {
-        if (error){
-          return reject(error)
-        }
-        resolve(results.insertId);
-      });
-    });
-  },
-
-  edit(req, res, next) {
-    const singleRankingId = req.params.singleRankingId;
-    const singleRankingProperties = req.body;
-    db.pool.getConnection((error, connection) => {
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      }
-      var query = connection.query('UPDATE SingleRanking SET ? WHERE singleRankingId = ?',[singleRankingProperties, singleRankingId], (error, results, fields) => {
-        if (error){
-          connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-        connection.release(); // CLOSE THE CONNECTION
-      });
-    });
-  },
-
-
-
-  delete(req, res, next) {
-    const singleRankingId = req.params.singleRankingId;
-    db.pool.getConnection((error, connection) => {
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      }
-      var query = connection.query('DELETE FROM SingleRanking WHERE singleRankingId = ?', singleRankingId, (error, results, fields) => {
-        if (error){
-          connection.release();
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-        connection.release(); // CLOSE THE CONNECTION
-      });
-    });
-  },
-
-  getNewNationalRankingOrder(leagueId, gender) {
-    return new Promise(function (resolve, reject) {
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return reject(error);
-        }
-        var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
-          INNER JOIN Players p on p.playerId = sr.Players_playerId
-          INNER JOIN Teams t on t.teamId = p.Teams_teamId
-          INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-          WHERE sr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender LIKE ?
-          ORDER BY sr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
             if (error){
-              connection.release();
               return reject(error);
             }
-            connection.release(); // CLOSE THE CONNECTION
-            resolve(results);
-          });
-        });
-      });
-    },
-
-    updateSingleRankingOrder(singleRankingId, rank) {
-      return new Promise(function (resolve, reject) {
-        db.pool.getConnection((error, connection) => {
-          if (error){
-            return reject(error);
-          }
-          var query = connection.query(`UPDATE SingleRanking SET rank = ? WHERE singleRankingId = ?`,[rank, singleRankingId], (error, results, fields) => {
-            if (error){
-              connection.release();
-              return reject(error);
-            }
-            connection.release(); // CLOSE THE CONNECTION
-            resolve(results);
-          });
-        });
-      });
-    },
-
-
-
-    getNewRegionalRankingOrder(leagueId, gender, regionId) {
-      return new Promise(function (resolve, reject) {
-        db.pool.getConnection((error, connection) => {
-          if (error){
-            return reject(error);
-          }
-          var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
-            INNER JOIN Players p on p.playerId = sr.Players_playerId
-            INNER JOIN Teams t on t.teamId = p.Teams_teamId
-            INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-            WHERE sr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender LIKE ? AND c.Regions_regionId = ?
-            ORDER BY sr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
-              if (error){
-                connection.release();
-                return reject(error);
-              }
-              connection.release(); // CLOSE THE CONNECTION
-              resolve(results);
+            var query = connection.query(`Select s.homeAway, r.winOverRankPoints from SimpleMatches s
+              Left Outer Join Players p on s.loser = p.playerId
+              Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
+              Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
+              Where s.winner = ? and sr.type = ? and r.type = 'S' and s.date > ?
+              order by r.opponentRank Asc limit ?`, [playerId,rankingType,date,limiteRequest], (error, results, fields) => {
+                if (error){
+                  connection.release();
+                  return reject(error);
+                }
+                connection.release(); // CLOSE THE CONNECTION
+                return resolve(results);
+              });
             });
           });
-        });
-      },
+        }
 
-      getNewConferenceRankingOrder(leagueId, gender, conferenceId) {
-        return new Promise(function (resolve, reject) {
-          db.pool.getConnection((error, connection) => {
-            if (error){
-              return reject(error);
-            }
-            var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
-              INNER JOIN Players p on p.playerId = sr.Players_playerId
-              INNER JOIN Teams t on t.teamId = p.Teams_teamId
-              INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-              WHERE sr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId = ?
-              ORDER BY sr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
+
+        const editSingleRankingWithPromise = (playerRankingId,rankPoints) => {
+          return new Promise(function (resolve, reject) {
+            const singleRankingId = playerRankingId;
+            const singleRankingProperties = rankPoints;
+            db.pool.getConnection((error, connection) => {
+              if (error){
+                return reject(error);
+              }
+              var query = connection.query('UPDATE SingleRanking SET rankPoints = ? WHERE singleRankingId = ?',[singleRankingProperties, singleRankingId], (error, results, fields) => {
                 if (error){
                   connection.release();
                   return reject(error);
@@ -384,321 +186,600 @@ module.exports = {
               });
             });
           });
-        },
+        }
 
-        orderNationalRankingByRankPoints() {
+
+        const updateSingleRankingOrder = (singleRankingId, rank) => {
+          return new Promise(function(resolve, reject) {
+            db.pool.getConnection((error, connection) => {
+              if (error) {
+                return reject(error);
+              }
+              var query = connection.query(`UPDATE SingleRanking SET rank = ? WHERE doubleRankingId = ?`, [rank, singleRankingId], (error, results, fields) => {
+                if (error) {
+                  connection.release();
+                  return reject(error);
+                }
+                connection.release(); // CLOSE THE CONNECTION
+                resolve(results);
+              });
+            });
+          });
+        }
+
+
+        const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
           return new Promise(function (resolve, reject) {
+            db.pool.getConnection((error, connection) => {
+              if (error){
+                return reject(error);
+              }
+              var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+                INNER JOIN Players p on p.playerId = sr.Players_playerId
+                INNER JOIN Teams t on t.teamId = p.Teams_teamId
+                INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+                WHERE sr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender LIKE ? AND c.Regions_regionId = ?
+                ORDER BY sr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
+                  if (error){
+                    connection.release();
+                    return reject(error);
+                  }
+                  connection.release(); // CLOSE THE CONNECTION
+                  resolve(results);
+                });
+              });
+            });
+          }
 
-            var leagues = [1, 2, 3, 4, 5];
-            var genders = ["M", "F"];
-
-            //Create a new promise for each league
-            const promisesPerLeague = leagues.map( leagueId =>
-              new Promise( (resolve, reject) => {
-
-                //Order National Ranking for each gender
-                const promisesPerGender = genders.map( gender =>
-                  new Promise( (resolve, reject) => {
-                    module.exports.getNewNationalRankingOrder(leagueId, gender)
-                    .then( (nationalRankingByLeagueGender) => {
-
-                      //Update each player's national singleRanking Rank
-                      const promisesPerPlayer = nationalRankingByLeagueGender.map( (playerNationalRank, rank) =>
-                      new Promise( (resolve, reject) => {
-                        module.exports.updateSingleRankingOrder(playerNationalRank.singleRankingId, rank + 1)
-                        .then( () => resolve() )
-                        .catch((error) => {
-                          console.log(error);
-                        });
-                      })
-                    );
-
-                    //When the national ranking has been updated for the players in the database
-                    Promise.all(promisesPerPlayer).then( () => {
-                      console.log(`National ranking done for league ${leagueId} and gender ${gender}`);
-                      resolve();
-                    });
-                  })
-                  .catch((error) => {
-                    console.log(error);
+          const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
+            return new Promise(function (resolve, reject) {
+              db.pool.getConnection((error, connection) => {
+                if (error){
+                  return reject(error);
+                }
+                var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+                  INNER JOIN Players p on p.playerId = sr.Players_playerId
+                  INNER JOIN Teams t on t.teamId = p.Teams_teamId
+                  INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+                  WHERE sr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId = ?
+                  ORDER BY sr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
+                    if (error){
+                      connection.release();
+                      return reject(error);
+                    }
+                    connection.release(); // CLOSE THE CONNECTION
+                    resolve(results);
                   });
+                });
+              });
+            }
+
+            const getNewNationalRankingOrder = (leagueId, gender) => {
+              return new Promise(function (resolve, reject) {
+                db.pool.getConnection((error, connection) => {
+                  if (error){
+                    return reject(error);
+                  }
+                  var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+                    INNER JOIN Players p on p.playerId = sr.Players_playerId
+                    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+                    INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+                    WHERE sr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender LIKE ?
+                    ORDER BY sr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
+                      if (error){
+                        connection.release();
+                        return reject(error);
+                      }
+                      connection.release(); // CLOSE THE CONNECTION
+                      resolve(results);
+                    });
+                  });
+                });
+              }
+
+              const orderRegionalRanking = async (leagueId, gender) => {
+                return new Promise( async (resolve, reject) => {
+                  let regions = [];
+                  let orderRegionalRankingPerRegionPromises = [];
+                  try{
+                    regions = await RegionsController.getRegionIds();
+                    console.log(`Region Ids fetched`);
+                  } catch(err){
+                    console.log(err);
+                    return reject(`Could not fetch Region Ids`);
+                  }
+
+                  try{
+                    const orderRegionalDoubleRankingOrderPromises = regions.map( region =>
+                      orderRegionalRankingPerRegion(leagueId, gender, region.regionId)
+                    );
+                    await Promise.all(orderRegionalDoubleRankingOrderPromises);
+                    console.log(`Regional double ranking updated for league ${leagueId} and gender ${gender}`);
+                  } catch(err){
+                    console.log(err);
+                    return reject(`Could not update regional double ranking for league ${leagueId} and gender ${gender}`);
+                  }
+
+                  resolve(`Regional Double Ranking ordering done for league ${leagueId} and gender ${gender}`);
+                });
+              }
 
 
-                })
+              const orderNationalRankingByRankPoints = async (leagueId, gender) => {
+                return new Promise( async (resolve, reject) => {
+                  const newNationalRanking = [];
+                  try{
+                    newNationalRanking = await getNewNationalRankingOrder(leagueId, gender);
+                    console.log(`New national ranking order fetched for league ${leagueId} and gender ${gender}`);
+                  } catch(err){
+                    console.log(err);
+                    return reject(`Could not fetch new national ranking order for league ${leagueId} and gender ${gender}`);
+                  }
+
+                  try{
+                    const updateSingleRankingOrderPromises = newNationalRanking.map( (doubleTeamNationalRank, rank) =>
+                      updateSingleRankingOrder(doubleTeamNationalRank.singleRankingId, rank + 1)
+                    );
+                  } catch(err){
+
+                  }
+                  updateSingleRankingOrder = (doubleRankingId, rank);
+                  resolve(`National Double Ranking ordering done for league ${leagueId} and gender ${gender}`);
+
+            });
+          }
+
+
+          const orderConferenceRanking = async (leagueId, gender) => {
+            return new Promise( async (resolve, reject) => {
+              let conferences = [];
+              let orderConferenceRankingPerConferencePromises = [];
+              try{
+                conferences = await ConferencesController.getConferenceIds();
+                console.log(`Conference Ids fetched`);
+              } catch(err){
+                console.log(err);
+                return reject(`Could not fetch Conference Ids`);
+              }
+
+              try{
+                const orderConferenceDoubleRankingOrderPromises = conferences.map( conference =>
+                  orderConferenceRankingPerConference(leagueId, gender, conference.conferenceId)
+                );
+                await Promise.all(orderConferenceDoubleRankingOrderPromises);
+                console.log(`Conference double ranking updated for league ${leagueId} and gender ${gender}`);
+              } catch(err){
+                console.log(err);
+                return reject(`Could not update conference double ranking for league ${leagueId} and gender ${gender}`);
+              }
+
+              resolve(`Conference Double Ranking ordering done for league ${leagueId} and gender ${gender}`);
+            });
+          }
+
+          const orderRankingPerGender = async (leagueId) => {
+            return new Promise( async (resolve, reject) => {
+              const genders = ["M", "F"];
+
+              const orderNationalRankingPerGenderPromises = genders.map(gender =>
+                orderNationalRanking(leagueId, gender)
               );
 
-              //When the national ranking has been update for both genders
-              Promise.all(promisesPerGender).then( () => {
-                console.log(`National ranking done for league ${leagueId}`);
-                resolve();
-              });
+              const orderRegionalRankingPerGenderPromises = genders.map(gender =>
+                orderRegionalRanking(leagueId, gender)
+              );
 
-            }).catch((error) => {
-              console.log(error);
-            })
-          );
+              const orderConferenceRankingPerGenderPromises = genders.map(gender =>
+                orderConferenceRanking(leagueId, gender)
+              );
 
-          //When the national ranking has been updated for all leagues
-          Promise.all(promisesPerLeague).then( () => console.log("National ranking done") );
+              try{
+                await Promise.all(orderNationalRankingPerGenderPromises);
+                console.log(`National Double Ranking ordered for all genders and league ${leagueId}`);
+              } catch(err){
+                console.log(err);
+                return reject(`National Double Ranking ordering failed for league ${leagueId}`);
+              }
 
-        }).catch((error) => {
-          console.log(error);
-        });
+              try{
+                await Promise.all(orderRegionalRankingPerGenderPromises);
+                console.log(`Regional Double Ranking ordered for all genders and league ${leagueId}`);
+              } catch(err){
+                console.log(err);
+                return reject(`Regional Double Ranking ordering failed for league ${leagueId}`);
+              }
 
-      },
+              try{
+                await Promise.all(orderConferenceRankingPerGenderPromises);
+                console.log(`Conference Double Ranking ordered for all genders and league ${leagueId}`);
+              } catch(err){
+                console.log(err);
+                return reject(`Conference Double Ranking ordering failed for league ${leagueId}`);
+              }
 
-      orderRegionalRankingByRankPoints() {
-        return new Promise(function (resolve, reject) {
+              resolve(`Double Ranking ordering done for league ${leagueId}`);
+            });
+          }
 
-          var leagues = [1, 2, 3, 4, 5];
-          var genders = ["M", "F"];
 
-          RegionsController.getRegionIds()
-          .then( (regions) => {
-            //Create a new promise for each league
-            const promisesPerLeague = leagues.map( leagueId =>
-              new Promise( (resolve, reject) => {
 
-                //Order Regional Ranking for each gender
-                const promisesPerGender = genders.map( gender =>
-                  new Promise( (resolve, reject) => {
+          const orderSingleRanking = async (req, res) => {
+            const leagues = [1, 2, 3, 4, 5];
 
-                    //Order Regional Ranking for each region
-                    const promisesPerRegion = regions.map( region =>
+            try{
+              const orderRankingPerLeaguePromises = leagues.map(leagueId =>
+                orderRankingPerGender(leagueId)
+              );
+              await Promise.all(orderRankingPerLeaguePromises);
+              console.log("New Double Ranking ordered for all leagues");
+              res.send(JSON.stringify({"status": 200, "error": null, "response": "New Double Ranking ordered for all leagues"}));
+            } catch(err){
+              console.log("New Double Ranking ordering failed");
+              console.log(err);
+              res.send(JSON.stringify({"status": 500, "error": err, "response": "New Double Ranking ordering failed"}));
+            }
+
+          }
+
+              module.exports = {
+
+                find (req, res) {
+                  const singleRankingId = req.params.singleRankingId;
+                  db.pool.getConnection((error, connection) => {
+                    if (error){
+                      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                    }
+                    // L'ajout du '?' permet d'éviter les injections sql
+                    var query = connection.query('SELECT * FROM SingleRanking WHERE singleRankingId = ?', singleRankingId, (error, results, fields) => {
+                      if (error){
+                        connection.release();
+                        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                      }
+                      else if (results.length > 0){
+                        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                        connection.release(); // CLOSE THE CONNECTION
+                      }
+                      else{
+                        res.send(JSON.stringify({"status": 500, "error": "Id does not exist", "response": null}));
+                        connection.release(); // CLOSE THE CONNECTION
+                      }
+                    });
+                  });
+                },
+
+                create(req, res, next) {
+                  const rank = req.body.rank;
+                  const rankPoints = req.body.rankPoints;
+                  const Players_playerId = req.body.Players_playerId;
+                  const differenceRank = req.body.differenceRank;
+                  const differencePoints = req.body.differencePoints;
+                  const type = req.body.type;
+
+                  db.pool.getConnection((error, connection) => {
+                    if (error){
+                      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                    }
+
+                    var query = connection.query('INSERT INTO SingleRanking (rank, rankPoints, Players_playerId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
+                    [rank, rankPoints, Players_playerId, differenceRank, differencePoints, type], (error, results, fields) => {
+                      if (error){
+                        connection.release();
+                        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                      }
+                      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                      connection.release(); // CLOSE THE CONNECTION
+                      return (results.insertId);
+                    });
+                  });
+                },
+
+
+                createInitialRanking(connection,rank,playerId,type) {
+                  return new Promise((reject,resolve)=> {
+
+                    var query = connection.query('INSERT INTO SingleRanking (rank, rankPoints, Players_playerId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
+                    [rank, 0, playerId, 0, 0, type], (error, results, fields) => {
+                      if (error){
+                        return reject(error)
+                      }
+                      resolve(results.insertId);
+                    });
+                  });
+                },
+
+                edit(req, res, next) {
+                  const singleRankingId = req.params.singleRankingId;
+                  const singleRankingProperties = req.body;
+                  db.pool.getConnection((error, connection) => {
+                    if (error){
+                      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                    }
+                    var query = connection.query('UPDATE SingleRanking SET ? WHERE singleRankingId = ?',[singleRankingProperties, singleRankingId], (error, results, fields) => {
+                      if (error){
+                        connection.release();
+                        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                      }
+                      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                      connection.release(); // CLOSE THE CONNECTION
+                    });
+                  });
+                },
+
+
+
+                delete(req, res, next) {
+                  const singleRankingId = req.params.singleRankingId;
+                  db.pool.getConnection((error, connection) => {
+                    if (error){
+                      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                    }
+                    var query = connection.query('DELETE FROM SingleRanking WHERE singleRankingId = ?', singleRankingId, (error, results, fields) => {
+                      if (error){
+                        connection.release();
+                        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                      }
+                      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                      connection.release(); // CLOSE THE CONNECTION
+                    });
+                  });
+                },
+
+
+
+              orderRegionalRankingByRankPoints() {
+                return new Promise(function (resolve, reject) {
+
+                  var leagues = [1, 2, 3, 4, 5];
+                  var genders = ["M", "F"];
+
+                  RegionsController.getRegionIds()
+                  .then( (regions) => {
+                    //Create a new promise for each league
+                    const promisesPerLeague = leagues.map( leagueId =>
                       new Promise( (resolve, reject) => {
-                        module.exports.getNewRegionalRankingOrder(leagueId, gender, region.regionId)
-                        .then( (regionalRankingByLeagueGenderRegion) => {
 
-                          //Update each player's regional singleRanking Rank
-                          const promisesPerPlayer = regionalRankingByLeagueGenderRegion.map( (playerRegionalRank, rank) =>
+                        //Order Regional Ranking for each gender
+                        const promisesPerGender = genders.map( gender =>
                           new Promise( (resolve, reject) => {
-                            module.exports.updateSingleRankingOrder(playerRegionalRank.singleRankingId, rank + 1)
-                            .then( () => resolve() )
+
+                            //Order Regional Ranking for each region
+                            const promisesPerRegion = regions.map( region =>
+                              new Promise( (resolve, reject) => {
+                                module.exports.getNewRegionalRankingOrder(leagueId, gender, region.regionId)
+                                .then( (regionalRankingByLeagueGenderRegion) => {
+
+                                  //Update each player's regional singleRanking Rank
+                                  const promisesPerPlayer = regionalRankingByLeagueGenderRegion.map( (playerRegionalRank, rank) =>
+                                  new Promise( (resolve, reject) => {
+                                    module.exports.updateSingleRankingOrder(playerRegionalRank.singleRankingId, rank + 1)
+                                    .then( () => resolve() )
+                                    .catch((error) => {
+                                      console.log(error);
+                                    });
+                                  })
+                                );
+
+                                //When the regional ranking has been updated for the players in the database
+                                Promise.all(promisesPerPlayer).then( () => {
+                                  console.log(`Regional ranking done for league ${leagueId}, gender ${gender} and region ${region.regionId}`);
+                                  resolve();
+                                });
+                              })
+                              .catch((error) => {
+                                console.log(error);
+                              });
+                            })
+                          );
+
+                          //When the regional ranking has been updated for all regions
+                          Promise.all(promisesPerRegion).then( () => {
+                            console.log(`Regional ranking done for league ${leagueId} and gender ${gender}`);
+                            resolve();
+                          });
+
+
+                        })
+                      );
+
+                      //When the regional ranking has been update for both genders
+                      Promise.all(promisesPerGender).then( () => {
+                        console.log(`Regional ranking done for league ${leagueId}`);
+                        resolve();
+                      });
+
+                    }).catch((error) => {
+                      console.log(error);
+                    })
+                  );
+
+                  //When the regional ranking has been updated for all leagues
+                  Promise.all(promisesPerLeague).then( () => console.log("Regional ranking done") );
+
+                }).catch((error) => {
+                  console.log(error);
+                });
+              })
+
+            },
+
+            orderConferenceRankingByRankPoints() {
+              return new Promise(function (resolve, reject) {
+
+                var leagues = [1, 2, 3, 4, 5];
+                var genders = ["M", "F"];
+
+                ConferencesController.getConferenceIds()
+                .then( (conferences) => {
+                  //Create a new promise for each league
+                  const promisesPerLeague = leagues.map( leagueId =>
+                    new Promise( (resolve, reject) => {
+
+                      //Order Conference Ranking for each gender
+                      const promisesPerGender = genders.map( gender =>
+                        new Promise( (resolve, reject) => {
+
+                          //Order Conference Ranking for each conference
+                          const promisesPerConference = conferences.map( conference =>
+                            new Promise( (resolve, reject) => {
+                              module.exports.getNewConferenceRankingOrder(leagueId, gender, conference.conferenceId)
+                              .then( (conferenceRankingByLeagueGenderConference) => {
+
+                                //Update each player's conference singleRanking Rank
+                                const promisesPerPlayer = conferenceRankingByLeagueGenderConference.map( (playerConferenceRank, rank) =>
+                                new Promise( (resolve, reject) => {
+                                  module.exports.updateSingleRankingOrder(playerConferenceRank.singleRankingId, rank + 1)
+                                  .then( () => resolve() )
+                                  .catch((error) => {
+                                    console.log(error);
+                                  });
+                                })
+                              );
+
+                              //When the national ranking has been updated for the players in the database
+                              Promise.all(promisesPerPlayer).then( () => {
+                                console.log(`Conference ranking done for league ${leagueId}, gender ${gender} and conference ${conference.conferenceId}`);
+                                resolve();
+                              });
+                            })
                             .catch((error) => {
                               console.log(error);
                             });
                           })
                         );
 
-                        //When the regional ranking has been updated for the players in the database
-                        Promise.all(promisesPerPlayer).then( () => {
-                          console.log(`Regional ranking done for league ${leagueId}, gender ${gender} and region ${region.regionId}`);
+                        //When the conference ranking has been updated for all regions
+                        Promise.all(promisesPerConference).then( () => {
+                          console.log(`Conference ranking done for league ${leagueId} and gender ${gender}`);
                           resolve();
                         });
+
+
                       })
-                      .catch((error) => {
-                        console.log(error);
-                      });
-                    })
-                  );
+                    );
 
-                  //When the regional ranking has been updated for all regions
-                  Promise.all(promisesPerRegion).then( () => {
-                    console.log(`Regional ranking done for league ${leagueId} and gender ${gender}`);
-                    resolve();
-                  });
-
-
-                })
-              );
-
-              //When the regional ranking has been update for both genders
-              Promise.all(promisesPerGender).then( () => {
-                console.log(`Regional ranking done for league ${leagueId}`);
-                resolve();
-              });
-
-            }).catch((error) => {
-              console.log(error);
-            })
-          );
-
-          //When the regional ranking has been updated for all leagues
-          Promise.all(promisesPerLeague).then( () => console.log("Regional ranking done") );
-
-        }).catch((error) => {
-          console.log(error);
-        });
-      })
-
-    },
-
-    orderConferenceRankingByRankPoints() {
-      return new Promise(function (resolve, reject) {
-
-        var leagues = [1, 2, 3, 4, 5];
-        var genders = ["M", "F"];
-
-        ConferencesController.getConferenceIds()
-        .then( (conferences) => {
-          //Create a new promise for each league
-          const promisesPerLeague = leagues.map( leagueId =>
-            new Promise( (resolve, reject) => {
-
-              //Order Conference Ranking for each gender
-              const promisesPerGender = genders.map( gender =>
-                new Promise( (resolve, reject) => {
-
-                  //Order Conference Ranking for each conference
-                  const promisesPerConference = conferences.map( conference =>
-                    new Promise( (resolve, reject) => {
-                      module.exports.getNewConferenceRankingOrder(leagueId, gender, conference.conferenceId)
-                      .then( (conferenceRankingByLeagueGenderConference) => {
-
-                        //Update each player's conference singleRanking Rank
-                        const promisesPerPlayer = conferenceRankingByLeagueGenderConference.map( (playerConferenceRank, rank) =>
-                        new Promise( (resolve, reject) => {
-                          module.exports.updateSingleRankingOrder(playerConferenceRank.singleRankingId, rank + 1)
-                          .then( () => resolve() )
-                          .catch((error) => {
-                            console.log(error);
-                          });
-                        })
-                      );
-
-                      //When the national ranking has been updated for the players in the database
-                      Promise.all(promisesPerPlayer).then( () => {
-                        console.log(`Conference ranking done for league ${leagueId}, gender ${gender} and conference ${conference.conferenceId}`);
-                        resolve();
-                      });
-                    })
-                    .catch((error) => {
-                      console.log(error);
+                    //When the conference ranking has been update for both genders
+                    Promise.all(promisesPerGender).then( () => {
+                      console.log(`Conference ranking done for league ${leagueId}`);
+                      resolve();
                     });
+
+                  }).catch((error) => {
+                    console.log(error);
                   })
                 );
 
-                //When the conference ranking has been updated for all regions
-                Promise.all(promisesPerConference).then( () => {
-                  console.log(`Conference ranking done for league ${leagueId} and gender ${gender}`);
-                  resolve();
-                });
+                //When the conference ranking has been updated for all leagues
+                Promise.all(promisesPerLeague).then( () => console.log("Conference ranking done") );
 
+              }).catch((error) => {
+                console.log(error);
+              });
+            })
 
-              })
-            );
-
-            //When the conference ranking has been update for both genders
-            Promise.all(promisesPerGender).then( () => {
-              console.log(`Conference ranking done for league ${leagueId}`);
-              resolve();
-            });
-
-          }).catch((error) => {
-            console.log(error);
-          })
-        );
-
-        //When the conference ranking has been updated for all leagues
-        Promise.all(promisesPerLeague).then( () => console.log("Conference ranking done") );
-
-      }).catch((error) => {
-        console.log(error);
-      });
-    })
-
-  },
+          },
 
 
 
-  //Get the current national ranking order
-  getSingleRankingsNationalByDivisionGender(req, res, next){
-    const leagueId = req.params.leagueId;
-    const gender = req.params.gender;
+          //Get the current national ranking order
+          getSingleRankingsNationalByDivisionGender(req, res, next){
+            const leagueId = req.params.leagueId;
+            const gender = req.params.gender;
 
-    db.pool.getConnection((error, connection) => {
+            db.pool.getConnection((error, connection) => {
 
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      }
-      var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-        u.firstName, u.lastName, p.status, c.name as collegeName
-        FROM SingleRanking sr
-        inner join Players p on sr.Players_playerId = p.playerId
-        inner join Users u on u.userId = p.Users_userId
-        inner join Teams t on t.teamId = p.Teams_teamId
-        inner join Colleges c on c.collegeId = t.Colleges_collegeId
-        inner join Leagues l on l.leagueId = c.Leagues_leagueId
-        WHERE u.gender LIKE ? AND sr.type LIKE 'N' AND l.leagueId LIKE ?
-        ORDER BY sr.rank ASC`, [gender, leagueId], (error, results, fields) => {
-          if (error){
-            connection.release();
-            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-          }
-          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          connection.release(); // CLOSE THE CONNECTION
-        });
-      });
-    },
-
-    //Get the current regional ranking order
-    getSingleRankingsByRegionDivisionGender(req, res, next){
-      const regionId = req.params.regionId;
-      const leagueId = req.params.leagueId;
-      const gender = req.params.gender;
-
-      db.pool.getConnection((error, connection) => {
-
-        if (error){
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-        }
-        var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-          u.firstName, u.lastName, p.status, c.name as collegeName
-          FROM SingleRanking sr
-          inner join Players p on sr.Players_playerId = p.playerId
-          inner join Users u on u.userId = p.Users_userId
-          inner join Teams t on t.teamId = p.Teams_teamId
-          inner join Colleges c on c.collegeId = t.Colleges_collegeId
-          inner join Leagues l on l.leagueId = c.Leagues_leagueId
-          WHERE u.gender LIKE ? AND sr.type = 'R' AND c.Regions_regionId = ? AND l.leagueId LIKE ?
-          ORDER BY sr.rank ASC`, [gender, regionId, leagueId], (error, results, fields) => {
-            if (error){
-              connection.release();
-              return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-            }
-            res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-            connection.release(); // CLOSE THE CONNECTION
-          });
-        });
-      },
-
-      //Get the current ranking order by conference
-      getSingleRankingsByConferenceDivisionGender(req, res, next){
-        const conferenceId = req.params.conferenceId;
-        const leagueId = req.params.leagueId;
-        const gender = req.params.gender;
-
-        db.pool.getConnection((error, connection) => {
-
-          if (error){
-            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-          }
-          var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
-            u.firstName, u.lastName, p.status, c.name as collegeName
-            FROM SingleRanking sr
-            inner join Players p on sr.Players_playerId = p.playerId
-            inner join Users u on u.userId = p.Users_userId
-            inner join Teams t on t.teamId = p.Teams_teamId
-            inner join Colleges c on c.collegeId = t.Colleges_collegeId
-            inner join Leagues l on l.leagueId = c.Leagues_leagueId
-            WHERE u.gender LIKE ? AND sr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueId LIKE ?
-            ORDER BY sr.rank ASC`, [gender, conferenceId, leagueId], (error, results, fields) => {
               if (error){
-                connection.release();
                 return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
               }
-              res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-              connection.release(); // CLOSE THE CONNECTION
-            });
-          });
-        },
+              var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
+                u.firstName, u.lastName, p.status, c.name as collegeName
+                FROM SingleRanking sr
+                inner join Players p on sr.Players_playerId = p.playerId
+                inner join Users u on u.userId = p.Users_userId
+                inner join Teams t on t.teamId = p.Teams_teamId
+                inner join Colleges c on c.collegeId = t.Colleges_collegeId
+                inner join Leagues l on l.leagueId = c.Leagues_leagueId
+                WHERE u.gender LIKE ? AND sr.type LIKE 'N' AND l.leagueId LIKE ?
+                ORDER BY sr.rank ASC`, [gender, leagueId], (error, results, fields) => {
+                  if (error){
+                    connection.release();
+                    return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                  }
+                  res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                  connection.release(); // CLOSE THE CONNECTION
+                });
+              });
+            },
+
+            //Get the current regional ranking order
+            getSingleRankingsByRegionDivisionGender(req, res, next){
+              const regionId = req.params.regionId;
+              const leagueId = req.params.leagueId;
+              const gender = req.params.gender;
+
+              db.pool.getConnection((error, connection) => {
+
+                if (error){
+                  return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                }
+                var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
+                  u.firstName, u.lastName, p.status, c.name as collegeName
+                  FROM SingleRanking sr
+                  inner join Players p on sr.Players_playerId = p.playerId
+                  inner join Users u on u.userId = p.Users_userId
+                  inner join Teams t on t.teamId = p.Teams_teamId
+                  inner join Colleges c on c.collegeId = t.Colleges_collegeId
+                  inner join Leagues l on l.leagueId = c.Leagues_leagueId
+                  WHERE u.gender LIKE ? AND sr.type = 'R' AND c.Regions_regionId = ? AND l.leagueId LIKE ?
+                  ORDER BY sr.rank ASC`, [gender, regionId, leagueId], (error, results, fields) => {
+                    if (error){
+                      connection.release();
+                      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                    }
+                    res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                    connection.release(); // CLOSE THE CONNECTION
+                  });
+                });
+              },
+
+              //Get the current ranking order by conference
+              getSingleRankingsByConferenceDivisionGender(req, res, next){
+                const conferenceId = req.params.conferenceId;
+                const leagueId = req.params.leagueId;
+                const gender = req.params.gender;
+
+                db.pool.getConnection((error, connection) => {
+
+                  if (error){
+                    return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                  }
+                  var query = connection.query(`SELECT sr.singleRankingId, sr.Players_playerId, sr.rank, sr.rankPoints, sr.differenceRank, sr.differencePoints,
+                    u.firstName, u.lastName, p.status, c.name as collegeName
+                    FROM SingleRanking sr
+                    inner join Players p on sr.Players_playerId = p.playerId
+                    inner join Users u on u.userId = p.Users_userId
+                    inner join Teams t on t.teamId = p.Teams_teamId
+                    inner join Colleges c on c.collegeId = t.Colleges_collegeId
+                    inner join Leagues l on l.leagueId = c.Leagues_leagueId
+                    WHERE u.gender LIKE ? AND sr.type = 'C' AND c.Conferences_conferenceId = ? AND l.leagueId LIKE ?
+                    ORDER BY sr.rank ASC`, [gender, conferenceId, leagueId], (error, results, fields) => {
+                      if (error){
+                        connection.release();
+                        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+                      }
+                      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+                      connection.release(); // CLOSE THE CONNECTION
+                    });
+                  });
+                },
 
 
-
-              calculateRankingPerPlayer,
-              calculateRanking,
-              calculateRankingPerTypeAndPlayer,
-              getSingleBestLossesMatches,
-              getSingleRankingPerPlayerId,
-              editSingleRankingWithPromise
-            };
+                getNewRegionalRankingOrder,
+                calculateRankingPerPlayer,
+                calculateRanking,
+                calculateRankingPerTypeAndPlayer,
+                getSingleBestLossesMatches,
+                getSingleRankingPerPlayerId,
+                editSingleRankingWithPromise,
+                getNewConferenceRankingOrder,
+                updateSingleRankingOrder
+              };
