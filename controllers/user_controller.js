@@ -157,10 +157,9 @@ module.exports = {
         if (error){
           return reject(error);
         }
-        var query = connection.query(`SELECT userId, firstName, lastName,
+        var query = connection.query(`SELECT userId, firstName, lastName, t.teamId as coachTeamId,t3.teamId as playerTeamId,
           u.gender, email, password, birthday, userType, phone, p.playerId,
-          p.status, c.coachId, c.coachType, count(t.Coaches_coachId) as teamNumberOfTheCoach,
-          count(t.Coaches_headCoachId) as teamNumberOfTheHeadCoach, t.Colleges_collegeId as coachCollegeId, t2.Colleges_collegeId as headCoachCollegeId, t3.Colleges_collegeId as playerCollegeId
+          p.status, c.coachId, c.coachType, t.Colleges_collegeId as coachCollegeId, t2.Colleges_collegeId as headCoachCollegeId, t3.Colleges_collegeId as playerCollegeId
           FROM Users u
           LEFT JOIN Players p on u.userId = p.Users_userId
           LEFT JOIN Coaches c on u.userId = c.Users_userId
