@@ -262,8 +262,10 @@ module.exports = {
 
               var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date,u1.gender,p1.Teams_teamId as winnerTeamId,p2.Teams_teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
               FROM SpringResult sr
-              INNER JOIN Colleges c1 on sr.winnerId = c1.collegeId
-              INNER JOIN Colleges c2 on sr.loserId = c2.collegeId
+              INNER JOIN Teams t1 on sr.winnerId = t1.teamId
+              INNER JOIN Teams t2 on sr.loserId = t2.teamId
+              INNER JOIN Colleges c1 on t1.Colleges_collegeId = c1.collegeId
+              INNER JOIN Colleges c2 on t2.Colleges_collegeId = c2.collegeId
               INNER JOIN SimpleMatches sm on sm.springId = sr.springId
               INNER JOIN Players p1 on p1.playerId = sm.winner
               INNER JOIN Players p2 on p2.playerId = sm.loser
@@ -312,8 +314,10 @@ module.exports = {
 
               var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date,p1.Teams_teamId as winnerTeamId,p2.Teams_teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
               FROM SpringResult sr
-              INNER JOIN Colleges c1 on sr.winnerId = c1.collegeId
-              INNER JOIN Colleges c2 on sr.loserId = c2.collegeId
+              INNER JOIN Teams t1 on sr.winnerId = t1.teamId
+              INNER JOIN Teams t2 on sr.loserId = t2.teamId
+              INNER JOIN Colleges c1 on t1.Colleges_collegeId = c1.collegeId
+              INNER JOIN Colleges c2 on t2.Colleges_collegeId = c2.collegeId
               INNER JOIN SimpleMatches sm on sm.springId = sr.springId
               INNER JOIN Players p1 on p1.playerId = sm.winner
               INNER JOIN Users u1 on u1.userId = p1.Users_userId
