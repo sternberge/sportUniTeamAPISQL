@@ -4,6 +4,7 @@ var jwtDecode = require('jwt-decode');
 
 module.exports.authenticate = function (informations) {
   return new Promise(function (resolve, reject) {
+    console.log(informations);
     var user = {
       userId: informations[0].userId,
       gender: informations[0].gender,
@@ -15,13 +16,19 @@ module.exports.authenticate = function (informations) {
     }
     if(informations[0].playerId != null){
       user.playerId = informations[0].playerId;
-      user.Teams_teamId = informations[0].Teams_teamId;
+      user.Teams_teamId = informations[0].playerTeamId;
       user.status = informations[0].status;
+      user.collegeId = informations[0].playerCollegeId;
     }
     if(informations[0].coachId != null){
+      if(informations.length == 2){
+        user.teamId2 = informations[1].coachTeamId;
+      }
+      user.teamId1 = informations[0].coachTeamId;
       user.coachId = informations[0].coachId;
       user.coachType = informations[0].coachType;
-      user.coachTeamNumber = informations[0].teamNumberOfTheCoach;
+      user.coachTeamNumber = informations.length;
+      user.collegeId = informations[0].coachCollegeId;
     }
     //console.log(user);
     var token = jwt.sign(user, process.env.SECRET_TOKENKEY, {

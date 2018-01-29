@@ -109,7 +109,7 @@ module.exports = (app) => {
   //Rankings
 
   //SingleRanking
-    app.post('/api/singleRanking/getRanking', SingleRankingController.calculateRanking);
+  app.post('/api/singleRanking/getRanking', SingleRankingController.calculateRanking);
   app.post('/api/singleRanking', SingleRankingController.create);
   app.delete('/api/singleRanking/:singleRankingId', SingleRankingController.delete);
   app.get('/api/singleRanking/:singleRankingId', SingleRankingController.find);
@@ -222,24 +222,25 @@ module.exports = (app) => {
   app.get('/api/dropDownList/playersFromConference/:conferenceId/:gender', DropDownListController.playersFromConference);
   app.get('/api/dropDownList/getConferences', DropDownListController.getConferences);
   app.get('/api/dropDownList/getOpponentCollege/:conferenceId/:coachId', DropDownListController.getOpponentCollege);
-  app.get('/api/dropDownList/getAllPlayers/:gender',DropDownListController.getAllPlayers)
+  app.get('/api/dropDownList/getAllPlayers/:gender',DropDownListController.getAllPlayers);
+  app.get('/api/dropDownList/getAllRegions',DropDownListController.getAllRegions);
   app.get('/api/dropDownList/getPlayersFromConferenceCollegeTournamentGender/:conferenceId/:collegeId/:tournamentId/:gender',DropDownListController.getPlayersFromConferenceCollegeTournamentGender);
 
   //SpringMatches
-    app.get('/api/springMatches/getSpringMatchsByYearGender/:year/:gender',SpringMatchesController.getSpringMatchsByYearGender);
-    app.get('/api/springMatches/getSingleSpringMatchsBySpringId/:springId',SpringMatchesController.getSingleSpringMatchsBySpringId);
-    app.get('/api/springMatches/getDoubleSpringMatchsBySpringId/:springId',SpringMatchesController.getDoubleSpringMatchsBySpringId);
+  app.get('/api/springMatches/getSpringMatchsByYearGender/:year/:gender',SpringMatchesController.getSpringMatchsByYearGender);
+  app.get('/api/springMatches/getSingleSpringMatchsBySpringId/:springId',SpringMatchesController.getSingleSpringMatchsBySpringId);
+  app.get('/api/springMatches/getDoubleSpringMatchsBySpringId/:springId',SpringMatchesController.getDoubleSpringMatchsBySpringId);
 
-    app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConference/:year/:gender/:collegeId/:conferenceId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConference);
-    app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConferencePlayer/:year/:gender/:collegeId/:conferenceId/:playerId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConferencePlayer);
+  app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConference/:year/:gender/:collegeId/:conferenceId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConference);
+  app.get('/api/springMatches/getSpringMatchesByDateGenderCollegeConferencePlayer/:year/:gender/:collegeId/:conferenceId/:playerId',SpringMatchesController.getSpringMatchesByDateGenderCollegeConferencePlayer);
 
 
-    app.get('/api/springMatches/test/:springId',SpringMatchesController.test);
-    app.get('/api/springMatches/testFinal/:gender/:springId/:conferenceId/:year',SpringMatchesController.testFinal);
+  app.get('/api/springMatches/test/:springId',SpringMatchesController.test);
+  app.get('/api/springMatches/testFinal/:gender/:springId/:conferenceId/:year',SpringMatchesController.testFinal);
 
-    //SpringResult
-    app.post('/api/springResult',SpringResultController.create);
-    app.get('/api/springResult/calculateWinnerLoser/:springId',SpringResultController.checkWinnerLoserSpring);
+  //SpringResult
+  app.post('/api/springResult/:gender',SpringResultController.create);
+  app.get('/api/springResult/calculateWinnerLoser/:springId',SpringResultController.checkWinnerLoserSpring);
 
     //Regions
     app.get('/api/regions/getRegions', RegionsController.getRegions);
