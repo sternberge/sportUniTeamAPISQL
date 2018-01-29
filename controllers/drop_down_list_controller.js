@@ -24,8 +24,6 @@ module.exports = {
   },
 
   getAllRegions(req, res, next) {
-
-
     db.pool.getConnection((error, connection) => {
 
       if (error){
