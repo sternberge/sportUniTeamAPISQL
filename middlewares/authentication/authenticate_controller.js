@@ -26,19 +26,21 @@ const authenticateWithToken = (informations) => {
       user.coachId = informations[0].coachId;
       user.coachType = informations[0].coachType;
       user.collegeId = informations[0].coachCollegeId;
-      if(informations[0].coachTeamId != null){
+      if(informations[0].coachTeamId != null && informations.length == 1){
         user.teamId =informations[0].coachTeamId;
         user.coachTeamNumber = informations.length;
       }
-      else{
+      else if (informations[0].coachTeamId == null){
         user.coachTeamNumber = 0;
       }
-      if(informations.length == 2){
+      else if(informations.length == 2){
         if(informations[1].teamGender == 'M'){
           user.teamIdM =informations[1].coachTeamId;
+          user.teamIdF =informations[0].coachTeamId;
         }
         else{
           user.teamIdF = informations[1].coachTeamId;
+          user.teamIdM =informations[0].coachTeamId;
         }
       }
     }
