@@ -1,7 +1,80 @@
 var db = require('./../db');
 
+const getCurrentTeamRankings = () => {
+  return new Promise(function(resolve, reject) {
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return reject(error);
+      }
+      var query = connection.query(`SELECT * FROM TeamRanking`, (error, results, fields) => {
+        if (error) {
+          connection.release();
+          return reject(error);
+        }
+        resolve(results);
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  });
+}
+
+const archiveCurrentTeamRanking = (teamId, rank, rankPoints, previousRank,
+  differencePoints, type, currentDate) => {
+  return new Promise(function(resolve, reject) {
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return reject(error);
+      }
+      var query = connection.query(`INSERT INTO TeamRankingHistory
+      (Teams_teamId, rank, rankPoints, previousRank,
+        differencePoints, type, date)
+      VALUES(?, ?, ?, ?, ?, ?, ?)`, [doubleTeamId, rank, rankPoints, previousRank,
+        differencePoints, type, currentDate], (error, results, fields) => {
+        if (error) {
+          connection.release();
+          return reject(error);
+        }
+        resolve(results);
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  });
+}
+
+const archiveCurrentTeamRankings = async () => {
+  return new Promise(async (resolve, reject) => {
+    let currentTeamRankings = [];
+
+    try {
+      currentTeamRankings = await getCurrentTeamRankings();
+      console.log("Current Team Ranking fetched");
+    } catch (err) {
+      console.log(err);
+      return reject("Could not fetch current Team Ranking");
+    }
+
+    try {
+      const currentDate = new Date();
+      archiveCurrentTeamRankingsPromises = currentTeamRankings.map(currentTeamRanking =>
+        archiveCurrentTeamRanking(currentTeamRanking.Teams_teamId,
+          currentTeamRanking.rank, currentTeamRanking.rankPoints,
+          currentTeamRanking.previousRank, currentTeamRanking.differencePoints,
+          currentTeamRanking.type, currentDate)
+      );
+
+      await Promise.all(archiveCurrentTeamRankingsPromises);
+      resolve("Current TeamRankings archived in History Table");
+    } catch (err) {
+      console.log(err);
+      return reject("Current TeamRankings archiving failed");
+    }
+
+  });
+}
 
 module.exports = {
+
+  archiveCurrentTeamRankings,
 
   find (req, res) {
     const teamRankingHistoryId = req.params.teamRankingHistoryId;

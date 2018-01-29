@@ -1,6 +1,5 @@
 var db = require('./../db');
 const RankRulesController = require('../controllers/rank_rules_controller');
-const PlayerController = require('../controllers/player_controller');
 const DoubleTeamsController = require('../controllers/double_teams_controller');
 const RegionsController = require('../controllers/regions_controller');
 const ConferencesController = require('../controllers/conferences_controller');
@@ -222,6 +221,9 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
     nbMatchesWon = bestDoubleMatchesWon.length;
     for (let i = 0; i < nbMatchesWon; i++) {
       winPoints += bestDoubleMatchesWon[i].winOverRankPoints;
+      if(bestDoubleMatchesWon[i].homeAway = 'A'){
+        winPoints *= 1.1;
+      }
     }
 
     if ((nbMatchesWon < limit) && (nbMatchesWon > 0)) {
@@ -379,6 +381,7 @@ const orderNationalRanking = async (leagueId, gender) => {
       const updateNationalDoubleRankingOrderPromises = newNationalRanking.map( (doubleTeamNationalRank, rank) =>
         updateDoubleRankingOrder(doubleTeamNationalRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamNationalRank.rank)
       );
+      await Promise.all(updateNationalDoubleRankingOrderPromises);
       console.log(`National double ranking updated for league ${leagueId} and gender ${gender}`);
     } catch(err){
       console.log(err);
@@ -404,6 +407,7 @@ const orderRegionalRankingPerRegion = async (leagueId, gender, regionId) => {
       const updateRegionalDoubleRankingOrderPromises = newRegionalRanking.map( (doubleTeamRegionalRank, rank) =>
         updateDoubleRankingOrder(doubleTeamRegionalRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamRegionalRank.rank)
       );
+      await Promise.all(updateRegionalDoubleRankingOrderPromises);
       console.log(`Regional double ranking updated for league ${leagueId}, gender ${gender} and region ${regionId}`);
     } catch(err){
       console.log(err);
@@ -457,6 +461,7 @@ const orderConferenceRankingPerConference = async (leagueId, gender, conferenceI
       const updateConferenceDoubleRankingOrderPromises = newConferenceRanking.map( (doubleTeamConferenceRank, rank) =>
         updateDoubleRankingOrder(doubleTeamConferenceRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamConferenceRank.rank)
       );
+      await Promise.all(updateConferenceDoubleRankingOrderPromises);
       console.log(`Conference double ranking updated for league ${leagueId}, gender ${gender} and conference ${conferenceId}`);
     } catch(err){
       console.log(err);
