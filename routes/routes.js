@@ -219,7 +219,8 @@ module.exports = (app) => {
   app.get('/api/dropDownList/playersFromConference/:conferenceId/:gender', DropDownListController.playersFromConference);
   app.get('/api/dropDownList/getConferences', DropDownListController.getConferences);
   app.get('/api/dropDownList/getOpponentCollege/:conferenceId/:coachId', DropDownListController.getOpponentCollege);
-  app.get('/api/dropDownList/getAllPlayers/:gender',DropDownListController.getAllPlayers)
+  app.get('/api/dropDownList/getAllPlayers/:gender',DropDownListController.getAllPlayers);
+  app.get('/api/dropDownList/getAllRegions',DropDownListController.getAllRegions);
   app.get('/api/dropDownList/getPlayersFromConferenceCollegeTournamentGender/:conferenceId/:collegeId/:tournamentId/:gender',DropDownListController.getPlayersFromConferenceCollegeTournamentGender);
 
   //SpringMatches
