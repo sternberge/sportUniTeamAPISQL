@@ -27,6 +27,8 @@ const SingleRankingHistoryController = require ('../controllers/single_ranking_h
 const DoubleRankingHistoryController = require ('../controllers/double_ranking_history_controller');
 const TeamRankingHistoryController = require ('../controllers/team_ranking_history_controller');
 
+const RegionsController = require ('../controllers/regions_controller');
+
 //Very important : keep the order of the drop down list because the server will
 //interpret the order, if you put the generateDropDownList at the end
 //the server will first execute getCollege and will be stuck avoiding
@@ -127,6 +129,7 @@ module.exports = (app) => {
   app.get('/api/doubleRanking/getDoubleRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', DoubleRankingController.getDoubleRankingsByConferenceDivisionGender);
 
   //TeamRanking
+  app.get('/api/teamRanking/createNewTeamRanking', TeamRankingController.createNewTeamRanking);
   app.post('/api/teamRanking', TeamRankingController.create);
   app.delete('/api/teamRanking/:teamRankingId', TeamRankingController.delete);
   app.get('/api/teamRanking/:teamRankingId', TeamRankingController.find);
@@ -237,6 +240,9 @@ module.exports = (app) => {
     //SpringResult
     app.post('/api/springResult',SpringResultController.create);
     app.get('/api/springResult/calculateWinnerLoser/:springId',SpringResultController.checkWinnerLoserSpring);
+
+    //Regions
+    app.get('/api/regions/getRegions', RegionsController.getRegions);
 
 
 
