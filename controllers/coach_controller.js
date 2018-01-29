@@ -88,12 +88,26 @@ module.exports = {
     var password = "";
     var hashGenerated = "";
 
+    let coachExist = false;
+
     db.pool.getConnection((error, connection) => {
       //erreur de connection
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
+      var queryTest = connection.query('select *from Users where email = ?',coachEmail, (error, results, fields) => {
+        console.log('Lenght de result : '+results.length);
+        if(results.length > 0 )
+        {
+          coachExist = true;
+          console.log('Le mail existe');
+        }
+        else {
+          res.send(JSON.stringify({"status": 500, "error": 'The user does not exist', "response": 'the user does not exist'}));
+          console.log('Le mail n\'existe pas');
+        }
+      });
 
       var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -113,25 +127,34 @@ module.exports = {
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
           }
 
-          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          if(coachExist)
+          {
+
+            console.log('coach existe ' + coachExist);
+            if(coachExist)
+            {
+              transporter.sendMail({
+                from: 'testservicenodemailer@gmail.com',
+                to: coachEmail,
+                subject: 'SUT Team : Your password for the application',
+                text: 'Please find your password for the application ' + password
+              }, function(error, info){
+                if (error) {
+                  console.log(error);
+                } else {
+                  console.log('Email sent: ' + info.response + ' password = ' + password);
+                }
+              });
+            }
+            res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          }
+
           connection.release(); // CLOSE THE CONNECTION
         });
 
       });
 
 
-      transporter.sendMail({
-        from: 'testservicenodemailer@gmail.com',
-        to: coachEmail,
-        subject: 'SUT Team : Your password for the application',
-        text: 'Please find your password for the application ' + password
-      }, function(error, info){
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email sent: ' + info.response + ' password = ' + password);
-        }
-      });
 
     });
 
