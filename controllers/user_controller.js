@@ -1,6 +1,5 @@
 var db = require('./../db');
 var expressValidator = require('express-validator');
-const AuthenticateController = require('../controllers/authenticate_controller');
 var promise = require('promise');
 var bcrypt = require('bcrypt'); // algo de hash
 const saltRounds = 10;
@@ -148,58 +147,6 @@ module.exports = {
     });
   },
 
-  // check de l'email pour la création et l'update du User
-  checkEmailExistence(email){
-    return new Promise((resolve,reject) => {
-
-      db.pool.getConnection((error, connection) => {
-
-        if (error){
-          return reject(error);
-        }
-        var query = connection.query(`SELECT userId, firstName, lastName, t.teamId as coachTeamId,t3.teamId as playerTeamId,
-          u.gender, email, password, birthday, userType, phone, p.playerId,
-          p.status, c.coachId, c.coachType, t.Colleges_collegeId as coachCollegeId, t2.Colleges_collegeId as headCoachCollegeId, t3.Colleges_collegeId as playerCollegeId
-          FROM Users u
-          LEFT JOIN Players p on u.userId = p.Users_userId
-          LEFT JOIN Coaches c on u.userId = c.Users_userId
-          LEFT JOIN Teams t on t.Coaches_coachId = c.coachId
-          LEFT JOIN Teams t2 on t2.Coaches_headCoachId = c.coachId
-          LEFT JOIN Teams t3 on t3.teamId = p.Teams_teamId
-          WHERE email = ?`, email, (error, results, fields) => {
-          if (error){
-            connection.release();
-            return reject(error);
-          }
-          connection.release(); // CLOSE THE CONNECTION
-          if(results.length > 0){
-            resolve(JSON.stringify(results));
-          }
-          else{
-            reject("Email doesn't exists");
-          }
-        });
-      });
-    });
-  },
-
-  // check de l'email pour la création et l'update du User
-  checkPassword(results, req){
-    return new Promise((resolve,reject) => {
-      var objectValue = JSON.parse(results);
-      bcrypt.compare(req.body.password, objectValue[0].password, function(err, res) {
-        if(err){
-          return reject(err);
-        }
-        if(res){
-          resolve(objectValue);
-        }
-        else {
-          reject("Password incorrect");
-        }
-      });
-    });
-  },
 
   addPhoneBirthdateToUserId(req, res, next){
     const userId = req.params.userId;
@@ -268,14 +215,6 @@ module.exports = {
     });
   },
 
-  authentication (req, res, next){
-    module.exports.checkEmailExistence(req.body.email)
-    .then((results) => module.exports.checkPassword(results, req))
-    .then((results) => AuthenticateController.authenticate(results))
-    .then((token) => res.send(JSON.stringify({"status": 200, "error": null, "response": token})))
-    .catch((error) => {
-      res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
-    })
-  }
+
 
 };

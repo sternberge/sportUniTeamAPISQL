@@ -18,7 +18,7 @@ const SingleRankingController = require ('../controllers/single_ranking_controll
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
 
-const AuthenticateController = require ('../controllers/authenticate_controller');
+const AuthenticateController = require ('../middlewares/authentication/index.js');
 
 const DoubleRankingController = require ('../controllers/double_ranking_controller');
 const TeamRankingController = require ('../controllers/team_ranking_controller');
@@ -34,7 +34,7 @@ const TeamRankingHistoryController = require ('../controllers/team_ranking_histo
 
 module.exports = (app) => {
 
-  app.post('/api/users/authentication', UserController.authentication);
+  app.post('/api/users/authentication', AuthenticateController.authentication);
 
   // From now on all routes require authentication
   //app.all('/*', AuthenticateController.ensureLoggedIn);
