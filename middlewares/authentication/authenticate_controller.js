@@ -5,7 +5,6 @@ var bcrypt = require('bcrypt'); // algo de hash
 
 const authenticateWithToken = (informations) => {
   return new Promise(function (resolve, reject) {
-    //console.log(informations);
     // Set different informations in the token
       let user = {
         userId: informations[0].userId,
@@ -17,8 +16,6 @@ const authenticateWithToken = (informations) => {
         userType : informations[0].userType
       }
 
-
-
     if(informations[0].playerId != null){
       user.playerId = informations[0].playerId,
       user.Teams_teamId = informations[0].playerTeamId  ;
@@ -28,24 +25,26 @@ const authenticateWithToken = (informations) => {
     if(informations[0].coachId != null){
       user.coachId = informations[0].coachId;
       user.coachType = informations[0].coachType;
-      user.coachTeamNumber = informations.length;
       user.collegeId = informations[0].coachCollegeId;
-      if(informations[0].teamGender == 'M'){
-        user.teamIdM =informations[0].coachTeamId;
+      if(informations[0].coachTeamId != null && informations.length == 1){
+        user.teamId =informations[0].coachTeamId;
+        user.coachTeamNumber = informations.length;
       }
-      else{
-        user.teamIdF = informations[0].coachTeamId;
+      else if (informations[0].coachTeamId == null){
+        user.coachTeamNumber = 0;
       }
-      if(informations.length == 2){
+      else if(informations.length == 2){
         if(informations[1].teamGender == 'M'){
           user.teamIdM =informations[1].coachTeamId;
+          user.teamIdF =informations[0].coachTeamId;
         }
         else{
           user.teamIdF = informations[1].coachTeamId;
+          user.teamIdM =informations[0].coachTeamId;
         }
       }
     }
-    console.log(user);
+    // Encoding the data contained in the user object
     var token = jwt.sign(user, process.env.SECRET_TOKENKEY, {
       expiresIn: 4000
     })

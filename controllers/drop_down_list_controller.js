@@ -161,7 +161,7 @@ module.exports = {
       FROM Players p INNER JOIN Users u on p.Users_userId = u.userId
       INNER JOIN Teams t on t.teamId = p.Teams_teamId
       INNER JOIN Colleges c on t.Colleges_collegeId = c.collegeId
-      Where u.gender LIKE 'M'`,gender, (error, results, fields) => {
+      Where u.gender LIKE ?`,gender, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));

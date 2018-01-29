@@ -28,6 +28,7 @@ const DoubleRankingHistoryController = require ('../controllers/double_ranking_h
 const TeamRankingHistoryController = require ('../controllers/team_ranking_history_controller');
 
 const RegionsController = require ('../controllers/regions_controller');
+const StatsController = require('../controllers/stats_controller');
 
 //Very important : keep the order of the drop down list because the server will
 //interpret the order, if you put the generateDropDownList at the end
@@ -70,6 +71,7 @@ module.exports = (app) => {
   app.get('/api/players/generateMyPlayerDropDownList/:coach_id/:gender', PlayerController.generateMyPlayerDropDownList);
   app.get('/api/players/getPlayerNameFromId/:playerId',PlayerController.getPlayerNameFromId)
   app.get('/api/players/getPlayerInformationByPlayerId/:playerId',PlayerController.getPlayerInformationByPlayerId);
+  app.get('/api/players/getPlayersByTeamId/:teamId',PlayerController.getPlayersByTeamId);
 
   //Users
   app.post('/api/users', UserController.createUser);
@@ -243,9 +245,17 @@ module.exports = (app) => {
   app.post('/api/springResult/:gender',SpringResultController.create);
   app.get('/api/springResult/calculateWinnerLoser/:springId',SpringResultController.checkWinnerLoserSpring);
 
-    //Regions
-    app.get('/api/regions/getRegions', RegionsController.getRegions);
+  //Regions
+  app.get('/api/regions/getRegions', RegionsController.getRegions);
 
+
+  //Stats
+  app.get('/api/stats/getSimpleMatchsWonByPlayerId/:playerId',StatsController.getSimpleMatchsWonByPlayerId);
+  app.get('/api/stats/getSimpleMatchsLostByPlayerId/:playerId',StatsController.getSimpleMatchsLostByPlayerId);
+  app.get('/api/stats/getSimpleMatchsPlayedByPlayerId/:playerId',StatsController.getSimpleMatchsPlayedByPlayerId);
+  app.get('/api/stats/getDoubleMatchsWonByPlayerId/:playerId',StatsController.getDoubleMatchsWonByPlayerId);
+  app.get('/api/stats/getDoubleMatchsLostByPlayerId/:playerId',StatsController.getDoubleMatchsLostByPlayerId);
+  app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
 
 
 };
