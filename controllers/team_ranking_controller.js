@@ -35,8 +35,8 @@ const getNewNationalRankingOrder = (leagueId, gender) => {
         FROM TeamRanking tr
   			INNER JOIN Teams t on t.teamId = tr.Teams_teamId
   			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-  			WHERE dr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender = ?
-  			ORDER BY dr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
+  			WHERE tr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender = ?
+  			ORDER BY tr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
 			  if (error){
 				connection.release();
 				return reject(error);
@@ -58,8 +58,8 @@ const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
         FROM TeamRanking tr
   			INNER JOIN Teams t on t.teamId = tr.Teams_teamId
   			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-  			WHERE dr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Regions_regionId
-  			ORDER BY dr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
+  			WHERE tr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Regions_regionId
+  			ORDER BY tr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
 			  if (error){
 				connection.release();
 				return reject(error);
@@ -81,8 +81,8 @@ const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
         FROM TeamRanking tr
   			INNER JOIN Teams t on t.teamId = tr.Teams_teamId
   			INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-  			WHERE dr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId
-  			ORDER BY dr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
+  			WHERE tr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId
+  			ORDER BY tr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
 			  if (error){
 				connection.release();
 				return reject(error);
@@ -106,7 +106,7 @@ const getBestTeamMatchesWon = (rankingType, teamId, limit, date) => {
         INNER JOIN Teams t on t.teamId = sr.loserId
         INNER JOIN TeamRanking tr on tr.Teams_teamId = t.teamId
         INNER JOIN RankPointsRules rpr on rpr.opponentRank = tr.rank
-        WHERE sr.winnerId = ? and tr.type = ? and rpr.type = 'T' and dm.date > ?
+        WHERE sr.winnerId = ? and tr.type = ? and rpr.type = 'T' and sr.date > ?
         ORDER BY rpr.opponentRank ASC LIMIT ?`, [teamId, rankingType, date, limit], (error, results, fields) => {
         if (error) {
           connection.release();
@@ -131,7 +131,7 @@ const getBestTeamMatchesLost = (rankingType, doubleTeamId, limit, date) => {
         INNER JOIN Teams t on t.teamId = sr.winnerId
         INNER JOIN TeamRanking tr on tr.Teams_teamId = t.teamId
         INNER JOIN RankPointsRules rpr on rpr.opponentRank = tr.rank
-        WHERE sr.winnerId = ? and tr.type = ? and rpr.type = 'T' and dm.date > ?
+        WHERE sr.winnerId = ? and tr.type = ? and rpr.type = 'T' and sr.date > ?
         ORDER BY rpr.opponentRank ASC LIMIT ?`, [teamId, rankingType, date, limit], (error, results, fields) => {
         if (error) {
           connection.release();
@@ -140,6 +140,27 @@ const getBestTeamMatchesLost = (rankingType, doubleTeamId, limit, date) => {
         connection.release(); // CLOSE THE CONNECTION
         return resolve(results);
       });
+    });
+  });
+}
+
+const getTeamRankingByTeamIdAndRankingType = (teamId, rankingType) => {
+  return new Promise((resolve, reject) => {
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return reject(error);
+      }
+      var query = connection.query(`SELECT tr.teamRankingId, tr.rankPoints
+        FROM TeamRanking tr
+        WHERE tr.Teams_teamId = ? and tr.type = ?`, [teamId, rankingType],
+        (error, results, fields) => {
+          if (error) {
+            connection.release();
+            return reject(error);
+          }
+          connection.release(); // CLOSE THE CONNECTION
+          resolve(results);
+        });
     });
   });
 }
@@ -191,8 +212,11 @@ const calculateTeamRankingPerTypeAndTeam = async (rankingType,
     nbMatchesWon = bestTeamMatchesWon.length;
     for (let i = 0; i < nbMatchesWon; i++) {
       winPoints += bestTeamMatchesWon[i].winOverRankPoints;
-      if(bestTeamMatchesWon[i].homeAway = 'A'){
-        winPoints *= 1.1;
+      let homeAway = bestTeamMatchesWon[i].homeAway;
+      if(homeAway != null){
+        if(homeAway == 'A'){
+          winPoints *= 1.1;
+        }
       }
     }
 
@@ -228,7 +252,7 @@ const calculateTeamRankingPerTypeAndTeam = async (rankingType,
     try {
       teamRanking = await getTeamRankingByTeamIdAndRankingType(teamId, rankingType);
       teamRankingId = teamRanking[0].teamRankingId;
-      oldRankPoints = doubleRanking[0].rankPoints;
+      oldRankPoints = teamRanking[0].rankPoints;
       oldRank = teamRanking[0].rank;
       differencePoints = parseFloat(rankPoints) - parseFloat(oldRankPoints);
 

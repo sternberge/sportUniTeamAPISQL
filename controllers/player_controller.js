@@ -334,7 +334,11 @@ module.exports = {
           "response": null
         }));
       }
-      var query = connection.query(`SELECT * FROM Players WHERE Teams_teamId = ?`, teamId, (error, results, fields) => {
+      var query = connection.query(`SELECT p.playerId, concat(u.firstName,' ',u.lastName) as fullName ,c.name as collegeName
+      FROM Players p INNER JOIN Users u on p.Users_userId = u.userId
+      INNER JOIN Teams t on t.teamId = p.Teams_teamId
+      INNER JOIN Colleges c on t.Colleges_collegeId = c.collegeId
+      WHERE Teams_teamId = ?`, teamId, (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
