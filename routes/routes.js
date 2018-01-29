@@ -70,6 +70,7 @@ module.exports = (app) => {
   app.get('/api/players/generateMyPlayerDropDownList/:coach_id/:gender', PlayerController.generateMyPlayerDropDownList);
   app.get('/api/players/getPlayerNameFromId/:playerId',PlayerController.getPlayerNameFromId)
   app.get('/api/players/getPlayerInformationByPlayerId/:playerId',PlayerController.getPlayerInformationByPlayerId);
+  app.get('/api/players/getPlayersByTeamId/:teamId',PlayerController.getPlayersByTeamId);
 
   //Users
   app.post('/api/users', UserController.createUser);
