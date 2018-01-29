@@ -28,7 +28,7 @@ const archiveCurrentTeamRanking = (teamId, rank, rankPoints, previousRank,
       var query = connection.query(`INSERT INTO TeamRankingHistory
       (Teams_teamId, rank, rankPoints, previousRank,
         differencePoints, type, date)
-      VALUES(?, ?, ?, ?, ?, ?, ?)`, [doubleTeamId, rank, rankPoints, previousRank,
+      VALUES(?, ?, ?, ?, ?, ?, ?)`, [teamId, rank, rankPoints, previousRank,
         differencePoints, type, currentDate], (error, results, fields) => {
         if (error) {
           connection.release();

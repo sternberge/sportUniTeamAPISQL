@@ -194,7 +194,7 @@ module.exports = (app) => {
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentCollege/:year/:springFall/:gender/:tournamentId/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentCollege);
   //Teams
   app.get('/api/teams/getTeamIdByGenderCollege/:gender/:collegeId',TeamsController.getTeamIdByGenderCollege);
-  app.post('/api/teams', TeamsController.create);
+  app.post('/api/teams', TeamsController.createTeamWithDefaultRankings);
   app.delete('/api/teams/:team_id',TeamsController.delete);
   app.get('/api/teams/:team_id', TeamsController.find);
   app.put('/api/teams/:team_id', TeamsController.edit);
