@@ -4,8 +4,7 @@ const CoachController = require('../controllers/coach_controller');
 const PlayerController = require('../controllers/player_controller');
 const UserController = require('../controllers/user_controller');
 
-const BudgetController = require('../controllers/budget_controller');
-const RankDatesController = require('../controllers/rank_dates_controller');
+
 const RankRulesController = require('../controllers/rank_rules_controller');
 const RankRulesPointsController = require('../controllers/rank_rules_points_controller');
 const SpringResultController = require('../controllers/spring_result_controller');
@@ -93,13 +92,7 @@ module.exports = (app) => {
   app.get('/api/budget/:budget_id', BudgetController.find);
   app.put('/api/budget/:budget_id', BudgetController.edit);*/
 
-  //RankDates
   /*
-  app.post('/api/rankDates', RankDatesController.create);
-  app.delete('/api/rankDates/:rankDates_id', RankDatesController.delete);
-  app.get('/api/rankDates/:rankDates_id', RankDatesController.find);
-  app.put('/api/rankDates/:rankDates_id', RankDatesController.edit);
-
   //RankRules
   app.post('/api/rankRules', RankRulesController.create);
   app.delete('/api/rankRules/:rankRules_id', RankRulesController.delete);
@@ -117,7 +110,7 @@ module.exports = (app) => {
   //Rankings
 
   //SingleRanking
-  app.post('/api/singleRanking/getRanking', calculateRanking.archiveRankings);
+  app.post('/api/singleRanking/getRanking', calculateRanking.createRanking);
   app.post('/api/singleRanking', SingleRankingController.create);
   app.delete('/api/singleRanking/:singleRankingId', SingleRankingController.delete);
   app.get('/api/singleRanking/:singleRankingId', SingleRankingController.find);
