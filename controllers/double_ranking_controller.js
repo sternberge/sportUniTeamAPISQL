@@ -221,8 +221,11 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
     nbMatchesWon = bestDoubleMatchesWon.length;
     for (let i = 0; i < nbMatchesWon; i++) {
       winPoints += bestDoubleMatchesWon[i].winOverRankPoints;
-      if(bestDoubleMatchesWon[i].homeAway = 'A'){
-        winPoints *= 1.1;
+      let homeAway = bestDoubleMatchesWon[i].homeAway;
+      if(homeAway != null){
+        if(homeAway == 'A'){
+          winPoints *= 1.1;
+        }
       }
     }
 

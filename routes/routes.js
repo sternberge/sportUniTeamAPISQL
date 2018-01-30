@@ -17,6 +17,8 @@ const SpringMatchesController = require('../controllers/spring_matches_controlle
 const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
+const calculateRanking = require('../ranking/singleranking/index.js');
+
 
 const AuthenticateController = require ('../middlewares/authentication/index.js');
 
@@ -112,7 +114,7 @@ module.exports = (app) => {
   //Rankings
 
   //SingleRanking
-  app.post('/api/singleRanking/getRanking', SingleRankingController.calculateRanking);
+  app.post('/api/singleRanking/getRanking', calculateRanking.createRanking);
   app.post('/api/singleRanking', SingleRankingController.create);
   app.delete('/api/singleRanking/:singleRankingId', SingleRankingController.delete);
   app.get('/api/singleRanking/:singleRankingId', SingleRankingController.find);
@@ -196,7 +198,7 @@ module.exports = (app) => {
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentCollege/:year/:springFall/:gender/:tournamentId/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentCollege);
   //Teams
   app.get('/api/teams/getTeamIdByGenderCollege/:gender/:collegeId',TeamsController.getTeamIdByGenderCollege);
-  app.post('/api/teams', TeamsController.create);
+  app.post('/api/teams', TeamsController.createTeamWithDefaultRankings);
   app.delete('/api/teams/:team_id',TeamsController.delete);
   app.get('/api/teams/:team_id', TeamsController.find);
   app.put('/api/teams/:team_id', TeamsController.edit);

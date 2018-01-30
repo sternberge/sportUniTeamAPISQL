@@ -322,25 +322,6 @@ module.exports = {
   },
 
 
-  getAllPlayerId() {
-    return new Promise((resolve, reject) => {
-      db.pool.getConnection((error, connection) => {
-
-        if (error) {
-          return reject(error);
-        }
-        var query = connection.query(`SELECT playerId from Players`, (error, results, fields) => {
-          if (error) {
-            connection.release();
-            return reject(error);
-          }
-          resolve(results);
-          connection.release(); // CLOSE THE CONNECTION
-        });
-      });
-    });
-  },
-
   getPlayersByTeamId(req, res, next)
   {
     const teamId = req.params.teamId;
