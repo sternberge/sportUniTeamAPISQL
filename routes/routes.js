@@ -117,7 +117,7 @@ module.exports = (app) => {
   //Rankings
 
   //SingleRanking
-  app.post('/api/singleRanking/getRanking', calculateRanking.createRanking);
+  app.post('/api/singleRanking/getRanking', calculateRanking.archiveRankings);
   app.post('/api/singleRanking', SingleRankingController.create);
   app.delete('/api/singleRanking/:singleRankingId', SingleRankingController.delete);
   app.get('/api/singleRanking/:singleRankingId', SingleRankingController.find);
@@ -149,7 +149,6 @@ module.exports = (app) => {
   //Ranking Histories
 
   //SingleRankingHistory
-  app.get('/api/singleRankingHistory/archive', SingleRankingHistoryController.archiveCurrentSingleRanking);
   app.post('/api/singleRankingHistory', SingleRankingHistoryController.create);
   app.delete('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.delete);
   app.get('/api/singleRankingHistory/:singleRankingHistoryId', SingleRankingHistoryController.find);
