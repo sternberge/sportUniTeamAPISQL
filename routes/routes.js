@@ -243,6 +243,7 @@ module.exports = (app) => {
 
   //SpringResult
   app.post('/api/springResult/:gender',SpringResultController.create);
+  app.post('/api/springResult2/:gender',SpringResultController.create2);
   app.get('/api/springResult/calculateWinnerLoser/:springId',SpringResultController.checkWinnerLoserSpring);
 
   //Regions
@@ -256,6 +257,6 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsWonByPlayerId/:playerId',StatsController.getDoubleMatchsWonByPlayerId);
   app.get('/api/stats/getDoubleMatchsLostByPlayerId/:playerId',StatsController.getDoubleMatchsLostByPlayerId);
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
-
+  app.get('/api/stats/testStats/:playerId',StatsController.testStats);
 
 };
