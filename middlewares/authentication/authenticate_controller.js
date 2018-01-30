@@ -35,10 +35,12 @@ const authenticateWithToken = (informations) => {
       }
       else if(informations.length == 2){
         if(informations[1].teamGender == 'M'){
+          user.coachTeamNumber = 2;
           user.teamIdM =informations[1].coachTeamId;
           user.teamIdF =informations[0].coachTeamId;
         }
         else{
+          user.coachTeamNumber = 2;
           user.teamIdF = informations[1].coachTeamId;
           user.teamIdM =informations[0].coachTeamId;
         }
