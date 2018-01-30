@@ -45,13 +45,14 @@ module.exports = {
     const winnerScore =  req.body.winnerScore;
     const loserScore =  req.body.loserScore;
     const homeAway =  req.body.homeAway;
+    const date = req.body.date;
 
     db.pool.getConnection((error, connection) => {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('INSERT INTO SpringResultBis (winnerId, loserId, scoreWinner,scoreLoser,homeAway) VALUES ((SELECT teamId FROM Teams WHERE Colleges_collegeId = ? AND gender = ?),(SELECT teamId FROM Teams WHERE Colleges_collegeId = ? AND gender = ?),?,?,?);',
-      [winnerId,gender,loserId,gender,winnerScore,loserScore,homeAway], (error, results, fields) => {
+      var query = connection.query('INSERT INTO SpringResult (winnerId, loserId, winnerScore,loserScore,homeAway,date) VALUES ((SELECT teamId FROM Teams WHERE Colleges_collegeId = ? AND gender = ?),(SELECT teamId FROM Teams WHERE Colleges_collegeId = ? AND gender = ?),?,?,?,?);',
+      [winnerId,gender,loserId,gender,winnerScore,loserScore,homeAway,date], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
