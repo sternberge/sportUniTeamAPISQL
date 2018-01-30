@@ -52,6 +52,8 @@ module.exports = (app) => {
   app.delete('/api/colleges/:college_id', CollegeController.deleteCollege);
   app.get('/api/colleges/:college_id', CollegeController.findCollegeById);
   app.get('/api/colleges/getCollegeNameFromTeamId/:teamId',CollegeController.getCollegeNameFromTeamId);
+    app.get('/api/colleges/getCollegeNameFromCollegeId/:collegeId',CollegeController.getCollegeNameFromCollegeId);
+
 
 
   //Coaches
@@ -74,6 +76,7 @@ module.exports = (app) => {
   app.get('/api/players/getPlayerNameFromId/:playerId',PlayerController.getPlayerNameFromId)
   app.get('/api/players/getPlayerInformationByPlayerId/:playerId',PlayerController.getPlayerInformationByPlayerId);
   app.get('/api/players/getPlayersByTeamId/:teamId',PlayerController.getPlayersByTeamId);
+  app.get('/api/players/getAllPlayersByTeamId/:teamId',PlayerController.getAllPlayersByTeamId);
 
   //Users
   app.post('/api/users', UserController.createUser);
@@ -258,6 +261,6 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsWonByPlayerId/:playerId',StatsController.getDoubleMatchsWonByPlayerId);
   app.get('/api/stats/getDoubleMatchsLostByPlayerId/:playerId',StatsController.getDoubleMatchsLostByPlayerId);
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
-  app.get('/api/stats/testStats/:playerId',StatsController.testStats);
+  app.get('/api/stats/getRatioStatsByPlayerId/:playerId',StatsController.getRatioStatsByPlayerId);
 
 };

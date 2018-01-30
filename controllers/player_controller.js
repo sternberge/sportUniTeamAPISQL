@@ -1,4 +1,44 @@
+const getAllPlayersByTeamId = (req, res) => {
+  const teamId = req.params.teamId;
+  db.pool.getConnection((error, connection) => {
+
+    if (error) {
+      return res.send(JSON.stringify({
+        "status": 500,
+        "error": error,
+        "response": null
+      }));
+    }
+    var query = connection.query(`SELECT p.playerId, concat(u.firstName,' ',u.lastName) as fullName,
+    p.status, c.name as collegeName, sr.rank as nationalSingleRank
+    FROM Players p
+    INNER JOIN Users u on p.Users_userId = u.userId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN Colleges c on t.Colleges_collegeId = c.collegeId
+    INNER JOIN SingleRanking sr on sr.Players_playerId = p.playerId
+    WHERE Teams_teamId = ? AND sr.type = 'N'
+    ORDER BY p.status`, teamId, (error, results, fields) => {
+      if (error) {
+        connection.release();
+        return res.send(JSON.stringify({
+          "status": 500,
+          "error": error,
+          "response": null
+        }));
+      }
+      res.send(JSON.stringify({
+        "status": 200,
+        "error": null,
+        "response": results
+      }));
+      connection.release(); // CLOSE THE CONNECTION
+    });
+  });
+}
+
 module.exports = {
+
+  getAllPlayersByTeamId,
 
   getPlayerTeamId(playerId) {
     return new Promise((resolve, reject) => {
