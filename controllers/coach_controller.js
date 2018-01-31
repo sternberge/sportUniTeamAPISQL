@@ -235,7 +235,7 @@ module.exports = {
       var query = connection.query(`SELECT u.firstName,u.lastName,u.birthday,u.phone,co.name,conf.conferenceLabel,l.leagueName,t.gender as teamGender FROM Coaches c
         INNER JOIN Users u on c.Users_userId = u.userId
         INNER JOIN Teams t on t.Coaches_coachId = c.coachId or t.Coaches_headCoachId = c.coachId
-        INNER JOIN Colleges co on co.collegeId = t.teamId
+        INNER JOIN Colleges co on co.collegeId = t.Colleges_collegeId
         INNER JOIN Conferences conf on conf.conferenceId = co.Conferences_conferenceId
         INNER JOIN Leagues l on l.leagueId = co.Leagues_leagueId
         WHERE c.coachId = ? `,coachId,(error, results, fields) => {
