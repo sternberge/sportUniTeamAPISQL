@@ -278,6 +278,7 @@ module.exports = {
               AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
               AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
               AND sr.date  >= '?-09-01' AND sr.date  <= '?-06-30'
+              order by sr.date desc
               `,[gender,collegeId,collegeId,conferenceId,conferenceId,year,yearPlusOne], (error, results, fields) => {
                 if (error){
                   connection.release();
@@ -333,6 +334,7 @@ module.exports = {
               AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
               AND sr.date  >= '?-09-01' AND sr.date  <= '?-06-30'
               AND (p1.playerId LIKE ? OR p2.playerId LIKE ? OR dt1.Players_playerId LIKE ? OR dt1.Players_playerId2 LIKE ? OR dt2.Players_playerId LIKE ? OR dt2.Players_playerId2 LIKE ?)
+              order by sr.date desc
               `,[gender,collegeId,collegeId,conferenceId,conferenceId,year,yearPlusOne,playerId,playerId,playerId,playerId,playerId,playerId], (error, results, fields) => {
                 if (error){
                   connection.release();
