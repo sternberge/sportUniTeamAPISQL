@@ -260,7 +260,7 @@ module.exports = {
                 return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
               }
 
-              var query = connection.query(`SELECT DISTINCT sr.springId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.date,1,10) as date,t1.gender,t1.teamId as winnerTeamId,t2.teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
+              var query = connection.query(`SELECT DISTINCT sr.springId,sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.date,1,10) as date,t1.gender,t1.teamId as winnerTeamId,t2.teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
                 FROM SpringResult sr
                 INNER JOIN Teams t1 on sr.winnerId = t1.teamId
                 INNER JOIN Teams t2 on sr.loserId = t2.teamId
@@ -307,23 +307,23 @@ module.exports = {
                   return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
                 }
 
-                var query = connection.query(`SELECT DISTINCT sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.springId,1,10) as date,p1.Teams_teamId as winnerTeamId,p2.Teams_teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
+                var query = connection.query(`SELECT distinct sr.springId,sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.date,1,10) as date,t1.gender,t1.teamId as winnerTeamId,t2.teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
                 FROM SpringResult sr
                 INNER JOIN Teams t1 on sr.winnerId = t1.teamId
                 INNER JOIN Teams t2 on sr.loserId = t2.teamId
                 INNER JOIN Colleges c1 on t1.Colleges_collegeId = c1.collegeId
                 INNER JOIN Colleges c2 on t2.Colleges_collegeId = c2.collegeId
-                INNER JOIN SimpleMatches sm on sm.springId = sr.springId
+                LEFT JOIN SimpleMatches sm on sm.springId = sr.springId
                 INNER JOIN Players p1 on p1.playerId = sm.winner
                 INNER JOIN Users u1 on u1.userId = p1.Users_userId
                 INNER JOIN Players p2 on p2.playerId = sm.loser
                 INNER JOIN Users u2 on u2.userId = p1.Users_userId
-                INNER JOIN DoubleMatches dm on dm.springId = sr.springId
+                LEFT JOIN DoubleMatches dm on dm.springId = sr.springId
                 INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
                 INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
-                LEFT JOIN TeamRanking tr1 on tr1.teamRankingId = p1.Teams_teamId
-                LEFT JOIN TeamRanking tr2 on tr2.teamRankingId = p2.Teams_teamId
-                WHERE u1.gender LIKE ?
+                LEFT JOIN TeamRanking tr1 on tr1.teamRankingId = t1.teamId
+                LEFT JOIN TeamRanking tr2 on tr2.teamRankingId = t2.teamId
+                WHERE t1.gender LIKE ?
                 AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
                 AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
                 AND sr.date  >= '?-09-01' AND sr.date  <= '?-06-30'
