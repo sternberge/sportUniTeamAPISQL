@@ -143,10 +143,8 @@ module.exports = {
       }));
     } catch (error) {
       //console.log(error);
-      res.send(JSON.stringify({
-        "status": 500,
-        "error": null,
-        "response": error
+      res.status(500).send(JSON.stringify({
+        "error": error
       }));
     }
   },
