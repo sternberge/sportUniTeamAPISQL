@@ -1,6 +1,5 @@
-const ranking = require("./create_rankings.js");
-
+const ranking = require("./create_single_rankings.js");
 
 module.exports = {
-  createRanking: ranking.calculateRanking
+  createRanking: ranking.createNewSingleRanking
 };

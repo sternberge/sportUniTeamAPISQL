@@ -119,4 +119,22 @@ module.exports = {
     });
   },
 
+  getCollegeNameFromCollegeId(req,res,next){
+    const collegeId = req.params.collegeId ;
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query('select name as collegeName from Colleges where collegeId = ?;',collegeId,(error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  }
+
 };
