@@ -96,8 +96,9 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var queryTest = connection.query('select *from Users where email = ? AND usertype = coach)',coachEmail, (error, results, fields) => {
-        console.log('Lenght de result : '+results.length);
+      var queryTest = connection.query('select * from Users where email = ? ',coachEmail, (error, results, fields) => {
+
+        //console.log('Lenght de result : '+results.length);
         if(results.length > 0 )
         {
           coachExist = true;
