@@ -395,7 +395,81 @@ module.exports = {
         connection.release(); // CLOSE THE CONNECTION
       });
     });
-  }
+  },
+
+  verifyPlayer(req, res, next) {
+
+    var playerEmail = req.params.playerEmail;
+    var password = "";
+    var hashGenerated = "";
+
+    let coachExist = false;
+
+    db.pool.getConnection((error, connection) => {
+      //erreur de connection
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+
+      var queryTest = connection.query('select *from Users where email = ? AND userType = player',playerEmail, (error, results, fields) => {
+        console.log('Lenght de result : '+results.length);
+        if(results.length > 0 )
+        {
+          coachExist = true;
+          console.log('Le mail existe');
+        }
+        else {
+          res.send(JSON.stringify({"status": 500, "error": 'The user does not exist', "response": 'the user does not exist'}));
+          console.log('Le mail n\'existe pas');
+        }
+      });
+
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+      for (var i = 0; i < 8; i++)
+      password += possible.charAt(Math.floor(Math.random() * possible.length));
+
+
+      bcrypt.hash(password, saltRounds, function(err, hash) {
+        console.log("Hash : " + hash);
+        hashGenerated = hash;
+
+        var query = connection.query('UPDATE Users SET password = ? WHERE email = ?',
+        [hashGenerated,playerEmail], (error, results, fields) => {
+
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+
+          if(coachExist)
+          {
+
+            console.log('coach existe ' + coachExist);
+            if(coachExist)
+            {
+              transporter.sendMail({
+                from: 'testservicenodemailer@gmail.com',
+                to: playerEmail,
+                subject: 'SUT Team : Your password for the application',
+                text: 'Please find your password for the application ' + password
+              }, function(error, info){
+                if (error) {
+                  console.log(error);
+                } else {
+                  console.log('Email sent: ' + info.response + ' password = ' + password);
+                }
+              });
+            }
+            res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          }
+
+          connection.release(); // CLOSE THE CONNECTION
+        });
+
+      });
+    });
+  },
 };
 
 var db = require('./../db');
