@@ -36,7 +36,7 @@ const calculateRankingPerPlayer = async (playerId,limiteRequest,rankingType,date
     }
     //On calcule ses ranking points à l'aide de la formule
     rankPoints = winPoints / (nbWinMatches + losePoints);
-    rankPoints = 88;
+    rankPoints = 400;
     console.log("Nombre points totaux : ",rankPoints,"pour le joueur",playerId);
     //On recupere le ranking id du player
     let playerRankingId = await getSingleRankingPerPlayerId(playerId,rankingType);
@@ -150,11 +150,8 @@ const getSingleBestMatches = (playerId,limiteRequest,rankingType,date) => {
           const promisesPerTypeCalculation = rankingTypes.map(rankingType =>
             calculateRankingPerTypeAndPlayer(rankingType, res));
             await Promise.all(promisesPerTypeCalculation);
-            console.log("New Double Ranking Points calculated for all types");
-            res.send(JSON.stringify({"status": 200, "error": null, "response": null}));
-            //var test = module.exports.orderNationalRankingByRankPoints()
-            //var test = module.exports.orderRegionalRankingByRankPoints()
-            //var test = module.exports.orderConferenceRankingByRankPoints()
+            console.log("New Single Ranking Points calculated for all types");
+
           }
           catch(error){
             console.log(error);

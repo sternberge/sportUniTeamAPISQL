@@ -1,6 +1,6 @@
 const db = require('./../../db');
 const ConferencesController = require('./../../controllers/conferences_controller.js');
-
+const RegionsController = require('./../../controllers/regions_controller.js');
 
 const orderSingleRanking = async (req, res) => {
   const leagues = [1, 2, 3, 4, 5];
@@ -11,7 +11,6 @@ const orderSingleRanking = async (req, res) => {
     );
     await Promise.all(orderRankingPerLeaguePromises);
     console.log("New Single Ranking ordered for all leagues");
-    res.send(JSON.stringify({"status": 200, "error": null, "response": "New Single Ranking ordered for all leagues"}));
   } catch(err){
     console.log("New Single Ranking ordering failed");
     console.log(err);
@@ -224,7 +223,8 @@ const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
       if (error){
         return reject(error);
       }
-      var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+      var query = connection.query(`SELECT singleRankingId, rank
+        FROM SingleRanking sr
         INNER JOIN Players p on p.playerId = sr.Players_playerId
         INNER JOIN Teams t on t.teamId = p.Teams_teamId
         INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
@@ -247,7 +247,8 @@ const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
         if (error){
           return reject(error);
         }
-        var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+        var query = connection.query(`SELECT singleRankingId, rank
+          FROM SingleRanking sr
           INNER JOIN Players p on p.playerId = sr.Players_playerId
           INNER JOIN Teams t on t.teamId = p.Teams_teamId
           INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
@@ -270,7 +271,8 @@ const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
           if (error){
             return reject(error);
           }
-          var query = connection.query(`SELECT singleRankingId FROM SingleRanking sr
+          var query = connection.query(`SELECT singleRankingId, rank
+            FROM SingleRanking sr
             INNER JOIN Players p on p.playerId = sr.Players_playerId
             INNER JOIN Teams t on t.teamId = p.Teams_teamId
             INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId

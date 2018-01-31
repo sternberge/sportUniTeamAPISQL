@@ -143,7 +143,9 @@ module.exports = {
       }));
     } catch (error) {
       //console.log(error);
-      res.send(error);
+      res.status(500).send(JSON.stringify({
+        "error": error
+      }));
     }
   },
 
