@@ -21,6 +21,7 @@
   "dependencies": {
     "bcrypt": "^1.0.3",
     "bluebird": "^3.5.1",
+    "busboy": "^0.2.14",
     "connect-busboy": "0.0.2",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
