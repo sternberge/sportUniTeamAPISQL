@@ -257,4 +257,6 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
   app.get('/api/stats/getRatioStatsByPlayerId/:playerId',StatsController.getRatioStatsByPlayerId);
 
+  app.post('/api/upload',UserController.upload);
+
 };
