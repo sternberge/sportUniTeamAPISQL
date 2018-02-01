@@ -128,7 +128,10 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT tournamentId, name FROM Tournaments WHERE gender = ?',gender, (error, results, fields) => {
+      var query = connection.query(`SELECT tournamentId, name
+        FROM Tournaments
+        WHERE gender = ?
+        ORDER BY name ASC`,gender, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
