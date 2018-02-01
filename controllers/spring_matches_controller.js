@@ -294,7 +294,7 @@ module.exports = {
                 LEFT JOIN TeamRanking tr1 on tr1.teamRankingId = t1.teamId
                 LEFT JOIN TeamRanking tr2 on tr2.teamRankingId = t2.teamId
                 WHERE t1.gender LIKE ?
-                AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
+                AND (c1.collegeId LIKE ? OR c2.collegeId LIKE ?)
                 AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
                 AND sr.date  >= '?-09-01' AND sr.date  <= '?-06-30'
                 order by sr.date desc
@@ -359,7 +359,7 @@ module.exports = {
                 LEFT JOIN TeamRanking tr1 on tr1.teamRankingId = t1.teamId
                 LEFT JOIN TeamRanking tr2 on tr2.teamRankingId = t2.teamId
                 WHERE t1.gender LIKE ?
-                AND (sr.loserId LIKE ? OR sr.winnerId LIKE ?)
+                AND (c1.collegeId LIKE ? OR c2.collegeId LIKE ?)
                 AND (c1.Conferences_conferenceId LIKE ? OR c2.Conferences_conferenceId LIKE ? )
                 AND sr.date  >= '?-09-01' AND sr.date  <= '?-06-30'
                 AND (p1.playerId LIKE ? OR p2.playerId LIKE ? OR dt1.Players_playerId LIKE ? OR dt1.Players_playerId2 LIKE ? OR dt2.Players_playerId LIKE ? OR dt2.Players_playerId2 LIKE ?)
