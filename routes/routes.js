@@ -76,7 +76,8 @@ module.exports = (app) => {
   app.get('/api/players/getPlayerInformationByPlayerId/:playerId',PlayerController.getPlayerInformationByPlayerId);
   app.get('/api/players/getPlayersByTeamId/:teamId',PlayerController.getPlayersByTeamId);
   app.get('/api/players/getAllPlayersByTeamId/:teamId',PlayerController.getAllPlayersByTeamId);
-  app.get('/api/players/verifyPlayer/:playerEmail',PlayerController.verifyPlayer)
+  app.get('/api/players/verifyPlayer/:playerEmail',PlayerController.verifyPlayer);
+  app.get('/api/players/getPlayerInformationByUserId/:userId',PlayerController.getPlayerInformationByUserId);
 
   //Users
   app.post('/api/users', UserController.createUser);
