@@ -45,12 +45,12 @@ const authenticateWithToken = (informations) => {
         user.program = "M,F";
         user.coachTeamNumber = 2;
         if(informations[1].teamGender == 'M'){
-          user.teamIdM =informations[1].coachTeamId;
-          user.teamIdF =informations[0].coachTeamId;
+            user.teamIdF = informations[1].coachTeamId;
+            user.teamIdM =informations[0].coachTeamId;
         }
         else{
-          user.teamIdF = informations[1].coachTeamId;
-          user.teamIdM =informations[0].coachTeamId;
+          user.teamIdM =informations[1].coachTeamId;
+          user.teamIdF =informations[0].coachTeamId;
         }
       }
     }

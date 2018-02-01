@@ -2,49 +2,45 @@ const makeDir = require('make-dir');
 const formidable = require('formidable');
 var multer  = require('multer');
 const expressUpload = require('express-fileupload')
+var fs = require('fs');
+
 
 // Set The Storage Engine
 const storage = multer.diskStorage({
-destination: "uploaded_files/colleges/4",
-filename: function(req, file, callback){
-  callback(null,"test");
-}
+  destination: "public/uploaded_files/colleges/4",
+  filename: function(req, file, callback){
+    callback(null,"test");
+  }
 });
 
 // Init Upload
 const upload = multer({
-storage: storage,
-limits:{fileSize: 1000000}
+  storage: storage,
+  limits:{fileSize: 1000000}
 }).single('sampleFile');// nom dans le formulaire
 
 
 const uploadProfilePicture = (req,res) => {
-  let id = 7;
+  let id = 4;
   let type = "colleges"
-  let pictureFolder = "uploaded_files";
-  pictureFolder = pictureFolder + "/" + type + "/" + id;
+  let pictureFolder = "public/uploaded_files";
+  pictureFolder = pictureFolder + "/" + type + "/" + id ;
   console.log(pictureFolder);
-  //makeDir(pictureFolder);
+  makeDir(pictureFolder);
 
   console.log(req.files);
-  upload(req,res,(err) => {
-    if(err){
-      res.render('index', {
-        msg: err
-      });
-    } else {
-      if(req.file == undefined){
-        res.render('index', {
-          msg: 'Error: No File Selected!'
-        });
-      } else {
-        res.render('index', {
-          msg: 'File Uploaded!',
-          file: `uploads/${req.file.filename}`
-        });
-      }
-    }
+  var fstream;
+  req.pipe(req.busboy);
+  req.busboy.on('file', function (fieldname, file, filename) {
+    console.log("Uploading: " + filename);
+    fstream = fs.createWriteStream(pictureFolder+"/"+filename);
+    file.pipe(fstream);
+    fstream.on('close', function () {
+      res.send('uploaded');
+    });
   });
+
+
   //
   // if (!req.files)
   //   return res.status(400).send('No files were uploaded.');
@@ -60,6 +56,27 @@ const uploadProfilePicture = (req,res) => {
   //   res.send('File uploaded!');});
   //
   // console.log("File has been created");
+
+
+  // upload(req,res,(err) => {
+  //   if(err){
+  //     res.render('index', {
+  //       msg: err
+  //     });
+  //   } else {
+  //     if(req.file == undefined){
+  //       res.render('index', {
+  //         msg: 'Error: No File Selected!'
+  //       });
+  //     } else {
+  //       res.render('index', {
+  //         msg: 'File Uploaded!',
+  //         file: `uploads/${req.file.filename}`
+  //       });
+  //     }
+  //   }
+  //
+  //
 }
 
 
