@@ -78,7 +78,7 @@ module.exports = {
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
 
-        var query = connection.query(`SELECT dm.*,dt1.*,dt2.*,concat(u1.firstName,' ',u1.lastName) as winnerName1,concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1,concat(u4.firstName,' ',u4.lastName) as loserName2,p1.playerId as winner1Id,p2.playerId as winner2Id,p3.playerId as loser1Id,p4.playerId as loser2Id ,c1.name as winnerCollegeName, c2.name as loserCollegeName,c1.collegeId as winnerCollege,c2.collegeId as loserColleger
+        var query = connection.query(`SELECT dm.*,dt1.*,dt2.*,concat(u1.firstName,' ',u1.lastName) as winnerName1,concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1,concat(u4.firstName,' ',u4.lastName) as loserName2,p1.playerId as winner1Id,p2.playerId as winner2Id,p3.playerId as loser1Id,p4.playerId as loser2Id ,c1.name as winnerCollegeName, c2.name as loserCollegeName,c1.collegeId as winnerCollege,c2.collegeId as loserColleger,dr1.rank as winnerRank,dr2.rank as loserRank
         FROM DoubleMatches dm
         INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
         INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
@@ -96,7 +96,10 @@ module.exports = {
         INNER JOIN Users u4 on u4.userId = p4.Users_userId
         INNER JOIN Colleges c1 on c1.collegeId = t1.Colleges_collegeId
         INNER JOIN Colleges c2 on c2.collegeId = t3.Colleges_collegeId
-        WHERE dm.springId = ? ORDER BY dm.springPosition`,[springId], (error, results, fields) => {
+        INNER JOIN DoubleRanking dr1 on dr1.DoubleTeams_doubleTeamId = dt1.doubleTeamId
+        INNER JOIN DoubleRanking dr2 on dr2.DoubleTeams_doubleTeamId = dt2.doubleTeamId
+        WHERE dm.springId = ? AND dr1.type = 'N' AND dr2.type = 'N'
+        ORDER BY dm.springPosition`,[springId], (error, results, fields) => {
           if (error){
             connection.release();
             return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
