@@ -251,8 +251,18 @@ module.exports = {
             var yearPlusOne=Number(year)+1;
 
             const gender= req.params.gender;
-            const collegeId= req.params.collegeId;
-            const conferenceId= req.params.conferenceId;
+            let collegeId= req.params.collegeId;
+            let conferenceId= req.params.conferenceId;
+
+            if(collegeId == '_')
+            {
+              collegeId = '%';
+            }
+
+            if(conferenceId == '_')
+            {
+              conferenceId = '%';
+            }
 
             db.pool.getConnection((error, connection) => {
 
@@ -292,13 +302,23 @@ module.exports = {
               var yearPlusOne=Number(year)+1;
 
               const gender= req.params.gender;
-              const collegeId= req.params.collegeId;
-              const conferenceId= req.params.conferenceId;
+              let collegeId= req.params.collegeId;
+              let conferenceId= req.params.conferenceId;
               var playerId = req.params.playerId;
 
               if(playerId == '_')
               {
                 playerId = '%';
+              }
+
+              if(collegeId == '_')
+              {
+                collegeId = '%';
+              }
+
+              if(conferenceId == '_')
+              {
+                conferenceId = '%';
               }
 
               db.pool.getConnection((error, connection) => {

@@ -51,7 +51,7 @@ module.exports = (app) => {
   app.delete('/api/colleges/:college_id', CollegeController.deleteCollege);
   app.get('/api/colleges/:college_id', CollegeController.findCollegeById);
   app.get('/api/colleges/getCollegeNameFromTeamId/:teamId',CollegeController.getCollegeNameFromTeamId);
-    app.get('/api/colleges/getCollegeNameFromCollegeId/:collegeId',CollegeController.getCollegeNameFromCollegeId);
+  app.get('/api/colleges/getCollegeNameFromCollegeId/:collegeId',CollegeController.getCollegeNameFromCollegeId);
 
 
 
@@ -207,6 +207,8 @@ module.exports = (app) => {
   app.delete('/api/tournaments/:tournament_id',TournamentsController.delete);
   app.get('/api/tournaments/:tournament_id', TournamentsController.find);
   app.put('/api/tournaments/:tournament_id', TournamentsController.edit);
+  app.get('/api/tournaments/generateTournamentDropDownListbyGender/:gender', TournamentsController.generateTournamentDropDownListbyGender);
+
   //Generate drop down lists for tournaments
 
 
