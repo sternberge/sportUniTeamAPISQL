@@ -270,7 +270,7 @@ module.exports = {
                 return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
               }
 
-              var query = connection.query(`SELECT DISTINCT sr.springId,sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.date,1,10) as date,t1.gender,t1.teamId as winnerTeamId,t2.teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
+              var query = connection.query(`SELECT DISTINCT sr.springId,c1.name as winnerCollegeName,c2.name loserCollegeName,c1.collegeId as winnerId,c2.collegeId as loserId,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.date,1,10) as date,t1.gender,sr.winnerId as winnerTeamId,sr.loserId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
                 FROM SpringResult sr
                 INNER JOIN Teams t1 on sr.winnerId = t1.teamId
                 INNER JOIN Teams t2 on sr.loserId = t2.teamId
@@ -327,7 +327,7 @@ module.exports = {
                   return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
                 }
 
-                var query = connection.query(`SELECT distinct sr.springId,sr.winnerId,sr.loserId,c1.name as winnerCollegeName,c2.name loserCollegeName,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.date,1,10) as date,t1.gender,t1.teamId as winnerTeamId,t2.teamId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
+                var query = connection.query(`SELECT distinct sr.springId,c1.name as winnerCollegeName,c2.name loserCollegeName,c1.collegeId as winnerId,c2.collegeId as loserId,sr.winnerScore as scoreWinner,sr.loserScore as scoreLoser,sr.springId,substring(sr.date,1,10) as date,t1.gender,sr.winnerId as winnerTeamId,sr.loserId as loserTeamId,tr1.rank as winnerRank,tr2.rank as loserRank
                 FROM SpringResult sr
                 INNER JOIN Teams t1 on sr.winnerId = t1.teamId
                 INNER JOIN Teams t2 on sr.loserId = t2.teamId
