@@ -4,6 +4,8 @@ var promise = require('promise');
 var bcrypt = require('bcrypt'); // algo de hash
 const saltRounds = 10;
 
+
+
 module.exports = {
 
   findUserById (req, res) {
@@ -214,7 +216,5 @@ module.exports = {
       });
     });
   },
-
-
 
 };
