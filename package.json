@@ -27,10 +27,7 @@
     "express-fileupload": "^0.4.0",
     "express-validator": "^4.3.0",
     "formidable": "^1.1.1",
-<<<<<<< HEAD
-=======
     "fs-extra": "^5.0.0",
->>>>>>> 504987dc26757e2d07937f2fc41aa242b0409025
     "jsonwebtoken": "^8.1.0",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.4",
