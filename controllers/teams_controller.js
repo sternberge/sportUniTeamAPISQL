@@ -108,10 +108,8 @@ const createTeamWithDefaultRankings = async (req, res) => {
   } catch(err){
     console.log(err);
     console.log(`Error while trying to create the Team`);
-    return res.send(JSON.stringify({
-      "status": 500,
-      "error": null,
-      "response": "An error occured while trying to create the team"
+    return res.status(500).send(JSON.stringify({
+      "error": "An error occured while trying to create the team"
     }));
   }
 
@@ -121,10 +119,8 @@ const createTeamWithDefaultRankings = async (req, res) => {
   } catch(err){
     console.log(err);
     console.log(`Could not fetch the unranked number for Teams`);
-    return res.send(JSON.stringify({
-      "status": 500,
-      "error": null,
-      "response": "An error occured while trying to create the team"
+    return res.status(500).send(JSON.stringify({
+      "error": "An error occured while trying to create the team"
     }));
   }
 

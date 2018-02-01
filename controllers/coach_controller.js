@@ -209,7 +209,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT group_concat(gender) AS teamGender FROM Teams
+      var query = connection.query(`SELECT group_concat(gender) AS teamGender,length(group_concat(gender)) as length FROM Teams
       WHERE Coaches_coachId = ? OR Coaches_headCoachId = ?
       GROUP BY Colleges_collegeId
       `,[coachId,coachId],(error, results, fields) => {
