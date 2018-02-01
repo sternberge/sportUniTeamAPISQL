@@ -3,7 +3,7 @@ const TeamsController = require('../controllers/teams_controller');
 const CoachController = require('../controllers/coach_controller');
 const PlayerController = require('../controllers/player_controller');
 const UserController = require('../controllers/user_controller');
-
+const upload = require('../file_upload/upload');
 
 const RankRulesController = require('../controllers/rank_rules_controller');
 const RankRulesPointsController = require('../controllers/rank_rules_points_controller');
@@ -42,7 +42,7 @@ module.exports = (app) => {
 
   // From now on all routes require authentication
   //app.all('/*', AuthenticateController.ensureLoggedIn);
-
+  app.post('/api/users/upload', upload.uploadProfilePicture);
   //College
   //Generate drop down lists for colleges
   app.get('/api/colleges/generateCollegeDropDownList', CollegeController.generateCollegeDropDownList);
@@ -258,5 +258,7 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsLostByPlayerId/:playerId',StatsController.getDoubleMatchsLostByPlayerId);
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
   app.get('/api/stats/getRatioStatsByPlayerId/:playerId',StatsController.getRatioStatsByPlayerId);
+
+  app.post('/api/upload',UserController.upload);
 
 };

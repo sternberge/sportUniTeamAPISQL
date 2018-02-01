@@ -4,7 +4,25 @@ var promise = require('promise');
 var bcrypt = require('bcrypt'); // algo de hash
 const saltRounds = 10;
 
+var fs = require('fs');
+
+const upload = (req, res) => {
+  var fstream;
+    req.pipe(req.busboy);
+    req.busboy.on('file', function (fieldname, file, filename) {
+        console.log("Uploading: " + filename);
+        fstream = fs.createWriteStream(__dirname + '/files/' + filename);
+        file.pipe(fstream);
+        fstream.on('close', function () {
+            res.send('uploaded');
+        });
+    });
+}
+
+
 module.exports = {
+
+  upload,
 
   findUserById (req, res) {
     const userId = req.params.user_id;
@@ -214,7 +232,5 @@ module.exports = {
       });
     });
   },
-
-
 
 };

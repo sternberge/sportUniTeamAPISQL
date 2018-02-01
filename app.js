@@ -7,6 +7,10 @@ var app = express();
 const routes = require('./routes/routes');
 const bodyParser = require('body-parser');
 
+var busboy = require('connect-busboy');
+
+app.use(busboy());
+
 app.use(bodyParser.json());
 app.use(expressValidator());
 routes(app);
