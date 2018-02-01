@@ -51,7 +51,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as fullName FROM Players p  INNER JOIN Teams t on p.Teams_teamId = t.teamId   INNER JOIN Users u on p.Users_userId = u.userId  WHERE Colleges_collegeId = ? AND u.gender LIKE ?;', [collegeId,gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as fullName FROM Players p  INNER JOIN Teams t on p.Teams_teamId = t.teamId   INNER JOIN Users u on p.Users_userId = u.userId  WHERE Colleges_collegeId = ? AND u.gender LIKE ? order by fullName;', [collegeId,gender], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -72,7 +72,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT DISTINCT request.playerId, request.PlayerName as fullName from (SELECT DISTINCT p1.playerId, concat(u1.firstName,\'  \',lastName) as PlayerName FROM SimpleMatches sm INNER JOIN Players p1 on sm.winner = p1.playerId INNER JOIN Users u1 on u1.userId = p1.playerId WHERE sm.Tournaments_tournamentId = ?  AND u1.gender LIKE ? UNION ALL SELECT DISTINCT p2.playerId, concat(u2.firstName,\'  \',u2.lastName) as PlayerName FROM  SimpleMatches sm INNER JOIN Players p2 on sm.loser = p2.playerId INNER JOIN Users u2 on u2.userId = p2.playerId WHERE sm.Tournaments_tournamentId = ? AND u2.gender LIKE ?) as request', [tournamentId,gender,tournamentId,gender], (error, results, fields) => {
+      var query = connection.query('SELECT DISTINCT request.playerId, request.PlayerName as fullName from (SELECT DISTINCT p1.playerId, concat(u1.firstName,\'  \',lastName) as PlayerName FROM SimpleMatches sm INNER JOIN Players p1 on sm.winner = p1.playerId INNER JOIN Users u1 on u1.userId = p1.playerId WHERE sm.Tournaments_tournamentId = ?  AND u1.gender LIKE ? UNION ALL SELECT DISTINCT p2.playerId, concat(u2.firstName,\'  \',u2.lastName) as PlayerName FROM  SimpleMatches sm INNER JOIN Players p2 on sm.loser = p2.playerId INNER JOIN Users u2 on u2.userId = p2.playerId WHERE sm.Tournaments_tournamentId = ? AND u2.gender LIKE ?) as request order by fullName', [tournamentId,gender,tournamentId,gender], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -93,7 +93,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as fullName FROM Players p INNER JOIN Teams t on p.Teams_teamId = t.teamId INNER JOIN Colleges c ON c.collegeId = t.Colleges_collegeId INNER JOIN Users u on p.Users_userId = u.userId WHERE c.Conferences_conferenceId = ? AND u.gender LIKE ?;', [conferenceId,gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, concat(u.firstName,\' \',u.lastName) as fullName FROM Players p INNER JOIN Teams t on p.Teams_teamId = t.teamId INNER JOIN Colleges c ON c.collegeId = t.Colleges_collegeId INNER JOIN Users u on p.Users_userId = u.userId WHERE c.Conferences_conferenceId = ? AND u.gender LIKE ? order by fullName ;', [conferenceId,gender], (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
@@ -161,7 +161,8 @@ module.exports = {
       FROM Players p INNER JOIN Users u on p.Users_userId = u.userId
       INNER JOIN Teams t on t.teamId = p.Teams_teamId
       INNER JOIN Colleges c on t.Colleges_collegeId = c.collegeId
-      Where u.gender LIKE ?`,gender, (error, results, fields) => {
+      Where u.gender LIKE ?
+      order by fullName`,gender, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
