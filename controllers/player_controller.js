@@ -239,7 +239,7 @@ module.exports = {
         }));
       }
 
-      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ?;', [coachId, coachId, gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ? order by fullName;', [coachId, coachId, gender], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -275,7 +275,7 @@ module.exports = {
         }));
       }
 
-      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName  FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId not in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ?;', [coachId, coachId, gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName  FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId not in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ? order by fullName;', [coachId, coachId, gender], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -380,7 +380,8 @@ module.exports = {
         FROM Players p INNER JOIN Users u on p.Users_userId = u.userId
         INNER JOIN Teams t on t.teamId = p.Teams_teamId
         INNER JOIN Colleges c on t.Colleges_collegeId = c.collegeId
-        WHERE Teams_teamId = ?`, teamId, (error, results, fields) => {
+        WHERE Teams_teamId = ?
+        order by fullName`, teamId, (error, results, fields) => {
           if (error) {
             connection.release();
             return res.send(JSON.stringify({
