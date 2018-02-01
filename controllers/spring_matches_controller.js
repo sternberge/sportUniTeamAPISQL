@@ -52,7 +52,7 @@ module.exports = {
         INNER JOIN Colleges c2 on c2.collegeId = t2.Colleges_collegeId
         INNER JOIN SingleRanking srk1 on srk1.Players_playerId = p1.playerId
         INNER JOIN SingleRanking srk2 on srk2.Players_playerId = p2.playerId
-        WHERE sm.springId = ?
+        WHERE sm.springId = ? AND srk1.type = 'N' AND srk2.type ='N'
         ORDER BY sm.springPosition;
         `,[springId], (error, results, fields) => {
           if (error){
