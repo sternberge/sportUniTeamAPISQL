@@ -239,7 +239,7 @@ module.exports = {
         }));
       }
 
-      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ?;', [coachId, coachId, gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ? order by fullName;', [coachId, coachId, gender], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -275,7 +275,7 @@ module.exports = {
         }));
       }
 
-      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName  FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId not in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ?;', [coachId, coachId, gender], (error, results, fields) => {
+      var query = connection.query('SELECT p.playerId, u.firstName,u.lastName,concat(u.firstName,\' \',u.lastName) as fullName  FROM Players p inner join Teams t on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId WHERE teamId not in (SELECT teamId FROM Teams WHERE Coaches_coachId = ? or Coaches_headCoachId = ?) AND u.gender = ? order by fullName;', [coachId, coachId, gender], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -345,138 +345,185 @@ module.exports = {
         INNER JOIN Conferences co on co.conferenceId = c.Conferences_conferenceId
         INNER JOIN Regions r on r.regionId = c.Regions_regionId
         WHERE p.playerId = ?`, playerId, (error, results, fields) => {
-        if (error) {
-          connection.release();
-          return res.send(JSON.stringify({
-            "status": 500,
-            "error": error,
-            "response": null
-          }));
-        }
-        res.send(JSON.stringify({
-          "status": 200,
-          "error": null,
-          "response": results
-        }));
-        connection.release(); // CLOSE THE CONNECTION
-      });
-    });
-  },
-
-
-  getPlayersByTeamId(req, res, next)
-  {
-    const teamId = req.params.teamId;
-    db.pool.getConnection((error, connection) => {
-
-      if (error) {
-        return res.send(JSON.stringify({
-          "status": 500,
-          "error": error,
-          "response": null
-        }));
-      }
-      var query = connection.query(`SELECT p.playerId, concat(u.firstName,' ',u.lastName) as fullName ,c.name as collegeName
-      FROM Players p INNER JOIN Users u on p.Users_userId = u.userId
-      INNER JOIN Teams t on t.teamId = p.Teams_teamId
-      INNER JOIN Colleges c on t.Colleges_collegeId = c.collegeId
-      WHERE Teams_teamId = ?`, teamId, (error, results, fields) => {
-        if (error) {
-          connection.release();
-          return res.send(JSON.stringify({
-            "status": 500,
-            "error": error,
-            "response": null
-          }));
-        }
-        res.send(JSON.stringify({
-          "status": 200,
-          "error": null,
-          "response": results
-        }));
-        connection.release(); // CLOSE THE CONNECTION
-      });
-    });
-  },
-
-  verifyPlayer(req, res, next) {
-
-    var playerEmail = req.params.playerEmail;
-    var password = "";
-    var hashGenerated = "";
-
-    let coachExist = false;
-
-    db.pool.getConnection((error, connection) => {
-      //erreur de connection
-      if (error){
-        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-      }
-
-      var queryTest = connection.query('select *from Users where email = ? AND userType = player',playerEmail, (error, results, fields) => {
-        console.log('Lenght de result : '+results.length);
-        if(results.length > 0 )
-        {
-          coachExist = true;
-          console.log('Le mail existe');
-        }
-        else {
-          res.send(JSON.stringify({"status": 500, "error": 'The user does not exist', "response": 'the user does not exist'}));
-          console.log('Le mail n\'existe pas');
-        }
-      });
-
-      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-      for (var i = 0; i < 8; i++)
-      password += possible.charAt(Math.floor(Math.random() * possible.length));
-
-
-      bcrypt.hash(password, saltRounds, function(err, hash) {
-        console.log("Hash : " + hash);
-        hashGenerated = hash;
-
-        var query = connection.query('UPDATE Users SET password = ? WHERE email = ?',
-        [hashGenerated,playerEmail], (error, results, fields) => {
-
-          if (error){
+          if (error) {
             connection.release();
-            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
           }
-
-          if(coachExist)
-          {
-
-            console.log('coach existe ' + coachExist);
-            if(coachExist)
-            {
-              transporter.sendMail({
-                from: 'testservicenodemailer@gmail.com',
-                to: playerEmail,
-                subject: 'SUT Team : Your password for the application',
-                text: 'Please find your password for the application ' + password
-              }, function(error, info){
-                if (error) {
-                  console.log(error);
-                } else {
-                  console.log('Email sent: ' + info.response + ' password = ' + password);
-                }
-              });
-            }
-            res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          }
-
+          res.send(JSON.stringify({
+            "status": 200,
+            "error": null,
+            "response": results
+          }));
           connection.release(); // CLOSE THE CONNECTION
         });
-
       });
-    });
-  },
-};
+    },
 
-var db = require('./../db');
-const UserController = require('../controllers/user_controller');
-var expressValidator = require('express-validator');
-const RankRulesController = require('../controllers/rank_rules_controller');
-const TeamController = require('../controllers/teams_controller');
-const SingleRankingController = require('../controllers/single_ranking_controller');
+
+    getPlayersByTeamId(req, res, next)
+    {
+      const teamId = req.params.teamId;
+      db.pool.getConnection((error, connection) => {
+
+        if (error) {
+          return res.send(JSON.stringify({
+            "status": 500,
+            "error": error,
+            "response": null
+          }));
+        }
+        var query = connection.query(`SELECT p.playerId, concat(u.firstName,' ',u.lastName) as fullName ,c.name as collegeName
+        FROM Players p INNER JOIN Users u on p.Users_userId = u.userId
+        INNER JOIN Teams t on t.teamId = p.Teams_teamId
+        INNER JOIN Colleges c on t.Colleges_collegeId = c.collegeId
+        WHERE Teams_teamId = ?
+        order by fullName`, teamId, (error, results, fields) => {
+          if (error) {
+            connection.release();
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
+          }
+          res.send(JSON.stringify({
+            "status": 200,
+            "error": null,
+            "response": results
+          }));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+      });
+    },
+
+    verifyPlayer(req, res, next) {
+
+      var playerEmail = req.params.playerEmail;
+      var password = "";
+      var hashGenerated = "";
+
+      let coachExist = false;
+
+      db.pool.getConnection((error, connection) => {
+        //erreur de connection
+        if (error){
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+
+        var queryTest = connection.query('select *from Users where email = ? AND userType = player',playerEmail, (error, results, fields) => {
+          console.log('Lenght de result : '+results.length);
+          if(results.length > 0 )
+          {
+            coachExist = true;
+            console.log('Le mail existe');
+          }
+          else {
+            res.send(JSON.stringify({"status": 500, "error": 'The user does not exist', "response": 'the user does not exist'}));
+            console.log('Le mail n\'existe pas');
+          }
+        });
+
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        for (var i = 0; i < 8; i++)
+        password += possible.charAt(Math.floor(Math.random() * possible.length));
+
+
+        bcrypt.hash(password, saltRounds, function(err, hash) {
+          console.log("Hash : " + hash);
+          hashGenerated = hash;
+
+          var query = connection.query('UPDATE Users SET password = ? WHERE email = ?',
+          [hashGenerated,playerEmail], (error, results, fields) => {
+
+            if (error){
+              connection.release();
+              return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+            }
+
+            if(coachExist)
+            {
+
+              console.log('coach existe ' + coachExist);
+              if(coachExist)
+              {
+                transporter.sendMail({
+                  from: 'testservicenodemailer@gmail.com',
+                  to: playerEmail,
+                  subject: 'SUT Team : Your password for the application',
+                  text: 'Please find your password for the application ' + password
+                }, function(error, info){
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    console.log('Email sent: ' + info.response + ' password = ' + password);
+                  }
+                });
+              }
+              res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+            }
+
+            connection.release(); // CLOSE THE CONNECTION
+          });
+
+        });
+      });
+    },
+
+
+    getPlayerInformationByUserId(req, res, next) {
+      const userId = req.params.userId;
+
+      db.pool.getConnection((error, connection) => {
+
+
+        if (error) {
+          return res.send(JSON.stringify({
+            "status": 500,
+            "error": error,
+            "response": null
+          }));
+        }
+
+        var query = connection.query(`  SELECT u.birthday, u.phone,c.name,co.conferenceLabel,l.leagueName FROM Users u
+          INNER JOIN Players p on p.Users_userId = u.userId
+          INNER JOIN Teams t on t.teamId = p.Teams_teamId
+          INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+          INNER JOIN Conferences co on co.conferenceId = c.Conferences_conferenceId
+          INNER JOIN Leagues l on l.leagueId = c.Leagues_leagueId
+          WHERE u.userId = ?`, userId, (error, results, fields) => {
+            if (error) {
+              connection.release();
+              return res.send(JSON.stringify({
+                "status": 500,
+                "error": error,
+                "response": null
+              }));
+            }
+            res.send(JSON.stringify({
+              "status": 200,
+              "error": null,
+              "response": results
+            }));
+            connection.release(); // CLOSE THE CONNECTION
+
+            console.log(query.sql);
+          });
+        });
+      },
+
+
+
+
+    };
+
+    var db = require('./../db');
+    const UserController = require('../controllers/user_controller');
+    var expressValidator = require('express-validator');
+    const RankRulesController = require('../controllers/rank_rules_controller');
+    const TeamController = require('../controllers/teams_controller');
+    const SingleRankingController = require('../controllers/single_ranking_controller');

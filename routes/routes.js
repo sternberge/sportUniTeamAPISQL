@@ -63,6 +63,7 @@ module.exports = (app) => {
   app.put('/api/coaches/:coach_id', CoachController.editCoach);
   app.delete('/api/coaches/:coach_id', CoachController.deleteCoach);
   app.get('/api/coaches/:coach_id', CoachController.findCoachById);
+  app.post('/api/coaches/sendEmailForMatchReportToSystem', CoachController.sendEmailForMatchReportToSystem);
 
   //Players
   app.post('/api/players', PlayerController.createPlayer);
@@ -76,7 +77,8 @@ module.exports = (app) => {
   app.get('/api/players/getPlayerInformationByPlayerId/:playerId',PlayerController.getPlayerInformationByPlayerId);
   app.get('/api/players/getPlayersByTeamId/:teamId',PlayerController.getPlayersByTeamId);
   app.get('/api/players/getAllPlayersByTeamId/:teamId',PlayerController.getAllPlayersByTeamId);
-  app.get('/api/players/verifyPlayer/:playerEmail',PlayerController.verifyPlayer)
+  app.get('/api/players/verifyPlayer/:playerEmail',PlayerController.verifyPlayer);
+  app.get('/api/players/getPlayerInformationByUserId/:userId',PlayerController.getPlayerInformationByUserId);
 
   //Users
   app.post('/api/users', UserController.createUser);
@@ -192,6 +194,8 @@ module.exports = (app) => {
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1/:year/:springFall/:tournamentId/:playerId1',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1Player2/:year/:springFall/:tournamentId/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1Player2);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentCollege/:year/:springFall/:gender/:tournamentId/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentCollege);
+  app.get('/api/doubleMatches/getMatchSimpleOrDoubleByMatchId/:matchId/:matchType',DoubleMatchesController.getMatchSimpleOrDoubleByMatchId);
+
   //Teams
   app.get('/api/teams/getTeamIdByGenderCollege/:gender/:collegeId',TeamsController.getTeamIdByGenderCollege);
   app.post('/api/teams', TeamsController.createTeamWithDefaultRankings);
