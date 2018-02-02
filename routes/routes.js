@@ -63,6 +63,7 @@ module.exports = (app) => {
   app.put('/api/coaches/:coach_id', CoachController.editCoach);
   app.delete('/api/coaches/:coach_id', CoachController.deleteCoach);
   app.get('/api/coaches/:coach_id', CoachController.findCoachById);
+  app.post('/api/coaches/sendEmailForMatchReportToSystem', CoachController.sendEmailForMatchReportToSystem);
 
   //Players
   app.post('/api/players', PlayerController.createPlayer);

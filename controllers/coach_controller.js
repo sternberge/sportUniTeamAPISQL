@@ -251,5 +251,25 @@ module.exports = {
       });
     },
 
+    sendEmailForMatchReportToSystem(req,res,next){
+      const message = req.body.message;
+
+      transporter.sendMail({
+        from: 'testservicenodemailer@gmail.com',
+        to: 'testservicenodemailer@gmail.com',
+        subject: 'Match report of ' + new Date(),
+        text: message
+      }, function(error, info){
+        if (error) {
+            res.send(JSON.stringify({"status": 500, "error": null, "response": 'error'}));
+          console.log(error);
+        } else {
+          res.send(JSON.stringify({"status": 200, "error": null, "response": 'everything is fine'}));
+          console.log('Email sent: ' + info.response);
+        }
+      });
+
+    },
+
 
   };
