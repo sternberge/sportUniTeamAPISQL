@@ -6,6 +6,17 @@ var fs = require('fs');
 
 
 
-const download = () => {
-  
+const download = (req,res) => {
+  let id = 4;
+  let type = "colleges"
+  let pictureFolder = "public/uploaded_files";
+  pictureFolder = pictureFolder + "/" + type + "/" + id + "/test.pdf" ;
+
+  res.download(pictureFolder);
+
 }
+
+
+module.exports = {
+  download
+};
