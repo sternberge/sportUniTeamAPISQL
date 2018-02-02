@@ -431,4 +431,77 @@ module.exports = {
     });
   },
 
+  getMatchSimpleOrDoubleByMatchId (req, res) {
+
+    const matchId = req.params.matchId;
+    const matchType = req.params.matchType;
+
+    db.pool.getConnection((error, connection) => {
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      if(matchType == 'S')
+      {
+        var query = connection.query(`SELECT sm.simpleMatchId, sm.date,c1.name as collegeWinner,c2.name as collegeLoser,t1.Coaches_headCoachId as coachIdCollegeWinner,t2.Coaches_headCoachId as coachIdCollegeLoser,concat(u3.firstName,' ',u3.lastName) as coachNameCollegeWinner,concat(u4.firstName,' ',u4.lastName) as coachNameCollegeLoser,sm.Tournaments_tournamentId,t.name,sm.score,concat(u1.firstName,' ',u1.lastName) as winnerName, concat(u2.firstName,' ',u2.lastName) as loserName,p1.playerId as winnerId,p2.playerId as loserId
+        FROM  SimpleMatches sm
+        INNER JOIN Players p1 on sm.winner = p1.playerId
+        INNER JOIN Players p2 on sm.loser = p2.playerId
+        INNER JOIN Users u1 on u1.userId = p1.Users_userId
+        INNER JOIN Users u2 on u2.userId = p2.Users_userId
+        INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId
+        INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId
+        INNER JOIN Colleges c1 on c1.collegeId = t1.Colleges_collegeId
+        INNER JOIN Colleges c2 on c2.collegeId = t2.Colleges_collegeId
+        LEFT JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId
+        INNER JOIN Coaches co1 on co1.coachId = t1.Coaches_headCoachId
+        INNER JOIN Coaches co2 on co2.coachId = t2.Coaches_headCoachId
+        INNER JOIN Users u3 on u3.userId = co1.Users_userId
+        INNER JOIN Users u4 on u4.userId = co2.Users_userId
+        WHERE sm.simpleMatchId = ?
+        `, matchId, (error, results, fields) => {
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+      }
+      else if (matchType == 'D')
+      {
+        var query = connection.query(`SELECT dm.doubleMatchId,c1.name as collegeWinner,c2.name as collegeLoser,co1.coachId as coachIdCollegeWinner,co2.coachId as coachIdCollegeLoser,concat(u5.firstName,' ',u5.lastName) as coachNameCollegeWinner,concat(u6.firstName,' ',u6.lastName) as coachNameCollegeLoser,dm.Tournaments_tournamentId,t.name,dm.score,concat(u1.firstName,' ',u1.lastName) as winnerName1, concat(u2.firstName,' ',u2.lastName) as winnerName2,concat(u3.firstName,' ',u3.lastName) as loserName1, concat(u4.firstName,' ',u4.lastName) as loserName2,p1.playerId as winnerId1,p2.playerId as winnerId2,p3.playerId as loserId1,p4.playerId as loserId2
+        FROM  DoubleMatches dm
+        INNER JOIN DoubleTeams dt1 on dm.winnerDouble = dt1.doubleTeamId
+        INNER JOIN DoubleTeams dt2 on dm.loserDouble = dt2.doubleTeamId
+        INNER JOIN Players p1 on dt1.Players_playerId = p1.playerId
+        INNER JOIN Players p2 on dt1.Players_playerId2 = p2.playerId
+        INNER JOIN Players p3 on dt2.Players_playerId = p3.playerId
+        INNER JOIN Players p4 on dt2.Players_playerId2 = p4.playerId
+        INNER JOIN Users u1 on p1.Users_userId = u1.userId
+        INNER JOIN Users u2 on p2.Users_userId = u2.userId
+        INNER JOIN Users u3 on p3.Users_userId = u3.userId
+        INNER JOIN Users u4 on p4.Users_userId = u4.userId
+        INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId
+        INNER JOIN Teams t2 on t2.teamId = p3.Teams_teamId
+        LEFT JOIN Tournaments t on t.tournamentId = dm.Tournaments_tournamentId
+        INNER JOIN Coaches co1 on co1.coachId = t1.Coaches_headCoachId
+        INNER JOIN Coaches co2 on co2.coachId = t2.Coaches_headCoachId
+        INNER JOIN Users u5 on u5.userId = co1.Users_userId
+        INNER JOIN Users u6 on u6.userId = co2.Users_userId
+        INNER JOIN Colleges c1 on c1.collegeId = t1.Colleges_collegeId
+        INNER JOIN Colleges c2 on c2.collegeId = t2.Colleges_collegeId
+        where doubleMatchId = ?
+        `, matchId, (error, results, fields) => {
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+      }
+
+    });
+  },
+
 };
