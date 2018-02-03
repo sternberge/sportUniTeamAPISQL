@@ -219,7 +219,7 @@ module.exports = {
   getRatioStatsByPlayerId(req, res, next) {
 
     const playerId = req.params.playerId;
-
+    const springFall = req.params.springFall;
     db.pool.getConnection((error, connection) => {
       if (error) {
         return res.send(JSON.stringify({
@@ -229,30 +229,30 @@ module.exports = {
         }));
       }
       var query = connection.query(`
-        SELECT *,(simpleMatchsWon / simpleMatchsPlayed)*100 as victoryRatioSimple,(doubleMatchsWon/doubleMatchsPlayed)*100 as victoryRationDouble  FROM
+        SELECT *,(simpleMatchsWon / simpleMatchsPlayed)*100 as victoryRatioSimple,(doubleMatchsWon/doubleMatchsPlayed)*100 as victoryRationDouble, ( (simpleMatchsWon+doubleMatchsWon)/(simpleMatchsPlayed+doubleMatchsPlayed))*100 as overallRatio  FROM
         (SELECT count(*) simpleMatchsWon FROM SimpleMatches sm
-        WHERE Winner = ?) AS simpleMatchsWon,
+        WHERE Winner = ? AND sm.springFall LIKE ?) AS simpleMatchsWon,
 
         (SELECT count(*) simpleMatchsLost  FROM SimpleMatches sm
-        WHERE Loser = ?) as simpleMatchsLost,
+        WHERE Loser = ? AND sm.springFall LIKE ?) as simpleMatchsLost,
 
         (SELECT COUNT(*) simpleMatchsPlayed FROM SimpleMatches sm
-        WHERE Winner = ? OR Loser = ?) as simpleMatchsPlayed,
+        WHERE Winner = ? OR Loser = ? AND sm.springFall LIKE ?) as simpleMatchsPlayed,
 
         (SELECT count(*) doubleMatchsWon FROM DoubleMatches dm
         INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
-        WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?) as doubleMatchsWon,
+        WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? AND dm.springFall LIKE ?) as doubleMatchsWon,
 
         (SELECT count(*) doubleMatchsLost  FROM DoubleMatches dm
         INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.loserDouble
-        WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?) as doubleMatchsLost,
+        WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? AND dm.springFall LIKE ?) as doubleMatchsLost,
 
         (SELECT count(*) doubleMatchsPlayed FROM DoubleMatches dm
         INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
         INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
-        WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? OR dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?) as doubleMatchsPlayed
+        WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? OR dt2.Players_playerId = ? OR dt2.Players_playerId2 = ? AND dm.springFall LIKE ?) as doubleMatchsPlayed
 
-        `, [playerId,playerId,playerId,playerId,playerId,playerId,playerId,playerId,playerId,playerId,playerId,playerId],(error, results, fields) => {
+        `, [playerId,springFall,playerId,springFall,playerId,playerId,springFall,playerId,playerId,springFall,playerId,playerId,springFall,playerId,playerId,playerId,playerId,springFall],(error, results, fields) => {
           if (error) {
             connection.release();
             return res.send(JSON.stringify({
@@ -261,6 +261,8 @@ module.exports = {
               "response": null
             }));
           }
+
+          console.log(query.sql);
 
           res.send(JSON.stringify({
             "status": 200,
