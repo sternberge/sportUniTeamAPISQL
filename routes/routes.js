@@ -42,7 +42,7 @@ module.exports = (app) => {
 
   // From now on all routes require authentication
   //app.all('/*', AuthenticateController.ensureLoggedIn);
-  app.post('/api/users/upload', upload.upload); 
+  app.post('/api/users/upload', upload.upload);
   //College
   //Generate drop down lists for colleges
   app.get('/api/colleges/generateCollegeDropDownList', CollegeController.generateCollegeDropDownList);
@@ -262,6 +262,12 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsLostByPlayerId/:playerId',StatsController.getDoubleMatchsLostByPlayerId);
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
   app.get('/api/stats/getRatioStatsByPlayerId/:playerId',StatsController.getRatioStatsByPlayerId);
+  app.get('/api/stats/getWinRatioByTeam/:springFall/:teamId',StatsController.getWinRatioByTeam);
+  app.get('/api/stats/getSpringWinRatioByTeam/:homeAway/:teamId',StatsController.getSpringWinRatioByTeam);
+  app.get('/api/stats/getTournamentsWinRatioByPlayer/:springFall/:playerId',StatsController.getTournamentsWinRatioByPlayer);
+  app.get('/api/stats/getTournamentsWinRatioByTeam/:teamId',StatsController.getTournamentsWinRatioByTeam);
+
+
 
   //app.post('/api/upload',UserController.upload);
 
