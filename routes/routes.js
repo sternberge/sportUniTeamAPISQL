@@ -266,6 +266,7 @@ module.exports = (app) => {
   app.get('/api/stats/getSpringWinRatioByTeam/:homeAway/:teamId',StatsController.getSpringWinRatioByTeam);
   app.get('/api/stats/getTournamentsWinRatioByPlayer/:springFall/:playerId',StatsController.getTournamentsWinRatioByPlayer);
   app.get('/api/stats/getTournamentsWinRatioByTeam/:teamId',StatsController.getTournamentsWinRatioByTeam);
+  app.get('/api/stats/getSpringHomeAwayWinByPlayer/:homeAway/:playerId',StatsController.getSpringHomeAwayWinByPlayer);
 
 
 

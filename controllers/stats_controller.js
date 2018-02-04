@@ -533,4 +533,75 @@ module.exports = {
       },
 
 
+      getSpringHomeAwayWinByPlayer(req, res, next) {
+
+
+        const playerId = Number(req.params.playerId);
+        const homeAway = req.params.homeAway;
+
+        db.pool.getConnection((error, connection) => {
+          if (error) {
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
+          }
+          var query = connection.query(`
+            SELECT *, (SpringsWon/SpringsPlayed)*100 as springsVictoryRatio FROM
+            /*SpringPlayed By the player*/
+            (select count(*) as SpringsPlayed from (SELECT sr.*,concat(group_concat(distinct sm.winner),',',group_concat(distinct sm.loser),',',group_concat(distinct dt1.Players_playerId),',',group_concat(distinct dt1.Players_playerId2),',',group_concat(distinct dt2.Players_playerId),',',group_concat(distinct dt2.Players_playerId2)) as playersInvolvedInSpring FROM SpringResult sr
+            INNER JOIN Teams t on t.teamId = sr.winnerId
+            INNER JOIN SimpleMatches sm on sm.springId = sr.springId
+            INNER JOIN DoubleMatches dm on dm.springId = sr.springId
+            INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+            INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+            INNER JOIN Players p1 on p1.playerId = sm.winner
+            INNER JOIN Players p2 on p2.playerId = sm.loser
+            WHERE sr.homeAway LIKE ?
+            GROUP BY sm.springId) as t
+            WHERE (playersInvolvedInSpring Like '?,%' OR playersInvolvedInSpring Like '%,?,%'Or  playersInvolvedInSpring Like '%,?')
+            AND winnerId = (SELECT Teams_teamId FROM Players p INNER JOIN Teams t on t.teamId = p.Teams_teamId WHERE p.playerId = ?)
+            OR LoserId = (SELECT Teams_teamId FROM Players p INNER JOIN Teams t on t.teamId = p.Teams_teamId WHERE p.playerId = ?)
+          )as SpringPlayed,
+
+
+          /*SpringWon by the player*/
+          (select count(*) as SpringsWon from (SELECT sr.*,concat(group_concat(distinct sm.winner),',',group_concat(distinct sm.loser),',',group_concat(distinct dt1.Players_playerId),',',group_concat(distinct dt1.Players_playerId2),',',group_concat(distinct dt2.Players_playerId),',',group_concat(distinct dt2.Players_playerId2)) as playersInvolvedInSpring FROM SpringResult sr
+          INNER JOIN Teams t on t.teamId = sr.winnerId
+          INNER JOIN SimpleMatches sm on sm.springId = sr.springId
+          INNER JOIN DoubleMatches dm on dm.springId = sr.springId
+          INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
+          INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
+          INNER JOIN Players p1 on p1.playerId = sm.winner
+          INNER JOIN Players p2 on p2.playerId = sm.loser
+          WHERE sr.homeAway LIKE ?
+          GROUP BY sm.springId) as t
+          WHERE (playersInvolvedInSpring Like '?,%' OR playersInvolvedInSpring Like '%,?,%'Or  playersInvolvedInSpring Like '%,?')
+          AND winnerId = (SELECT Teams_teamId FROM Players p INNER JOIN Teams t on t.teamId = p.Teams_teamId WHERE p.playerId = ?)) as SpringWon
+          `
+          ,[homeAway,playerId,playerId,playerId,playerId,playerId,homeAway,playerId,playerId,playerId,playerId],(error, results, fields) => {
+            if (error) {
+              connection.release();
+              return res.send(JSON.stringify({
+                "status": 500,
+                "error": error,
+                "response": null
+              }));
+            }
+
+            console.log(query.sql);
+
+            res.send(JSON.stringify({
+              "status": 200,
+              "error": null,
+              "response": results
+            }));
+            connection.release(); // CLOSE THE CONNECTION
+
+          });
+        });
+      },
+
+
     };
