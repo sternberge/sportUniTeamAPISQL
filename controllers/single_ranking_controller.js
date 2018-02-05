@@ -63,7 +63,7 @@ module.exports = {
       var query = connection.query('INSERT INTO SingleRanking (rank, rankPoints, Players_playerId,	differenceRank, differencePoints, type) VALUES(?, ?, ?, ?, ?, ?)',
       [rank, 0, playerId, 0, 0, type], (error, results, fields) => {
         if (error){
-          return reject(error)
+          return reject(error);
         }
         resolve(results.insertId);
       });

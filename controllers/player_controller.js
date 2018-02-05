@@ -107,9 +107,10 @@ module.exports = {
 
 
   async createPlayer(req, res) {
+    let connection;
     try {
       //Ouverture de la transaction
-      var connection = await db.getConnectionForTransaction(db.pool);
+      connection = await db.getConnectionForTransaction(db.pool);
       //Check si l'email n'est pas deja existant
       await UserController.checkEmailUnicity(connection, req.body.email);
       // Check cohérence genre team du joueur et genre du joueur
@@ -126,12 +127,9 @@ module.exports = {
       var nonRankedValueSingle = await RankRulesController.getLastRankingPerType(connection, "S");
       console.log("Valeur unranked pour classement simple :", nonRankedValueSingle);
       //On cree 3 classements unranked Single pour le regional national et country
-      var type = ["R", "N", "C"];
+      let type = ["R", "N", "C"];
       const promisesPerType = type.map(type =>
         SingleRankingController.createInitialRanking(connection, nonRankedValueSingle, playerId, type)
-        .catch((error) => {
-          console.log(error);
-        })
       );
       const resu = await Promise.all(promisesPerType);
       // Fermeture de la transaction
@@ -142,6 +140,8 @@ module.exports = {
         "response": "Player has been created"
       }));
     } catch (error) {
+      // Fermeture de la transaction
+      await db.rollbackConnectionTransaction(connection);
       //console.log(error);
       res.status(500).send(JSON.stringify({
         "error": error

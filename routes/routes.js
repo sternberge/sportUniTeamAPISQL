@@ -261,7 +261,14 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsWonByPlayerId/:playerId',StatsController.getDoubleMatchsWonByPlayerId);
   app.get('/api/stats/getDoubleMatchsLostByPlayerId/:playerId',StatsController.getDoubleMatchsLostByPlayerId);
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
-  app.get('/api/stats/getRatioStatsByPlayerId/:playerId',StatsController.getRatioStatsByPlayerId);
+  app.get('/api/stats/getRatioStatsByPlayerId/:springFall/:playerId',StatsController.getRatioStatsByPlayerId);
+  app.get('/api/stats/getWinRatioByTeam/:springFall/:teamId',StatsController.getWinRatioByTeam);
+  app.get('/api/stats/getSpringWinRatioByTeam/:homeAway/:teamId',StatsController.getSpringWinRatioByTeam);
+  app.get('/api/stats/getTournamentsWinRatioByPlayer/:springFall/:playerId',StatsController.getTournamentsWinRatioByPlayer);
+  app.get('/api/stats/getTournamentsWinRatioByTeam/:teamId',StatsController.getTournamentsWinRatioByTeam);
+  app.get('/api/stats/getSpringHomeAwayWinByPlayer/:homeAway/:playerId',StatsController.getSpringHomeAwayWinByPlayer);
+
+
 
   //app.post('/api/upload',UserController.upload);
 

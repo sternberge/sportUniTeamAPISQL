@@ -47,13 +47,14 @@ module.exports = {
   },
 
   async createCoach(req, res) {
+    let connection;
     try{
       //Ouverture de la transaction
-      var connection = await db.getConnectionForTransaction(db.pool);
+      connection = await db.getConnectionForTransaction(db.pool);
       // Check si l'email n'est pas deja en BDD
-      var emailOk = await UserController.checkEmailUnicity(connection,req.body.email);
+      let emailOk = await UserController.checkEmailUnicity(connection,req.body.email);
       //Creation du profil utilisateur
-      var userId =  await UserController.createUserWithPromise(connection,req);
+      let userId =  await UserController.createUserWithPromise(connection,req);
       //Creation du coach
       await module.exports.createCoachProfile(connection,userId,req);
       // Fermeture de la transaction
@@ -61,6 +62,9 @@ module.exports = {
       res.send(JSON.stringify({"status": 200, "error": null, "response": "Coach has been created"}));
     }
     catch(error){
+      // Fermeture de la transaction
+      await db.rollbackConnectionTransaction(connection);
+
       return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
     }
   },
