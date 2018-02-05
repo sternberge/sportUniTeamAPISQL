@@ -346,7 +346,7 @@ module.exports = {
 
     getSpringWinRatioByTeam(req, res, next) {
 
-      const homeAway = req.params.homeAway;
+    
       const teamId = Number(req.params.teamId);
 
       db.pool.getConnection((error, connection) => {
