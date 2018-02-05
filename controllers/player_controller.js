@@ -1,3 +1,32 @@
+var db = require('./../db');
+const UserController = require('../controllers/user_controller');
+var expressValidator = require('express-validator');
+const RankRulesController = require('../controllers/rank_rules_controller');
+const TeamController = require('../controllers/teams_controller');
+const SingleRankingController = require('../controllers/single_ranking_controller');
+
+
+var expressValidator = require('express-validator');
+var nodemailer = require('nodemailer');
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'testservicenodemailer@gmail.com',
+    pass: 'Super_PFE_2018'
+  }
+});
+
+var mailOptions = {
+  from: 'testservicenodemailer@gmail.com',
+  to: 'testservicenodemailer@gmail.com',
+  subject: 'Premier test d\'un email',
+  text: 'ceci est les password :'
+};
+
+
 const getAllPlayersByTeamId = (req, res) => {
   const teamId = req.params.teamId;
   db.pool.getConnection((error, connection) => {
@@ -414,7 +443,7 @@ module.exports = {
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
 
-        var queryTest = connection.query('select *from Users where email = ? AND userType = player AND isActive = 0',playerEmail, (error, results, fields) => {
+        var queryTest = connection.query(`select * from Users where email = ? AND userType = 'player' AND isActive = 0`,playerEmail, (error, results, fields) => {
           console.log('Lenght de result : '+results.length);
           if(results.length > 0 )
           {
@@ -437,7 +466,7 @@ module.exports = {
           console.log("Hash : " + hash);
           hashGenerated = hash;
 
-          var query = connection.query('UPDATE Users SET password = ?,SET isActive = 1 WHERE email = ?',
+          var query = connection.query('UPDATE Users SET password = ?,isActive = 1 WHERE email = ?',
           [hashGenerated,playerEmail], (error, results, fields) => {
 
             if (error){
@@ -632,10 +661,3 @@ module.exports = {
 
 
         };
-
-        var db = require('./../db');
-        const UserController = require('../controllers/user_controller');
-        var expressValidator = require('express-validator');
-        const RankRulesController = require('../controllers/rank_rules_controller');
-        const TeamController = require('../controllers/teams_controller');
-        const SingleRankingController = require('../controllers/single_ranking_controller');
