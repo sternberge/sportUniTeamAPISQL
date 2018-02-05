@@ -271,7 +271,7 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
   app.get('/api/stats/getRatioStatsByPlayerId/:springFall/:playerId',StatsController.getRatioStatsByPlayerId);
   app.get('/api/stats/getWinRatioByTeam/:springFall/:teamId',StatsController.getWinRatioByTeam);
-  app.get('/api/stats/getSpringWinRatioByTeam/:homeAway/:teamId',StatsController.getSpringWinRatioByTeam);
+  app.get('/api/stats/getSpringWinRatioByTeam/:teamId',StatsController.getSpringWinRatioByTeam);
   app.get('/api/stats/getTournamentsWinRatioByPlayer/:springFall/:playerId',StatsController.getTournamentsWinRatioByPlayer);
   app.get('/api/stats/getTournamentsWinRatioByTeam/:teamId',StatsController.getTournamentsWinRatioByTeam);
   app.get('/api/stats/getSpringHomeAwayWinByPlayer/:homeAway/:playerId',StatsController.getSpringHomeAwayWinByPlayer);

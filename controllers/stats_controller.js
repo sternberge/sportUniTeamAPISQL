@@ -346,7 +346,7 @@ module.exports = {
 
     getSpringWinRatioByTeam(req, res, next) {
 
-      const homeAway = req.params.homeAway;
+    
       const teamId = Number(req.params.teamId);
 
       db.pool.getConnection((error, connection) => {
@@ -357,25 +357,31 @@ module.exports = {
             "response": null
           }));
         }
-        var query = connection.query(`SELECT *, (springsHomeWonByTeam / springsPlayedByTeam)*100 springHomeWinRatio,
-        (springsAwayWonByTeam / springsPlayedByTeam)*100 as springAwayWinRatio,
-        (springsWonByTeam/springsPlayedByTeam)*100 as springOverallWinRatio
+        var query = connection.query(`SELECT *, (springsHomeWonByTeam / springsPlayedByTeam)*100 springsHomeWinRatio,(springsAwayWonByTeam / springsAwayPlayedByTeam)*100 as springAwayWinRatio,(springsWonByTeam/springsPlayedByTeam)*100 as springOverallWinRatio
 
         FROM
 
 
         (SELECT count(*) as springsHomeWonByTeam FROM SpringResult sr
-        WHERE winnerId LIKE ? AND homeAway LIKE ?) as springsHomeWonByTeam,
+        WHERE winnerId LIKE ? AND homeAway = 'H') as springsHomeWonByTeam,
 
         (SELECT count(*) as springsAwayWonByTeam FROM SpringResult sr
-        WHERE winnerId = ? AND homeAway = ?) as springsAwayWonByTeam,
+        WHERE winnerId = ? AND homeAway = 'A') as springsAwayWonByTeam,
+
+        (SELECT count(*) as springsHomePlayedByTeam FROM SpringResult sr
+        WHERE (winnerId LIKE ? OR loserId LIKE ?) AND homeAway = 'H') as springsHomePlayedByTeam,
+
+        (SELECT count(*) as springsAwayPlayedByTeam FROM SpringResult sr
+        WHERE (winnerId LIKE ? OR loserId LIKE ?) AND homeAway = 'A') as springsAwayPlayedByTeam,
 
         (SELECT count(*) as springsWonByTeam FROM SpringResult sr
         WHERE winnerId = ?) as springsWonByTeam,
 
         (SELECT count(*) as springsPlayedByTeam FROM SpringResult sr
-        WHERE winnerId = ? or loserId = ?) as springsPlayedByTeam`
-        ,[teamId,homeAway,teamId,homeAway,teamId,teamId,teamId],(error, results, fields) => {
+        WHERE (winnerId = ? or loserId = ?)) as springsPlayedByTeam
+
+        `
+        ,[teamId,teamId,teamId,teamId,teamId,teamId,teamId,teamId,teamId],(error, results, fields) => {
           if (error) {
             connection.release();
             return res.send(JSON.stringify({
@@ -395,6 +401,8 @@ module.exports = {
           connection.release(); // CLOSE THE CONNECTION
 
         });
+
+
       });
     },
 
