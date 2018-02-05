@@ -119,6 +119,7 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (connection, rankingTyp
     } else if (nbMatchesWon == 0) {
       console.log(`No match won for doubleTeamId ${doubleTeamId} and type ${rankingType}`);
     } else {
+      rankPoints = winPoints / nbMatchesWon;
       console.log(`All countable matches are wins for doubleTeamId ${doubleTeamId} and type ${rankingType}`);
     }
 
