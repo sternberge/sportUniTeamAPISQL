@@ -1,24 +1,5 @@
 var db = require('./../db');
 
-//Get the different Team ids from the Teams Table in the DB
-const getTeamIds = () => {
-  return new Promise((resolve, reject) => {
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
-      var query = connection.query(`SELECT teamId FROM Teams`, (error, results, fields) => {
-        if (error) {
-          connection.release();
-          return reject(error);
-        }
-        connection.release(); // CLOSE THE CONNECTION
-        resolve(results);
-      });
-    });
-  });
-}
-
 const getTeamUnrankedNumber = () => {
   return new Promise((resolve, reject) => {
     db.pool.getConnection((error, connection) => {
@@ -140,7 +121,6 @@ const createTeamWithDefaultRankings = async (req, res) => {
 
 module.exports = {
 
-  getTeamIds,
   createTeamWithDefaultRankings,
 
   find(req, res) {
