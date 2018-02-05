@@ -17,7 +17,6 @@ const createNewDoubleRankings = async (req, res) => {
     try{
       //Fermeture de la transaction avec rollback
       let closeConnection = await db.rollbackConnectionTransaction(connection);
-      console.log(err);
       return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Double Ranking Failed"}));
     } catch(err){
       return res.send(JSON.stringify({"error":"Rollback failed"}));
@@ -32,7 +31,6 @@ const createNewDoubleRankings = async (req, res) => {
     try{
       //Fermeture de la transaction avec rollback
       let closeConnection = await db.rollbackConnectionTransaction(connection);
-      console.log(err);
       return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Double Ranking Failed"}));
     } catch(err){
       return res.send(JSON.stringify({"error":"Rollback failed"}));
@@ -47,7 +45,18 @@ const createNewDoubleRankings = async (req, res) => {
     try{
       //Fermeture de la transaction avec rollback
       let closeConnection = await db.rollbackConnectionTransaction(connection);
-      console.log(err);
+      return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Double Ranking Failed"}));
+    } catch(err){
+      return res.send(JSON.stringify({"error":"Rollback failed"}));
+    }
+  }
+
+  try{
+    db.closeConnectionTransaction(connection);
+  } catch(err){
+    try{
+      //Fermeture de la transaction avec rollback
+      let closeConnection = await db.rollbackConnectionTransaction(connection);
       return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Double Ranking Failed"}));
     } catch(err){
       return res.send(JSON.stringify({"error":"Rollback failed"}));

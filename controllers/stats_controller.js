@@ -289,37 +289,39 @@ module.exports = {
           }));
         }
         var query = connection.query(`SELECT *, (simpleMatchsWon/simpleMatchsPlayed)*100 as simpleMatchWonRatioByTeam,(doubleMatchsWon/doubleMatchsPlayed)*100  as doubleMatchWonRatioByTeam, ((simpleMatchsWon+doubleMatchsWon) / (simpleMatchsPlayed+doubleMatchsPlayed))*100 as overallRatio FROM
+
         (SELECT count(*) as simpleMatchsWon FROM SimpleMatches sm
         INNER JOIN Players p on p.playerId = sm.winner
-        WHERE p.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ? ) as simpleMatchsWon,(SELECT count(*) as simpleMatchsLost FROM SimpleMatches sm
+        WHERE p.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as simpleMatchsWon,
+
+        (SELECT count(*) as simpleMatchsLost FROM SimpleMatches sm
         INNER JOIN Players p on p.playerId = sm.loser
         WHERE p.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as simpleMatchsLost,
-
 
         (SELECT count(*) simpleMatchsPlayed FROM SimpleMatches sm
         INNER JOIN Players p1 on p1.playerId = sm.winner
         INNER JOIN Players p2 on p2.playerId = sm.loser
-        WHERE p1.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?)
-        OR p2.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as simpleMatchsPlayed,
+        WHERE (p1.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?)
+        OR p2.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?)) AND springFall LIKE ?) as simpleMatchsPlayed,
 
         (SELECT count(*) as doubleMatchsWon FROM DoubleMatches dm
-        INNER JOIN DoubleTeams dt on dm.winnerDouble
-        INNER JOIN Players p on p.playerId = dt.Players_playerId
-        WHERE p.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as doubleMatchsWon,
+        INNER JOIN DoubleTeams dt on dm.winnerDouble = dt.doubleTeamId
+        INNER JOIN Players p1 on p1.playerId = dt.Players_playerId
+        INNER JOIN Players p2 on p2.playerId = dt.Players_playerId2
+        WHERE p1.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) OR p2.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as doubleMatchsWon,
 
         (SELECT count(*) as doubleMatchsLost FROM DoubleMatches dm
-        INNER JOIN DoubleTeams dt on dm.loserDouble
+        INNER JOIN DoubleTeams dt on dm.loserDouble = dt.doubleTeamId
         INNER JOIN Players p on p.playerId = dt.Players_playerId
         WHERE p.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as doubleMatchsLost,
 
         (SELECT count(*) as doubleMatchsPlayed FROM DoubleMatches dm
-        INNER JOIN DoubleTeams dt1 on dm.winnerDouble
-        INNER JOIN DoubleTeams dt2 on dm.loserDouble
+        INNER JOIN DoubleTeams dt1 on dm.winnerDouble = dt1.doubleTeamId
+        INNER JOIN DoubleTeams dt2 on dm.loserDouble = dt2.doubleTeamId
         INNER JOIN Players p1 on p1.playerId = dt1.Players_playerId
         INNER JOIN Players p2 on p2.playerId = dt2.Players_playerId
         WHERE p1.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?)
-        or p2.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as doubleMatchsPlayed
-        `, [teamId,springFall,teamId,springFall,teamId,teamId,springFall,teamId,springFall,teamId,springFall,teamId,teamId,springFall],(error, results, fields) => {
+        or p2.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as doubleMatchsPlayed`, [teamId,springFall,teamId,springFall,teamId,teamId,springFall,teamId,springFall,teamId,springFall,teamId,teamId,springFall,springFall],(error, results, fields) => {
           if (error) {
             connection.release();
             return res.send(JSON.stringify({
