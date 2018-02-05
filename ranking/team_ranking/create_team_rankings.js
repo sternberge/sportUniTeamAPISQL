@@ -1,4 +1,4 @@
-const createNewSingleRanking = async (req, res) => {
+const createNewTeamRankings = async (req, res) => {
   const currentDate = new Date();
   let connection;
 
@@ -15,15 +15,15 @@ const createNewSingleRanking = async (req, res) => {
       console.log(err);
     }
     return res.status(500).send(JSON.stringify({
-      "error": "New Single Ranking Failed"
+      "error": "New Team Rankings Failed"
     }));
   }
 
   try{
-    console.log("Initiating Single ranking archiving process");
-    const archiveCurrentSingleRankingsPromise =
-    await archiveRankings.archiveCurrentSingleRankings(connection);
-    console.log(archiveCurrentSingleRankingsPromise);
+    console.log("Initiating team ranking archiving process");
+    const archiveCurrentTeamRankingsPromise =
+    await ArchiveTeamRankings.archiveCurrentTeamRankings(connection);
+    console.log(archiveCurrentTeamRankingsPromise);
   } catch(err){
     console.log(err);
     try{
@@ -33,14 +33,14 @@ const createNewSingleRanking = async (req, res) => {
       console.log(err);
     }
     return res.status(500).send(JSON.stringify({
-      "error": "New Single Ranking Failed"
+      "error": "New Team Rankings Failed"
     }));
   }
 
   try{
-    console.log("Initiating calculation of new Single Ranking Points");
-    const calculateSingleRankingPromise = await calculateRanking.calculateSingleRanking(connection);
-    console.log(calculateSingleRankingPromise);
+    console.log("Initiating calculation of new Team Ranking Points");
+    const calculateTeamRankingPromise = await CalculateTeamRankings.calculateTeamRanking(connection);
+    console.log(calculateTeamRankingPromise);
   } catch(err){
     console.log(err);
     try{
@@ -50,14 +50,14 @@ const createNewSingleRanking = async (req, res) => {
       console.log(err);
     }
     return res.status(500).send(JSON.stringify({
-      "error": "New Single Ranking Failed"
+      "error": "New Team Rankings Failed"
     }));
   }
 
   try{
-    console.log("Initiating ordering of new Single Ranking");
-    const orderSingleRankingPromise = await orderRanking.orderSingleRanking(connection);
-    console.log(orderSingleRankingPromise);
+    console.log("Initiating ordering of new Team Ranking");
+    const orderTeamRankingPromise = await OrderTeamRankings.orderTeamRanking(connection);
+    console.log(orderTeamRankingPromise);
   } catch(err){
     console.log(err);
     try{
@@ -67,7 +67,7 @@ const createNewSingleRanking = async (req, res) => {
       console.log(err);
     }
     return res.status(500).send(JSON.stringify({
-      "error": "New Single Ranking Failed"
+      "error": "New Team Rankings Failed"
     }));
   }
 
@@ -77,25 +77,23 @@ const createNewSingleRanking = async (req, res) => {
   } catch(err){
     console.log(err);
     return res.status(500).send(JSON.stringify({
-      "error": "New Single Ranking Failed"
+      "error": "New Team Rankings Failed"
     }));
   }
 
-  console.log("New Single Ranking Created");
+  console.log("New Team Rankings Created");
   const currentDate2 = new Date();
   const time = currentDate2 - currentDate;
   console.log(time);
 
-  res.send(JSON.stringify({"status": 200, "error": null, "response": "New Single Ranking Done"}));
-
-
+  res.send(JSON.stringify({"status": 200, "error": null, "response": "New Team Ranking Done"}));
 }
 
 module.exports = {
-  createNewSingleRanking
+  createNewTeamRankings
 }
 
 const db = require('./../../db');
-const calculateRanking = require("./calculate_single_rankings.js");
-const orderRanking = require("./order_single_rankings.js");
-const archiveRankings = require("./archive_single_ranking.js");
+const CalculateTeamRankings = require("./calculate_team_rankings.js");
+const OrderTeamRankings = require("./order_team_rankings.js");
+const ArchiveTeamRankings = require("./archive_team_rankings.js");

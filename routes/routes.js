@@ -13,14 +13,15 @@ const DoubleMatchesController = require('../controllers/double_matches_controlle
 const TournamentsController = require('../controllers/tournaments_controller');
 const LeaguesController = require('../controllers/leagues_controller');
 const SpringMatchesController = require('../controllers/spring_matches_controller');
-const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
 const calculateRanking = require('../ranking/singleranking/index.js');
+const TeamRanking = require('../ranking/team_ranking/index.js');
 
 
 const AuthenticateController = require ('../middlewares/authentication/index.js');
 
+const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DoubleRankingController = require ('../controllers/double_ranking_controller');
 const TeamRankingController = require ('../controllers/team_ranking_controller');
 
@@ -139,7 +140,7 @@ module.exports = (app) => {
   app.get('/api/doubleRanking/getDoubleRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', DoubleRankingController.getDoubleRankingsByConferenceDivisionGender);
 
   //TeamRanking
-  app.get('/api/teamRanking/createNewTeamRanking', TeamRankingController.createNewTeamRanking);
+  app.get('/api/teamRanking/createNewTeamRankings', TeamRanking.createNewTeamRankings);
   app.post('/api/teamRanking', TeamRankingController.create);
   app.delete('/api/teamRanking/:teamRankingId', TeamRankingController.delete);
   app.get('/api/teamRanking/:teamRankingId', TeamRankingController.find);
