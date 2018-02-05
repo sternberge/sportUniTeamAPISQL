@@ -100,8 +100,8 @@ module.exports = {
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
 
-      var queryTest = connection.query('select * from Users where email = ? ',coachEmail, (error, results, fields) => {
-
+      var queryTest = connection.query(`select * from Users where email = ? and userType = 'coach' AND isActive = 0`,coachEmail, (error, results, fields) => {
+        console.log(queryTest.sql);
         //console.log('Lenght de result : '+results.length);
         if(results.length > 0 )
         {
@@ -109,7 +109,7 @@ module.exports = {
           console.log('Le mail existe');
         }
         else {
-          res.send(JSON.stringify({"status": 500, "error": 'The user does not exist', "response": 'the user does not exist'}));
+          res.send(JSON.stringify({"status": 500, "error": 'The user does not exist or is already activated', "response": 'The user does not exist or is already activated'}));
           console.log('Le mail n\'existe pas');
         }
       });
@@ -124,7 +124,7 @@ module.exports = {
         console.log("Hash : " + hash);
         hashGenerated = hash;
 
-        var query = connection.query('UPDATE Users SET password = ? WHERE email = ?',
+        var query = connection.query('UPDATE Users SET password = ?, isActive = 1 WHERE email = ?',
         [hashGenerated,coachEmail], (error, results, fields) => {
 
           if (error){
