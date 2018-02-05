@@ -2,36 +2,37 @@ const db = require('./../../db');
 const ConferencesController = require('./../../controllers/conferences_controller.js');
 const RegionsController = require('./../../controllers/regions_controller.js');
 
-const orderSingleRanking = async (req, res) => {
-  const leagues = [1, 2, 3, 4, 5];
+const orderSingleRanking = async (connection) => {
+  return new Promise ( async (resolve, reject) => {
+    const leagues = [1, 2, 3, 4, 5];
 
-  try{
-    const orderRankingPerLeaguePromises = leagues.map(leagueId =>
-      orderRankingPerGender(leagueId)
-    );
-    await Promise.all(orderRankingPerLeaguePromises);
-    console.log("New Single Ranking ordered for all leagues");
-  } catch(err){
-    console.log("New Single Ranking ordering failed");
-    console.log(err);
-    res.send(JSON.stringify({"status": 500, "error": err, "response": "New Single Ranking ordering failed"}));
-  }
+    try{
+      const orderRankingPerLeaguePromises = leagues.map(leagueId =>
+        orderRankingPerGender(connection, leagueId)
+      );
+      await Promise.all(orderRankingPerLeaguePromises);
+      resolve("New Single Ranking ordered for all leagues");
+    } catch(err){
+      console.log(err);
+      reject("New Single Ranking ordering failed");
+    }
+  });
 }
 
-const orderRankingPerGender = async (leagueId) => {
+const orderRankingPerGender = async (connection, leagueId) => {
   return new Promise( async (resolve, reject) => {
     const genders = ["M", "F"];
 
     const orderNationalRankingPerGenderPromises = genders.map(gender =>
-      orderNationalRanking(leagueId, gender)
+      orderNationalRanking(connection, leagueId, gender)
     );
 
     const orderRegionalRankingPerGenderPromises = genders.map(gender =>
-      orderRegionalRanking(leagueId, gender)
+      orderRegionalRanking(connection, leagueId, gender)
     );
 
     const orderConferenceRankingPerGenderPromises = genders.map(gender =>
-      orderConferenceRanking(leagueId, gender)
+      orderConferenceRanking(connection, leagueId, gender)
     );
 
     try{
@@ -62,12 +63,12 @@ const orderRankingPerGender = async (leagueId) => {
   });
 }
 
-const orderNationalRanking = async (leagueId, gender) => {
+const orderNationalRanking = async (connection, leagueId, gender) => {
   return new Promise( async (resolve, reject) => {
     let newNationalRanking = [];
 
     try{
-      newNationalRanking = await getNewNationalRankingOrder(leagueId, gender);
+      newNationalRanking = await getNewNationalRankingOrder(connection, leagueId, gender);
       console.log(`New national ranking order fetched for league ${leagueId} and gender ${gender}`);
     } catch(err){
       console.log(err);
@@ -76,7 +77,7 @@ const orderNationalRanking = async (leagueId, gender) => {
 
     try{
       const updateNationalSingleRankingOrderPromises = newNationalRanking.map( (singleNationalRank, rank) =>
-        updateSingleRankingOrder(singleNationalRank.singleRankingId, rank + 1, rank + 1 - singleNationalRank.rank)
+        updateSingleRankingOrder(connection, singleNationalRank.singleRankingId, rank + 1, rank + 1 - singleNationalRank.rank)
       );
       await Promise.all(updateNationalSingleRankingOrderPromises);
       console.log(`National single ranking updated for league ${leagueId} and gender ${gender}`);
@@ -90,21 +91,21 @@ const orderNationalRanking = async (leagueId, gender) => {
 }
 
 
-const orderRegionalRanking = async (leagueId, gender) => {
+const orderRegionalRanking = async (connection, leagueId, gender) => {
   return new Promise( async (resolve, reject) => {
     let regions = [];
     let orderRegionalRankingPerRegionPromises = [];
     try{
-      regions = await RegionsController.getRegionIds();
-      console.log(`Region Ids fetched`);
+      regions = await RegionsController.getRegionIds(connection);
+      console.log(`Region Ids fetched for leagueId ${leagueId} and gender ${gender}`);
     } catch(err){
       console.log(err);
-      return reject(`Could not fetch Region Ids`);
+      return reject(`Could not fetch Region Ids for leagueId ${leagueId} and gender ${gender}`);
     }
 
     try{
       const orderRegionalSingleRankingOrderPromises = regions.map( region =>
-        orderRegionalRankingPerRegion(leagueId, gender, region.regionId)
+        orderRegionalRankingPerRegion(connection, leagueId, gender, region.regionId)
       );
       await Promise.all(orderRegionalSingleRankingOrderPromises);
       console.log(`Regional Single ranking updated for league ${leagueId} and gender ${gender}`);
@@ -117,11 +118,11 @@ const orderRegionalRanking = async (leagueId, gender) => {
   });
 }
 
-const orderRegionalRankingPerRegion = async (leagueId, gender, regionId) => {
+const orderRegionalRankingPerRegion = async (connection, leagueId, gender, regionId) => {
   return new Promise( async (resolve, reject) => {
     let newRegionalRanking = [];
     try{
-      newRegionalRanking = await getNewRegionalRankingOrder(leagueId, gender, regionId);
+      newRegionalRanking = await getNewRegionalRankingOrder(connection, leagueId, gender, regionId);
       console.log(`New regional ranking order fetched for league ${leagueId}, gender ${gender} and region ${regionId}`);
     } catch(err){
       console.log(err);
@@ -130,7 +131,7 @@ const orderRegionalRankingPerRegion = async (leagueId, gender, regionId) => {
 
     try{
       const updateRegionalSingleRankingOrderPromises = newRegionalRanking.map( (singleRegionalRank, rank) =>
-        updateSingleRankingOrder(singleRegionalRank.SingleRankingId, rank + 1, rank + 1 - singleRegionalRank.rank)
+        updateSingleRankingOrder(connection, singleRegionalRank.SingleRankingId, rank + 1, rank + 1 - singleRegionalRank.rank)
       );
       await Promise.all(updateRegionalSingleRankingOrderPromises);
       console.log(`Regional Single ranking updated for league ${leagueId}, gender ${gender} and region ${regionId}`);
@@ -143,21 +144,21 @@ const orderRegionalRankingPerRegion = async (leagueId, gender, regionId) => {
   });
 }
 
-const orderConferenceRanking = async (leagueId, gender) => {
+const orderConferenceRanking = async (connection, leagueId, gender) => {
   return new Promise( async (resolve, reject) => {
     let conferences = [];
     let orderConferenceRankingPerConferencePromises = [];
     try{
-      conferences = await ConferencesController.getConferenceIds();
-      console.log(`Conference Ids fetched`);
+      conferences = await ConferencesController.getConferenceIds(connection);
+      console.log(`Conference Ids fetched for leagueId ${leagueId} and gender ${gender}`);
     } catch(err){
       console.log(err);
-      return reject(`Could not fetch Conference Ids`);
+      return reject(`Could not fetch Conference Ids for leagueId ${leagueId} and gender ${gender}`);
     }
 
     try{
       const orderConferenceSingleRankingOrderPromises = conferences.map( conference =>
-        orderConferenceRankingPerConference(leagueId, gender, conference.conferenceId)
+        orderConferenceRankingPerConference(connection, leagueId, gender, conference.conferenceId)
       );
       await Promise.all(orderConferenceSingleRankingOrderPromises);
       console.log(`Conference Single ranking updated for league ${leagueId} and gender ${gender}`);
@@ -170,11 +171,11 @@ const orderConferenceRanking = async (leagueId, gender) => {
   });
 }
 
-const orderConferenceRankingPerConference = async (leagueId, gender, conferenceId) => {
+const orderConferenceRankingPerConference = async (connection, leagueId, gender, conferenceId) => {
   return new Promise( async (resolve, reject) => {
     let newConferenceRanking = [];
     try{
-      newConferenceRanking = await getNewConferenceRankingOrder(leagueId, gender, conferenceId);
+      newConferenceRanking = await getNewConferenceRankingOrder(connection, leagueId, gender, conferenceId);
       console.log(`New conference ranking order fetched for league ${leagueId}, gender ${gender} and conference ${conferenceId}`);
     } catch(err){
       console.log(err);
@@ -183,7 +184,7 @@ const orderConferenceRankingPerConference = async (leagueId, gender, conferenceI
 
     try{
       const updateConferenceSingleRankingOrderPromises = newConferenceRanking.map( (singleConferenceRank, rank) =>
-        updateSingleRankingOrder(singleConferenceRank.singleRankingId, rank + 1, rank + 1 - singleConferenceRank.rank)
+        updateSingleRankingOrder(connection, singleConferenceRank.singleRankingId, rank + 1, rank + 1 - singleConferenceRank.rank)
       );
       await Promise.all(updateConferenceSingleRankingOrderPromises);
       console.log(`Conference Single ranking updated for league ${leagueId}, gender ${gender} and conference ${conferenceId}`);
@@ -196,95 +197,67 @@ const orderConferenceRankingPerConference = async (leagueId, gender, conferenceI
   });
 }
 
-const updateSingleRankingOrder = (singleRankingId, rank, differenceRank) => {
+const updateSingleRankingOrder = (connection, singleRankingId, rank, differenceRank) => {
   return new Promise(function(resolve, reject) {
-    db.pool.getConnection((error, connection) => {
+    var query = connection.query(`UPDATE SingleRanking
+      SET rank = ?, differenceRank = ?
+      WHERE singleRankingId = ?`, [rank, differenceRank, singleRankingId], (error, results, fields) => {
       if (error) {
         return reject(error);
       }
-      var query = connection.query(`UPDATE SingleRanking
-        SET rank = ?, differenceRank = ?
-        WHERE singleRankingId = ?`, [rank, differenceRank, singleRankingId], (error, results, fields) => {
-        if (error) {
-          connection.release();
-          return reject(error);
-        }
-        connection.release(); // CLOSE THE CONNECTION
-        resolve(results);
-      });
+      resolve(results);
     });
   });
 }
 
 
-const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
+const getNewRegionalRankingOrder = (connection, leagueId, gender, regionId) => {
   return new Promise(function (resolve, reject) {
-    db.pool.getConnection((error, connection) => {
-      if (error){
-        return reject(error);
-      }
+    var query = connection.query(`SELECT singleRankingId, rank
+      FROM SingleRanking sr
+      INNER JOIN Players p on p.playerId = sr.Players_playerId
+      INNER JOIN Teams t on t.teamId = p.Teams_teamId
+      INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+      WHERE sr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender LIKE ? AND c.Regions_regionId = ?
+      ORDER BY sr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
+        if (error){
+          return reject(error);
+        }
+        resolve(results);
+      });
+    });
+  }
+
+  const getNewConferenceRankingOrder = (connection, leagueId, gender, conferenceId) => {
+    return new Promise(function (resolve, reject) {
       var query = connection.query(`SELECT singleRankingId, rank
         FROM SingleRanking sr
         INNER JOIN Players p on p.playerId = sr.Players_playerId
         INNER JOIN Teams t on t.teamId = p.Teams_teamId
         INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-        WHERE sr.type = 'R' AND c.Leagues_leagueId = ? AND t.gender LIKE ? AND c.Regions_regionId = ?
-        ORDER BY sr.rankPoints DESC`,[leagueId, gender, regionId], (error, results, fields) => {
+        WHERE sr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId = ?
+        ORDER BY sr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
           if (error){
-            connection.release();
             return reject(error);
           }
-          connection.release(); // CLOSE THE CONNECTION
           resolve(results);
         });
       });
-    });
-  }
+    }
 
-  const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
-    return new Promise(function (resolve, reject) {
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return reject(error);
-        }
+    const getNewNationalRankingOrder = (connection, leagueId, gender) => {
+      return new Promise(function (resolve, reject) {
         var query = connection.query(`SELECT singleRankingId, rank
           FROM SingleRanking sr
           INNER JOIN Players p on p.playerId = sr.Players_playerId
           INNER JOIN Teams t on t.teamId = p.Teams_teamId
           INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-          WHERE sr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId = ?
-          ORDER BY sr.rankPoints DESC`,[leagueId, gender, conferenceId], (error, results, fields) => {
+          WHERE sr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender LIKE ?
+          ORDER BY sr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
             if (error){
-              connection.release();
               return reject(error);
             }
-            connection.release(); // CLOSE THE CONNECTION
             resolve(results);
-          });
-        });
-      });
-    }
-
-    const getNewNationalRankingOrder = (leagueId, gender) => {
-      return new Promise(function (resolve, reject) {
-        db.pool.getConnection((error, connection) => {
-          if (error){
-            return reject(error);
-          }
-          var query = connection.query(`SELECT singleRankingId, rank
-            FROM SingleRanking sr
-            INNER JOIN Players p on p.playerId = sr.Players_playerId
-            INNER JOIN Teams t on t.teamId = p.Teams_teamId
-            INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
-            WHERE sr.type = 'N' AND c.Leagues_leagueId = ? AND t.gender LIKE ?
-            ORDER BY sr.rankPoints DESC`,[leagueId, gender], (error, results, fields) => {
-              if (error){
-                connection.release();
-                return reject(error);
-              }
-              connection.release(); // CLOSE THE CONNECTION
-              resolve(results);
-            });
           });
         });
       }

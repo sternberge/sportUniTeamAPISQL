@@ -237,7 +237,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT u.firstName,u.lastName,u.birthday,u.phone,co.name,conf.conferenceLabel,l.leagueName,t.gender as teamGender FROM Coaches c
+      var query = connection.query(`SELECT u.firstName,u.lastName,u.birthday,u.phone as userPhone,co.phone as collegePhone,co.name,conf.conferenceLabel,l.leagueName,t.gender as teamGender FROM Coaches c
         INNER JOIN Users u on c.Users_userId = u.userId
         INNER JOIN Teams t on t.Coaches_coachId = c.coachId or t.Coaches_headCoachId = c.coachId
         INNER JOIN Colleges co on co.collegeId = t.Colleges_collegeId
@@ -265,7 +265,7 @@ module.exports = {
         text: message
       }, function(error, info){
         if (error) {
-            res.send(JSON.stringify({"status": 500, "error": null, "response": 'error'}));
+          res.send(JSON.stringify({"status": 500, "error": null, "response": 'error'}));
           console.log(error);
         } else {
           res.send(JSON.stringify({"status": 200, "error": null, "response": 'everything is fine'}));
