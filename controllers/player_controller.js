@@ -599,7 +599,7 @@ module.exports = {
           }
 
           var query = connection.query(`
-            SELECT dr.*,u.firstName,u.lastName,p.status,c.name,u1.firstName as firstNamePlayer1,u1.lastName as lastNamePlayer2,p1.status as statusPlayer1,u2.firstName as firstNamePlayer2,u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
+            SELECT dr.*,u.firstName,u.lastName,p.status,c.name,u1.firstName as firstNamePlayer1,u1.lastName as lastNamePlayer1,p1.status as statusPlayer1,u2.firstName as firstNamePlayer2,u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
             FROM DoubleRanking dr
             INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
             INNER JOIN Players p on p.playerId = ?
