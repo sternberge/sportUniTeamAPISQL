@@ -599,77 +599,79 @@ module.exports = {
           }
 
           var query = connection.query(`
-            SELECT dr.*,u.firstName,u.lastName,p.status,c.name,u1.firstName as firstNamePlayer1,u1.lastName as lastNamePlayer1,p1.status as statusPlayer1,u2.firstName as firstNamePlayer2,u2.lastName as lastNamePlayer2, p2.status as statusPlayer2
-            FROM DoubleRanking dr
-            INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
-            INNER JOIN Players p on p.playerId = ?
-            INNER JOIN Users u on u.userId = p.Users_userId
-            INNER JOIN Teams t on t.teamId = p.Teams_teamId
-            INNER JOIN Colleges c on c.collegeId = t.teamId
-            INNER JOIN Players p1 on p1.playerId = dt.Players_playerId
-            INNER JOIN Players p2 on p2.playerId = dt.Players_playerId2
-            INNER JOIN Users u1 on p1.playerId = u1.userId
-            INNER JOIN Users u2 on p2.playerId = u2.userId
-            WHERE (dt.Players_playerId = ? or dt.Players_playerId2 = ?)  AND dr.type LIKE ? order by type;`, [playerId,playerId,playerId,type], (error, results, fields) => {
+            select temp.*,u1.firstName as firstNamePlayer1,u1.lastName as lastNamePlayer1,p1.status as statusPlayer2,u2.firstName as firstNamePlayer2,u2.lastName as lastNamePlayer2,p2.status as statusPlayer2 from (SELECT dr.*,c.name as collegeName,dt.Players_playerId,dt.Players_playerId2
+              FROM DoubleRanking dr
+              INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
+              INNER JOIN Players p on p.playerId = ?
+              INNER JOIN Users u on u.userId = p.Users_userId
+              INNER JOIN Teams t on t.teamId = p.Teams_teamId
+              INNER JOIN Colleges c on c.collegeId = t.teamId
+              WHERE (dt.Players_playerId = ? or dt.Players_playerId2 = ?)) as temp
+              INNER JOIN Players p1 on p1.playerId = temp.Players_playerId
+              INNER JOIN Players p2 on p2.playerId = temp.Players_playerId2
+              INNER JOIN Users u1 on u1.userId = p1.Users_userId
+              INNER JOIN Users u2 on u2.userId = p2.Users_userId
+              WHERE type LIKE ?
+              `, [playerId,playerId,playerId,type], (error, results, fields) => {
+                if (error) {
+                  connection.release();
+                  return res.send(JSON.stringify({
+                    "status": 500,
+                    "error": error,
+                    "response": null
+                  }));
+                }
+                res.send(JSON.stringify({
+                  "status": 200,
+                  "error": null,
+                  "response": results
+                }));
+                connection.release(); // CLOSE THE CONNECTION
+
+                console.log(query.sql);
+              });
+            });
+          },
+
+          getTeamRankingByPlayerId(req, res, next) {
+            const playerId = req.params.playerId;
+            const type = req.params.type;
+
+            db.pool.getConnection((error, connection) => {
+
+
               if (error) {
-                connection.release();
                 return res.send(JSON.stringify({
                   "status": 500,
                   "error": error,
                   "response": null
                 }));
               }
-              res.send(JSON.stringify({
-                "status": 200,
-                "error": null,
-                "response": results
-              }));
-              connection.release(); // CLOSE THE CONNECTION
 
-              console.log(query.sql);
-            });
-          });
-        },
-
-        getTeamRankingByPlayerId(req, res, next) {
-          const playerId = req.params.playerId;
-          const type = req.params.type;
-
-          db.pool.getConnection((error, connection) => {
-
-
-            if (error) {
-              return res.send(JSON.stringify({
-                "status": 500,
-                "error": error,
-                "response": null
-              }));
-            }
-
-            var query = connection.query(`SELECT * FROM (SELECT teamId,u.firstName,u.lastName,p.status,c.name FROM Teams t INNER JOIN Players p on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId inner join Colleges c on c.collegeId = t.teamId where playerId = ?) as teamId inner join TeamRanking tr on tr.Teams_teamId = teamId.teamId  WHERE tr.type LIKE ? order by type;`, [playerId,type], (error, results, fields) => {
-              if (error) {
-                connection.release();
-                return res.send(JSON.stringify({
-                  "status": 500,
-                  "error": error,
-                  "response": null
+              var query = connection.query(`SELECT * FROM (SELECT teamId,u.firstName,u.lastName,p.status,c.name FROM Teams t INNER JOIN Players p on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId inner join Colleges c on c.collegeId = t.teamId where playerId = ?) as teamId inner join TeamRanking tr on tr.Teams_teamId = teamId.teamId  WHERE tr.type LIKE ? order by type;`, [playerId,type], (error, results, fields) => {
+                if (error) {
+                  connection.release();
+                  return res.send(JSON.stringify({
+                    "status": 500,
+                    "error": error,
+                    "response": null
+                  }));
+                }
+                res.send(JSON.stringify({
+                  "status": 200,
+                  "error": null,
+                  "response": results
                 }));
-              }
-              res.send(JSON.stringify({
-                "status": 200,
-                "error": null,
-                "response": results
-              }));
-              connection.release(); // CLOSE THE CONNECTION
+                connection.release(); // CLOSE THE CONNECTION
 
-              console.log(query.sql);
+                console.log(query.sql);
+              });
             });
-          });
-        },
+          },
 
 
 
 
 
 
-      };
+        };
