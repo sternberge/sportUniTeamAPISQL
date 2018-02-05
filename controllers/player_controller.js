@@ -519,11 +519,123 @@ module.exports = {
 
 
 
-    };
+      getSingleRankingByPlayerId(req, res, next) {
+        const playerId = req.params.playerId;
+        const type = req.params.type;
+        db.pool.getConnection((error, connection) => {
 
-    var db = require('./../db');
-    const UserController = require('../controllers/user_controller');
-    var expressValidator = require('express-validator');
-    const RankRulesController = require('../controllers/rank_rules_controller');
-    const TeamController = require('../controllers/teams_controller');
-    const SingleRankingController = require('../controllers/single_ranking_controller');
+
+          if (error) {
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
+          }
+
+          var query = connection.query(` SELECT sr.*,u.firstName,u.lastName,p.status,c.name as collegeName FROM Players p INNER JOIN SingleRanking sr on p.playerId = sr.Players_playerId INNER JOIN Users u on u.userId = p.Users_userId INNER JOIN Teams t on t.teamId = p.Teams_teamId INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId where p.playerId = ? and sr.type LIKE ?  order by type;`, [playerId,type], (error, results, fields) => {
+            if (error) {
+              connection.release();
+              return res.send(JSON.stringify({
+                "status": 500,
+                "error": error,
+                "response": null
+              }));
+            }
+            res.send(JSON.stringify({
+              "status": 200,
+              "error": null,
+              "response": results
+            }));
+            connection.release(); // CLOSE THE CONNECTION
+
+            console.log(query.sql);
+          });
+        });
+      },
+
+      getDoubleRankingByPlayerId(req, res, next) {
+        const playerId = req.params.playerId;
+        const type = req.params.type;
+
+        db.pool.getConnection((error, connection) => {
+
+
+          if (error) {
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
+          }
+
+          var query = connection.query(`SELECT dr.*,u.firstName,u.lastName,p.status,c.name FROM DoubleRanking dr INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId INNER JOIN Players p on p.playerId = ? INNER JOIN Users u on u.userId = p.Users_userId INNER JOIN Teams t on t.teamId = p.Teams_teamId INNER JOIN Colleges c on c.collegeId = t.teamId WHERE (dt.Players_playerId = ? or dt.Players_playerId2 = ?)  AND dr.type LIKE ?  order by type ;`, [playerId,playerId,playerId,type], (error, results, fields) => {
+              if (error) {
+                connection.release();
+                return res.send(JSON.stringify({
+                  "status": 500,
+                  "error": error,
+                  "response": null
+                }));
+              }
+              res.send(JSON.stringify({
+                "status": 200,
+                "error": null,
+                "response": results
+              }));
+              connection.release(); // CLOSE THE CONNECTION
+
+              console.log(query.sql);
+            });
+          });
+        },
+
+        getTeamRankingByPlayerId(req, res, next) {
+          const playerId = req.params.playerId;
+          const type = req.params.type;
+
+          db.pool.getConnection((error, connection) => {
+
+
+            if (error) {
+              return res.send(JSON.stringify({
+                "status": 500,
+                "error": error,
+                "response": null
+              }));
+            }
+
+            var query = connection.query(`SELECT * FROM (SELECT teamId,u.firstName,u.lastName,p.status,c.name FROM Teams t INNER JOIN Players p on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId inner join Colleges c on c.collegeId = t.teamId where playerId = ?) as teamId inner join TeamRanking tr on tr.Teams_teamId = teamId.teamId  WHERE tr.type LIKE ? order by type;`, [playerId,type], (error, results, fields) => {
+                if (error) {
+                  connection.release();
+                  return res.send(JSON.stringify({
+                    "status": 500,
+                    "error": error,
+                    "response": null
+                  }));
+                }
+                res.send(JSON.stringify({
+                  "status": 200,
+                  "error": null,
+                  "response": results
+                }));
+                connection.release(); // CLOSE THE CONNECTION
+
+                console.log(query.sql);
+              });
+            });
+          },
+
+
+
+
+
+
+        };
+
+        var db = require('./../db');
+        const UserController = require('../controllers/user_controller');
+        var expressValidator = require('express-validator');
+        const RankRulesController = require('../controllers/rank_rules_controller');
+        const TeamController = require('../controllers/teams_controller');
+        const SingleRankingController = require('../controllers/single_ranking_controller');

@@ -70,6 +70,12 @@ module.exports = (app) => {
   app.put('/api/players/:player_id', PlayerController.editPlayer);
   app.delete('/api/players/:player_id', PlayerController.deletePlayer);
   app.get('/api/players/:player_id', PlayerController.findPlayerById);
+
+  app.get('/api/players/getSingleRankingByPlayerId/:playerId/:type', PlayerController.getSingleRankingByPlayerId);
+  app.get('/api/players/getDoubleRankingByPlayerId/:playerId/:type', PlayerController.getDoubleRankingByPlayerId);
+  app.get('/api/players/getTeamRankingByPlayerId/:playerId/:type', PlayerController.getTeamRankingByPlayerId);
+
+
   //Generate drop down lists for players
   app.get('/api/players/generateOtherPlayerDropDownList/:coach_id/:gender', PlayerController.generateOtherPlayerDropDownList);
   app.get('/api/players/generateMyPlayerDropDownList/:coach_id/:gender', PlayerController.generateMyPlayerDropDownList);
