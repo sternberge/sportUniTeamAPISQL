@@ -1,10 +1,6 @@
-const getBestDoubleMatchesWon = (rankingType, doubleTeamId, limit, date) => {
+const getBestDoubleMatchesWon = (connection,rankingType, doubleTeamId, limit, date) => {
   return new Promise(function(resolve, reject) {
     limit = Number(limit);
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`SELECT dm.homeAway, rpr.winOverRankPoints
         FROM DoubleMatches dm
         INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
@@ -13,23 +9,16 @@ const getBestDoubleMatchesWon = (rankingType, doubleTeamId, limit, date) => {
         WHERE dm.winnerDouble = ? and dr.type = ? and rpr.type = 'D' and dm.date > ?
         ORDER BY rpr.opponentRank ASC LIMIT ?`, [doubleTeamId, rankingType, date, limit], (error, results, fields) => {
         if (error) {
-          connection.release();
           return reject(error);
         }
-        connection.release(); // CLOSE THE CONNECTION
         return resolve(results);
       });
     });
-  });
 }
 
-const getBestDoubleMatchesLost = (rankingType, doubleTeamId, limit, date) => {
+const getBestDoubleMatchesLost = (connection,rankingType, doubleTeamId, limit, date) => {
   return new Promise(function(resolve, reject) {
     limit = Number(limit);
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`SELECT dm.homeAway, rpr.lossToRankPoints
         FROM DoubleMatches dm
         INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
@@ -38,60 +27,43 @@ const getBestDoubleMatchesLost = (rankingType, doubleTeamId, limit, date) => {
         WHERE dm.winnerDouble = ? and dr.type = ? and rpr.type = 'D' and dm.date > ?
         ORDER BY rpr.opponentRank ASC LIMIT ?`, [doubleTeamId, rankingType, date, limit], (error, results, fields) => {
         if (error) {
-          connection.release();
           return reject(error);
         }
-        connection.release(); // CLOSE THE CONNECTION
         return resolve(results);
       });
     });
-  });
 }
 
-const getDoubleRankingByDoubleTeamIdAndRankingType = (doubleTeamId, rankingType) => {
+const getDoubleRankingByDoubleTeamIdAndRankingType = (connection,doubleTeamId, rankingType) => {
   return new Promise((resolve, reject) => {
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`SELECT dr.doubleRankingId, dr.rankPoints
         FROM DoubleRanking dr
         WHERE dr.DoubleTeams_doubleTeamId = ? and dr.type = ?`, [doubleTeamId, rankingType],
         (error, results, fields) => {
           if (error) {
-            connection.release();
             return reject(error);
           }
-          connection.release(); // CLOSE THE CONNECTION
           resolve(results);
         });
     });
-  });
 }
 
-const updateDoubleTeamRankingPoints = (doubleRankingId, rankPoints,
+const updateDoubleTeamRankingPoints = (connection,doubleRankingId, rankPoints,
   differencePoints) => {
   return new Promise((resolve, reject) => {
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`UPDATE DoubleRanking
         SET rankPoints = ?, differencePoints = ?
         WHERE doubleRankingId = ?`, [rankPoints, differencePoints, doubleRankingId],
         (error, results, fields) => {
           if (error) {
-            connection.release();
             return reject(error);
           }
-          connection.release(); // CLOSE THE CONNECTION
           resolve(results);
         });
     });
-  });
 }
 
-const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
+const calculateDoubleRankingPerTypeAndDoubleTeam = async (connection, rankingType,
   doubleTeamId, limit, date) => {
   return new Promise(async (resolve, reject) => {
     let winPoints = 0;
@@ -105,7 +77,7 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
     let doubleRanking = [];
 
     try {
-      bestDoubleMatchesWon = await getBestDoubleMatchesWon(rankingType,
+      bestDoubleMatchesWon = await getBestDoubleMatchesWon(connection,rankingType,
         doubleTeamId, limit, date);
       console.log(`Best Double Matches Won retrieved for type ${rankingType} and doubleTeamId ${doubleTeamId}`);
     } catch (err) {
@@ -128,7 +100,7 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
       const countableBestLostMatches = limit - nbMatchesWon;
 
       try {
-        bestDoubleMatchesLost = await getBestDoubleMatchesLost(rankingType,
+        bestDoubleMatchesLost = await getBestDoubleMatchesLost(connection,rankingType,
           doubleTeamId, limit, date);
         console.log(`Best Double Matches Lost retrieved for type ${rankingType} and doubleTeamId ${doubleTeamId}`);
       } catch (err) {
@@ -154,7 +126,7 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
     let oldRankPoints = 0.0;
 
     try {
-      doubleRanking = await getDoubleRankingByDoubleTeamIdAndRankingType(doubleTeamId, rankingType);
+      doubleRanking = await getDoubleRankingByDoubleTeamIdAndRankingType(connection,doubleTeamId, rankingType);
       doubleRankingId = doubleRanking[0].doubleRankingId;
       oldRankPoints = doubleRanking[0].rankPoints;
       oldRank = doubleRanking[0].rank;
@@ -167,7 +139,7 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
     }
 
     try {
-      const updateDoubleTeamRankingPointsPromise = await updateDoubleTeamRankingPoints(doubleRankingId,
+      const updateDoubleTeamRankingPointsPromise = await updateDoubleTeamRankingPoints(connection,doubleRankingId,
         rankPoints, differencePoints);
       console.log(`rankPoints and differencePoints updated for doubleRankingId ${doubleRankingId}`);
     } catch (err) {
@@ -179,12 +151,24 @@ const calculateDoubleRankingPerTypeAndDoubleTeam = async (rankingType,
   });
 }
 
+//Get the different DoubleTeam ids from the DoubleTeam Table in the DB
+const getDoubleTeamIds = (connection) => {
+  return new Promise((resolve, reject) => {
+      var query = connection.query(`SELECT doubleTeamId FROM DoubleTeams`, (error, results, fields) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(results);
+      });
+    });
+}
 
-const calculateDoubleRankingPerType = async (rankingType) => {
+
+const calculateDoubleRankingPerType = async (connection,rankingType) => {
   return new Promise(async function(resolve, reject) {
     let doubleTeamsIds = [];
     try {
-      doubleTeamsIds = await DoubleTeamsController.getDoubleTeamIds();
+      doubleTeamsIds = await getDoubleTeamIds(connection);
       console.log(`DoubleTeams IDs retrieved for type ${rankingType}`);
     } catch (err) {
       console.log(err);
@@ -196,7 +180,7 @@ const calculateDoubleRankingPerType = async (rankingType) => {
 
     try {
       const promisesPerDoubleTeam = doubleTeamsIds.map(doubleTeamId =>
-        calculateDoubleRankingPerTypeAndDoubleTeam(rankingType, doubleTeamId.doubleTeamId, limit,
+        calculateDoubleRankingPerTypeAndDoubleTeam(connection,rankingType, doubleTeamId.doubleTeamId, limit,
           date)
       );
       await Promise.all(promisesPerDoubleTeam);
@@ -209,13 +193,13 @@ const calculateDoubleRankingPerType = async (rankingType) => {
   });
 }
 
-const calculateDoubleRanking = async () => {
+const calculateDoubleRanking = async (connection) => {
   return new Promise ( async (resolve, reject) => {
     const rankingTypes = ["N", "R", "C"];
 
     try {
       const promisesPerTypeCalculation = rankingTypes.map(rankingType =>
-        calculateDoubleRankingPerType(rankingType)
+        calculateDoubleRankingPerType(connection,rankingType)
       );
       await Promise.all(promisesPerTypeCalculation);
       resolve("New Double Ranking Points calculated for all types");

@@ -3,13 +3,13 @@ var db = require('./../db');
 //Get the different Region ids from the Regions Table in the DB
 const getRegionIds = (connection) => {
   return new Promise((resolve, reject) => {
-    var query = connection.query(`SELECT regionId FROM Regions`, (error, results, fields) => {
-      if (error) {
-        return reject(error);
-      }
-      resolve(results);
+      var query = connection.query(`SELECT regionId FROM Regions`, (error, results, fields) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(results);
+      });
     });
-  });
 }
 
 const getRegions = (req, res) => {

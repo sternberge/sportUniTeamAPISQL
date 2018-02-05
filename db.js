@@ -1,8 +1,7 @@
-var mysql = require('mysql');
-
+const mysql = require('mysql');
 
 // Connection string parameters.
-var pool = mysql.createPool({
+const pool = mysql.createPool({
   host     : process.env.DB_HOST,
   user     : process.env.DB_USER,
   password : process.env.DB_PASSWORD,
@@ -12,9 +11,8 @@ var pool = mysql.createPool({
   queueLimit : 5000
 });
 
-
 // Ouvre une connection et démarre la transaction
-var getConnectionForTransaction = (pool) => {
+const getConnectionForTransaction = (pool) => {
   return new Promise((resolve,reject)=>{
     pool.getConnection((error,connection)=>{
       if(error){
@@ -23,13 +21,13 @@ var getConnectionForTransaction = (pool) => {
       else{
         connection.beginTransaction(function(err) {
           if (err) { return reject(error);}
+          console.log("Transaction successfully openened");
           resolve(connection);
         });
       }
     });
   });
 }
-
 
 // Termine la transaction et ferme la connection
 const closeConnectionTransaction = (connection) => {
@@ -43,12 +41,15 @@ const closeConnectionTransaction = (connection) => {
   });
 }
 
-
-
 // Termine la transaction et ferme la connection
 const rollbackConnectionTransaction = (connection) => {
-    connection.rollback();
+  return new Promise((resolve) => {
+    connection.rollback(()=>{
+      connection.release();
+      resolve();
+    });
     console.log('Connection has been rollbacked');
+  });
 }
 
 exports.getConnectionForTransaction = getConnectionForTransaction;

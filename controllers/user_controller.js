@@ -36,20 +36,21 @@ module.exports = {
 
 
   async createUser(req, res){
+    let connection;
     try{
       //Ouverture de la transaction
-      var connection = await db.getConnectionForTransaction(db.pool);
+      await db.getConnectionForTransaction(db.pool);
       // Check si l'email n'est pas deja en BDD
-      var emailOk = await module.exports.checkEmailUnicity(connection,req.body.email);
+      let emailOk = await module.exports.checkEmailUnicity(connection,req.body.email);
       //Creation du profil utilisateur
-      var create =  await module.exports.createUserWithPromise(connection,req);
+      let create =  await module.exports.createUserWithPromise(connection,req);
       //Fermeture de la transaction
-      var closeConnection = await db.closeConnectionTransaction(connection);
+      let closeConnection = await db.closeConnectionTransaction(connection);
       res.send(JSON.stringify({"status": 200, "error": null, "response": "User has been created"}));
     }
     catch(error){
       //Fermeture de la transaction avec rollback
-      var closeConnection = await db.rollbackConnectionTransaction(connection);
+      let closeConnection = await db.rollbackConnectionTransaction(connection);
 
       res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
     }

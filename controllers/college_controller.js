@@ -137,26 +137,28 @@ module.exports = {
     });
   },
 
-    getCollegeRankingByCollegeIdGender(req,res,next){
-      const collegeId = req.params.collegeId ;
-      const gender = req.params.gender;
-      const type = req.params.type;
-      db.pool.getConnection((error, connection) => {
+  getCollegeRankingByCollegeIdGender(req,res,next){
+    const collegeId = req.params.collegeId ;
+    const gender = req.params.gender;
+    const type = req.params.type;
+    db.pool.getConnection((error, connection) => {
 
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`SELECT tr.*,temp.name as collegeName,temp.conferenceId,temp.conferenceLabel FROM TeamRanking tr
+      INNER JOIN (SELECT * FROM Teams t INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId INNER JOIN Conferences conf on conf.conferenceId = c.Conferences_conferenceId WHERE c.collegeId = ? AND t.gender LIKE ?)
+      as temp on temp.teamId = tr.Teams_teamId WHERE tr.type LIKE ?`,[collegeId,gender,type],(error, results, fields) => {
         if (error){
+          connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
-        var query = connection.query('  SELECT tr.*,temp.name FROM TeamRanking tr INNER JOIN (SELECT * FROM Teams t INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId WHERE c.collegeId = ? AND t.gender = ?) as temp on temp.teamId = tr.Teams_teamId WHERE tr.type LIKE ?',[collegeId,gender,type],(error, results, fields) => {
-          if (error){
-            connection.release();
-            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
-          }
-          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-          connection.release(); // CLOSE THE CONNECTION
-        });
-        console.log(query.sql);
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
       });
-    },
+      console.log(query.sql);
+    });
+  },
 
 
 };
