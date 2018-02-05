@@ -73,7 +73,6 @@ const createNewTeamRankings = async (req, res) => {
 
   try{
     db.closeConnectionTransaction(connection);
-    connection.release();
   } catch(err){
     console.log(err);
     return res.status(500).send(JSON.stringify({
