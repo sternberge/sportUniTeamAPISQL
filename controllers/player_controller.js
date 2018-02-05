@@ -1,3 +1,32 @@
+var db = require('./../db');
+const UserController = require('../controllers/user_controller');
+var expressValidator = require('express-validator');
+const RankRulesController = require('../controllers/rank_rules_controller');
+const TeamController = require('../controllers/teams_controller');
+const SingleRankingController = require('../controllers/single_ranking_controller');
+
+
+var expressValidator = require('express-validator');
+var nodemailer = require('nodemailer');
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'testservicenodemailer@gmail.com',
+    pass: 'Super_PFE_2018'
+  }
+});
+
+var mailOptions = {
+  from: 'testservicenodemailer@gmail.com',
+  to: 'testservicenodemailer@gmail.com',
+  subject: 'Premier test d\'un email',
+  text: 'ceci est les password :'
+};
+
+
 const getAllPlayersByTeamId = (req, res) => {
   const teamId = req.params.teamId;
   db.pool.getConnection((error, connection) => {
@@ -107,9 +136,10 @@ module.exports = {
 
 
   async createPlayer(req, res) {
+    let connection;
     try {
       //Ouverture de la transaction
-      var connection = await db.getConnectionForTransaction(db.pool);
+      connection = await db.getConnectionForTransaction(db.pool);
       //Check si l'email n'est pas deja existant
       await UserController.checkEmailUnicity(connection, req.body.email);
       // Check cohérence genre team du joueur et genre du joueur
@@ -126,12 +156,9 @@ module.exports = {
       var nonRankedValueSingle = await RankRulesController.getLastRankingPerType(connection, "S");
       console.log("Valeur unranked pour classement simple :", nonRankedValueSingle);
       //On cree 3 classements unranked Single pour le regional national et country
-      var type = ["R", "N", "C"];
+      let type = ["R", "N", "C"];
       const promisesPerType = type.map(type =>
         SingleRankingController.createInitialRanking(connection, nonRankedValueSingle, playerId, type)
-        .catch((error) => {
-          console.log(error);
-        })
       );
       const resu = await Promise.all(promisesPerType);
       // Fermeture de la transaction
@@ -142,6 +169,8 @@ module.exports = {
         "response": "Player has been created"
       }));
     } catch (error) {
+      // Fermeture de la transaction
+      await db.rollbackConnectionTransaction(connection);
       //console.log(error);
       res.status(500).send(JSON.stringify({
         "error": error
@@ -414,7 +443,7 @@ module.exports = {
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
         }
 
-        var queryTest = connection.query('select *from Users where email = ? AND userType = player',playerEmail, (error, results, fields) => {
+        var queryTest = connection.query(`select * from Users where email = ? AND userType = 'player' AND isActive = 0`,playerEmail, (error, results, fields) => {
           console.log('Lenght de result : '+results.length);
           if(results.length > 0 )
           {
@@ -422,7 +451,7 @@ module.exports = {
             console.log('Le mail existe');
           }
           else {
-            res.send(JSON.stringify({"status": 500, "error": 'The user does not exist', "response": 'the user does not exist'}));
+            res.send(JSON.stringify({"status": 500, "error": 'The user does not exist or is already activated', "response": 'the user does not exist or is already activated'}));
             console.log('Le mail n\'existe pas');
           }
         });
@@ -437,7 +466,7 @@ module.exports = {
           console.log("Hash : " + hash);
           hashGenerated = hash;
 
-          var query = connection.query('UPDATE Users SET password = ? WHERE email = ?',
+          var query = connection.query('UPDATE Users SET password = ?,isActive = 1 WHERE email = ?',
           [hashGenerated,playerEmail], (error, results, fields) => {
 
             if (error){
@@ -519,11 +548,116 @@ module.exports = {
 
 
 
-    };
+      getSingleRankingByPlayerId(req, res, next) {
+        const playerId = req.params.playerId;
+        const type = req.params.type;
+        db.pool.getConnection((error, connection) => {
 
-    var db = require('./../db');
-    const UserController = require('../controllers/user_controller');
-    var expressValidator = require('express-validator');
-    const RankRulesController = require('../controllers/rank_rules_controller');
-    const TeamController = require('../controllers/teams_controller');
-    const SingleRankingController = require('../controllers/single_ranking_controller');
+
+          if (error) {
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
+          }
+
+          var query = connection.query(` SELECT sr.*,u.firstName,u.lastName,p.status,c.name as collegeName FROM Players p INNER JOIN SingleRanking sr on p.playerId = sr.Players_playerId INNER JOIN Users u on u.userId = p.Users_userId INNER JOIN Teams t on t.teamId = p.Teams_teamId INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId where p.playerId = ? and sr.type LIKE ?  order by type;`, [playerId,type], (error, results, fields) => {
+            if (error) {
+              connection.release();
+              return res.send(JSON.stringify({
+                "status": 500,
+                "error": error,
+                "response": null
+              }));
+            }
+            res.send(JSON.stringify({
+              "status": 200,
+              "error": null,
+              "response": results
+            }));
+            connection.release(); // CLOSE THE CONNECTION
+
+            console.log(query.sql);
+          });
+        });
+      },
+
+      getDoubleRankingByPlayerId(req, res, next) {
+        const playerId = req.params.playerId;
+        const type = req.params.type;
+
+        db.pool.getConnection((error, connection) => {
+
+
+          if (error) {
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
+          }
+
+          var query = connection.query(`SELECT dr.*,u.firstName,u.lastName,p.status,c.name FROM DoubleRanking dr INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId INNER JOIN Players p on p.playerId = ? INNER JOIN Users u on u.userId = p.Users_userId INNER JOIN Teams t on t.teamId = p.Teams_teamId INNER JOIN Colleges c on c.collegeId = t.teamId WHERE (dt.Players_playerId = ? or dt.Players_playerId2 = ?)  AND dr.type LIKE ?  order by type ;`, [playerId,playerId,playerId,type], (error, results, fields) => {
+              if (error) {
+                connection.release();
+                return res.send(JSON.stringify({
+                  "status": 500,
+                  "error": error,
+                  "response": null
+                }));
+              }
+              res.send(JSON.stringify({
+                "status": 200,
+                "error": null,
+                "response": results
+              }));
+              connection.release(); // CLOSE THE CONNECTION
+
+              console.log(query.sql);
+            });
+          });
+        },
+
+        getTeamRankingByPlayerId(req, res, next) {
+          const playerId = req.params.playerId;
+          const type = req.params.type;
+
+          db.pool.getConnection((error, connection) => {
+
+
+            if (error) {
+              return res.send(JSON.stringify({
+                "status": 500,
+                "error": error,
+                "response": null
+              }));
+            }
+
+            var query = connection.query(`SELECT * FROM (SELECT teamId,u.firstName,u.lastName,p.status,c.name FROM Teams t INNER JOIN Players p on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId inner join Colleges c on c.collegeId = t.teamId where playerId = ?) as teamId inner join TeamRanking tr on tr.Teams_teamId = teamId.teamId  WHERE tr.type LIKE ? order by type;`, [playerId,type], (error, results, fields) => {
+                if (error) {
+                  connection.release();
+                  return res.send(JSON.stringify({
+                    "status": 500,
+                    "error": error,
+                    "response": null
+                  }));
+                }
+                res.send(JSON.stringify({
+                  "status": 200,
+                  "error": null,
+                  "response": results
+                }));
+                connection.release(); // CLOSE THE CONNECTION
+
+                console.log(query.sql);
+              });
+            });
+          },
+
+
+
+
+
+
+        };

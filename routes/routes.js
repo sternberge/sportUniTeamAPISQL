@@ -3,7 +3,7 @@ const TeamsController = require('../controllers/teams_controller');
 const CoachController = require('../controllers/coach_controller');
 const PlayerController = require('../controllers/player_controller');
 const UserController = require('../controllers/user_controller');
-const upload = require('../file_upload/upload');
+const upload = require('../file_upload/index');
 
 const RankRulesController = require('../controllers/rank_rules_controller');
 const RankRulesPointsController = require('../controllers/rank_rules_points_controller');
@@ -42,7 +42,7 @@ module.exports = (app) => {
 
   // From now on all routes require authentication
   //app.all('/*', AuthenticateController.ensureLoggedIn);
-  app.post('/api/users/upload', upload.uploadProfilePicture);
+  app.post('/api/users/upload', upload.download);
   //College
   //Generate drop down lists for colleges
   app.get('/api/colleges/generateCollegeDropDownList', CollegeController.generateCollegeDropDownList);
@@ -63,12 +63,19 @@ module.exports = (app) => {
   app.put('/api/coaches/:coach_id', CoachController.editCoach);
   app.delete('/api/coaches/:coach_id', CoachController.deleteCoach);
   app.get('/api/coaches/:coach_id', CoachController.findCoachById);
+  app.post('/api/coaches/sendEmailForMatchReportToSystem', CoachController.sendEmailForMatchReportToSystem);
 
   //Players
   app.post('/api/players', PlayerController.createPlayer);
   app.put('/api/players/:player_id', PlayerController.editPlayer);
   app.delete('/api/players/:player_id', PlayerController.deletePlayer);
   app.get('/api/players/:player_id', PlayerController.findPlayerById);
+
+  app.get('/api/players/getSingleRankingByPlayerId/:playerId/:type', PlayerController.getSingleRankingByPlayerId);
+  app.get('/api/players/getDoubleRankingByPlayerId/:playerId/:type', PlayerController.getDoubleRankingByPlayerId);
+  app.get('/api/players/getTeamRankingByPlayerId/:playerId/:type', PlayerController.getTeamRankingByPlayerId);
+
+
   //Generate drop down lists for players
   app.get('/api/players/generateOtherPlayerDropDownList/:coach_id/:gender', PlayerController.generateOtherPlayerDropDownList);
   app.get('/api/players/generateMyPlayerDropDownList/:coach_id/:gender', PlayerController.generateMyPlayerDropDownList);
@@ -193,6 +200,8 @@ module.exports = (app) => {
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1/:year/:springFall/:tournamentId/:playerId1',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1Player2/:year/:springFall/:tournamentId/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1Player2);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentCollege/:year/:springFall/:gender/:tournamentId/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentCollege);
+  app.get('/api/doubleMatches/getMatchSimpleOrDoubleByMatchId/:matchId/:matchType',DoubleMatchesController.getMatchSimpleOrDoubleByMatchId);
+
   //Teams
   app.get('/api/teams/getTeamIdByGenderCollege/:gender/:collegeId',TeamsController.getTeamIdByGenderCollege);
   app.post('/api/teams', TeamsController.createTeamWithDefaultRankings);
@@ -204,7 +213,7 @@ module.exports = (app) => {
 
   //Tournaments
   app.get('/api/tournaments/generateTournamentDropDownList', TournamentsController.generateTournamentDropDownList);
-  app.post('/api/', TournamentsController.create);
+  app.post('/api/create', TournamentsController.create);
   app.delete('/api/tournaments/:tournament_id',TournamentsController.delete);
   app.get('/api/tournaments/:tournament_id', TournamentsController.find);
   app.put('/api/tournaments/:tournament_id', TournamentsController.edit);
@@ -258,7 +267,14 @@ module.exports = (app) => {
   app.get('/api/stats/getDoubleMatchsWonByPlayerId/:playerId',StatsController.getDoubleMatchsWonByPlayerId);
   app.get('/api/stats/getDoubleMatchsLostByPlayerId/:playerId',StatsController.getDoubleMatchsLostByPlayerId);
   app.get('/api/stats/getDoubleMatchsPlayedByPlayerId/:playerId',StatsController.getDoubleMatchsPlayedByPlayerId);
-  app.get('/api/stats/getRatioStatsByPlayerId/:playerId',StatsController.getRatioStatsByPlayerId);
+  app.get('/api/stats/getRatioStatsByPlayerId/:springFall/:playerId',StatsController.getRatioStatsByPlayerId);
+  app.get('/api/stats/getWinRatioByTeam/:springFall/:teamId',StatsController.getWinRatioByTeam);
+  app.get('/api/stats/getSpringWinRatioByTeam/:homeAway/:teamId',StatsController.getSpringWinRatioByTeam);
+  app.get('/api/stats/getTournamentsWinRatioByPlayer/:springFall/:playerId',StatsController.getTournamentsWinRatioByPlayer);
+  app.get('/api/stats/getTournamentsWinRatioByTeam/:teamId',StatsController.getTournamentsWinRatioByTeam);
+  app.get('/api/stats/getSpringHomeAwayWinByPlayer/:homeAway/:playerId',StatsController.getSpringHomeAwayWinByPlayer);
+
+
 
   //app.post('/api/upload',UserController.upload);
 

@@ -48,7 +48,10 @@ module.exports = {
       res.send(JSON.stringify({"status": 200, "error": null, "response": "User has been created"}));
     }
     catch(error){
-        res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
+      //Fermeture de la transaction avec rollback
+      var closeConnection = await db.rollbackConnectionTransaction(connection);
+
+      res.send(JSON.stringify({"status": 500, "error": error, "response": error}));
     }
   },
 

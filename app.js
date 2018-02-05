@@ -1,6 +1,7 @@
 var express = require('express'); // Web Framework
 var expressValidator = require('express-validator');
 const jwt = require('jsonwebtoken');
+const queue = require('express-queue');
 
 require('dotenv').config();
 var app = express();
@@ -13,6 +14,8 @@ app.use(busboy());
 
 app.use(bodyParser.json());
 app.use(expressValidator());
+// Using queue middleware
+app.use(queue({ activeLimit: 10, queuedLimit: -1 }));
 routes(app);
 
 // Message d'erreur pour les routes incorrectes

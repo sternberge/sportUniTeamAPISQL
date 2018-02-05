@@ -1,8 +1,9 @@
 const makeDir = require('make-dir');
+const mkdir = require('mkdirp');
 const formidable = require('formidable');
 var multer  = require('multer');
 const expressUpload = require('express-fileupload')
-var fs = require('fs');
+var fs = require('fs-extra');
 
 
 // Set The Storage Engine
@@ -21,24 +22,31 @@ const upload = multer({
 
 
 const uploadProfilePicture = (req,res) => {
-  let id = 4;
+  let id = 6;
   let type = "colleges"
   let pictureFolder = "public/uploaded_files";
   pictureFolder = pictureFolder + "/" + type + "/" + id ;
-  console.log(pictureFolder);
-  makeDir(pictureFolder);
+  console.log(`Test ${pictureFolder}`);
+  //makeDir(pictureFolder);
+  mkdir(pictureFolder, (error)=>{
+    if (error)
+      console.error(err);
+    else
+      console.log('Folder has been created !');
+  });
+
 
   console.log(req.files);
-  var fstream;
-  req.pipe(req.busboy);
-  req.busboy.on('file', function (fieldname, file, filename) {
-    console.log("Uploading: " + filename);
-    fstream = fs.createWriteStream(pictureFolder+"/"+filename);
-    file.pipe(fstream);
-    fstream.on('close', function () {
-      res.send('uploaded');
-    });
-  });
+  // var fstream;
+  // req.pipe(req.busboy);
+  // req.busboy.on('file', function (fieldname, file, filename) {
+  //   console.log("Uploading: " + filename);
+  //   fstream = fs.createWriteStream(pictureFolder+"/"+filename);
+  //   file.pipe(fstream);
+  //   fstream.on('close', function () {
+  //     res.send('uploaded');
+  //   });
+  // });
 
 
   //

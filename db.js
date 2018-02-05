@@ -32,7 +32,7 @@ var getConnectionForTransaction = (pool) => {
 
 
 // Termine la transaction et ferme la connection
-var closeConnectionTransaction = (connection) => {
+const closeConnectionTransaction = (connection) => {
   connection.commit(function(err) {
     if (err) {
       return connection.rollback(function() {
@@ -41,9 +41,17 @@ var closeConnectionTransaction = (connection) => {
     }
     console.log('Connection closed');
   });
-  connection.release();
+}
+
+
+
+// Termine la transaction et ferme la connection
+const rollbackConnectionTransaction = (connection) => {
+    connection.rollback();
+    console.log('Connection has been rollbacked');
 }
 
 exports.getConnectionForTransaction = getConnectionForTransaction;
 exports.closeConnectionTransaction = closeConnectionTransaction;
+exports.rollbackConnectionTransaction = rollbackConnectionTransaction;
 exports.pool = pool;
