@@ -42,7 +42,7 @@ module.exports = (app) => {
 
   // From now on all routes require authentication
   //app.all('/*', AuthenticateController.ensureLoggedIn);
-  app.post('/api/users/upload', upload.upload); 
+  app.post('/api/users/upload', upload.download);
   //College
   //Generate drop down lists for colleges
   app.get('/api/colleges/generateCollegeDropDownList', CollegeController.generateCollegeDropDownList);
@@ -207,7 +207,7 @@ module.exports = (app) => {
 
   //Tournaments
   app.get('/api/tournaments/generateTournamentDropDownList', TournamentsController.generateTournamentDropDownList);
-  app.post('/api/', TournamentsController.create);
+  app.post('/api/create', TournamentsController.create);
   app.delete('/api/tournaments/:tournament_id',TournamentsController.delete);
   app.get('/api/tournaments/:tournament_id', TournamentsController.find);
   app.put('/api/tournaments/:tournament_id', TournamentsController.edit);

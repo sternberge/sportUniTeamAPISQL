@@ -15,7 +15,7 @@ app.use(busboy());
 app.use(bodyParser.json());
 app.use(expressValidator());
 // Using queue middleware
-app.use(queue({ activeLimit: 30, queuedLimit: -1 }));
+app.use(queue({ activeLimit: 10, queuedLimit: -1 }));
 routes(app);
 
 // Message d'erreur pour les routes incorrectes
