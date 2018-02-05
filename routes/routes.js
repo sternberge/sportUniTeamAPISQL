@@ -52,7 +52,7 @@ module.exports = (app) => {
   app.get('/api/colleges/:college_id', CollegeController.findCollegeById);
   app.get('/api/colleges/getCollegeNameFromTeamId/:teamId',CollegeController.getCollegeNameFromTeamId);
   app.get('/api/colleges/getCollegeNameFromCollegeId/:collegeId',CollegeController.getCollegeNameFromCollegeId);
-
+  app.get('/api/colleges/getCollegeRankingByCollegeIdGender/:collegeId/:gender/:type',CollegeController.getCollegeRankingByCollegeIdGender);
 
 
   //Coaches
