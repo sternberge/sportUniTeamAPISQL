@@ -77,7 +77,7 @@ const orderNationalRanking = async (connection, leagueId, gender) => {
 
     try{
       const updateNationalSingleRankingOrderPromises = newNationalRanking.map( (singleNationalRank, rank) =>
-        updateSingleRankingOrder(singleNationalRank.singleRankingId, rank + 1, rank + 1 - singleNationalRank.rank)
+        updateSingleRankingOrder(connection, singleNationalRank.singleRankingId, rank + 1, rank + 1 - singleNationalRank.rank)
       );
       await Promise.all(updateNationalSingleRankingOrderPromises);
       console.log(`National single ranking updated for league ${leagueId} and gender ${gender}`);
@@ -228,7 +228,7 @@ const getNewRegionalRankingOrder = (connection, leagueId, gender, regionId) => {
     });
   }
 
-  const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
+  const getNewConferenceRankingOrder = (connection, leagueId, gender, conferenceId) => {
     return new Promise(function (resolve, reject) {
       var query = connection.query(`SELECT singleRankingId, rank
         FROM SingleRanking sr
@@ -245,7 +245,7 @@ const getNewRegionalRankingOrder = (connection, leagueId, gender, regionId) => {
       });
     }
 
-    const getNewNationalRankingOrder = (leagueId, gender) => {
+    const getNewNationalRankingOrder = (connection, leagueId, gender) => {
       return new Promise(function (resolve, reject) {
         var query = connection.query(`SELECT singleRankingId, rank
           FROM SingleRanking sr

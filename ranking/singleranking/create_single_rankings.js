@@ -10,6 +10,12 @@ const createNewSingleRanking = async (req, res) => {
     console.log("Connection acquired from pool");
   } catch(err){
     console.log(err);
+    try{
+      connection.rollback();
+      connection.release();
+    } catch(err){
+      console.log(err);
+    }
     return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Single Ranking Failed"}));
   }
 
@@ -20,6 +26,12 @@ const createNewSingleRanking = async (req, res) => {
     console.log(archiveCurrentSingleRankingsPromise);
   } catch(err){
     console.log(err);
+    try{
+      connection.rollback();
+      connection.release();
+    } catch(err){
+      console.log(err);
+    }
     return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Single Ranking Failed"}));
   }
 
@@ -29,6 +41,12 @@ const createNewSingleRanking = async (req, res) => {
     console.log(calculateSingleRankingPromise);
   } catch(err){
     console.log(err);
+    try{
+      connection.rollback();
+      connection.release();
+    } catch(err){
+      console.log(err);
+    }
     return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Single Ranking Failed"}));
   }
 
@@ -36,6 +54,20 @@ const createNewSingleRanking = async (req, res) => {
     console.log("Initiating ordering of new Single Ranking");
     const orderSingleRankingPromise = await orderRanking.orderSingleRanking(connection);
     console.log(orderSingleRankingPromise);
+  } catch(err){
+    console.log(err);
+    try{
+      connection.rollback();
+      connection.release();
+    } catch(err){
+      console.log(err);
+    }
+    return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Single Ranking Failed"}));
+  }
+
+  try{
+    db.closeConnectionTransaction(connection);
+    connection.release();
   } catch(err){
     console.log(err);
     return res.send(JSON.stringify({"status": 500, "error": err, "response": "New Single Ranking Failed"}));
@@ -55,6 +87,7 @@ module.exports = {
   createNewSingleRanking
 }
 
+const db = require('./../../db');
 const calculateRanking = require("./calculate_single_rankings.js");
 const orderRanking = require("./order_single_rankings.js");
 const archiveRankings = require("./archive_single_ranking.js");
