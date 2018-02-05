@@ -17,7 +17,7 @@ const authenticateWithToken = (informations) => {
     }
     if(informations[0].playerId != null){
       user.playerId = informations[0].playerId,
-      user.Teams_teamId = informations[0].playerTeamId  ;
+      user.teamId = informations[0].playerTeamId  ;
       user.status = informations[0].status;
       user.collegeId = informations[0].playerCollegeId;
       user.program = informations[0].playerTeamGender;
