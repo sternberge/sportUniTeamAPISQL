@@ -37,6 +37,7 @@ const closeConnectionTransaction = (connection) => {
         throw err;
       });
     }
+    connection.release();
     console.log('Connection closed');
   });
 }
