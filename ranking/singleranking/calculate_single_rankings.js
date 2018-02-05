@@ -86,6 +86,7 @@ const calculateSingleRankingPerTypeAndPlayer = async (connection, rankingType,
     } else if (nbMatchesWon == 0) {
       console.log(`No match won for playerId ${playerId} and type ${rankingType}`);
     } else {
+      rankPoints = winPoints / nbMatchesWon;
       console.log(`All countable matches are wins for playerId ${playerId} and type ${rankingType}`);
     }
 
