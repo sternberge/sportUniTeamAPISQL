@@ -366,7 +366,7 @@ module.exports = {
           "response": null
         }));
       }
-      var query = connection.query(`SELECT * FROM Players p
+      var query = connection.query(`SELECT *,u.phone as userPhone,c.phone as collegePhone FROM Players p
         INNER JOIN Users u on p.Users_userId = u.userId
         INNER JOIN Teams t on t.teamId = p.Teams_teamId
         INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
@@ -518,7 +518,7 @@ module.exports = {
           }));
         }
 
-        var query = connection.query(`  SELECT u.birthday, u.phone,c.name,co.conferenceLabel,l.leagueName FROM Users u
+        var query = connection.query(`SELECT u.birthday, u.phone as userPhone,c.phone as collegePhone,c.name,co.conferenceLabel,l.leagueName FROM Users u
           INNER JOIN Players p on p.Users_userId = u.userId
           INNER JOIN Teams t on t.teamId = p.Teams_teamId
           INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
@@ -599,65 +599,65 @@ module.exports = {
           }
 
           var query = connection.query(`SELECT dr.*,u.firstName,u.lastName,p.status,c.name FROM DoubleRanking dr INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId INNER JOIN Players p on p.playerId = ? INNER JOIN Users u on u.userId = p.Users_userId INNER JOIN Teams t on t.teamId = p.Teams_teamId INNER JOIN Colleges c on c.collegeId = t.teamId WHERE (dt.Players_playerId = ? or dt.Players_playerId2 = ?)  AND dr.type LIKE ?  order by type ;`, [playerId,playerId,playerId,type], (error, results, fields) => {
-              if (error) {
-                connection.release();
-                return res.send(JSON.stringify({
-                  "status": 500,
-                  "error": error,
-                  "response": null
-                }));
-              }
-              res.send(JSON.stringify({
-                "status": 200,
-                "error": null,
-                "response": results
-              }));
-              connection.release(); // CLOSE THE CONNECTION
-
-              console.log(query.sql);
-            });
-          });
-        },
-
-        getTeamRankingByPlayerId(req, res, next) {
-          const playerId = req.params.playerId;
-          const type = req.params.type;
-
-          db.pool.getConnection((error, connection) => {
-
-
             if (error) {
+              connection.release();
               return res.send(JSON.stringify({
                 "status": 500,
                 "error": error,
                 "response": null
               }));
             }
+            res.send(JSON.stringify({
+              "status": 200,
+              "error": null,
+              "response": results
+            }));
+            connection.release(); // CLOSE THE CONNECTION
 
-            var query = connection.query(`SELECT * FROM (SELECT teamId,u.firstName,u.lastName,p.status,c.name FROM Teams t INNER JOIN Players p on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId inner join Colleges c on c.collegeId = t.teamId where playerId = ?) as teamId inner join TeamRanking tr on tr.Teams_teamId = teamId.teamId  WHERE tr.type LIKE ? order by type;`, [playerId,type], (error, results, fields) => {
-                if (error) {
-                  connection.release();
-                  return res.send(JSON.stringify({
-                    "status": 500,
-                    "error": error,
-                    "response": null
-                  }));
-                }
-                res.send(JSON.stringify({
-                  "status": 200,
-                  "error": null,
-                  "response": results
-                }));
-                connection.release(); // CLOSE THE CONNECTION
+            console.log(query.sql);
+          });
+        });
+      },
 
-                console.log(query.sql);
-              });
-            });
-          },
+      getTeamRankingByPlayerId(req, res, next) {
+        const playerId = req.params.playerId;
+        const type = req.params.type;
+
+        db.pool.getConnection((error, connection) => {
 
 
+          if (error) {
+            return res.send(JSON.stringify({
+              "status": 500,
+              "error": error,
+              "response": null
+            }));
+          }
+
+          var query = connection.query(`SELECT * FROM (SELECT teamId,u.firstName,u.lastName,p.status,c.name FROM Teams t INNER JOIN Players p on p.Teams_teamId = t.teamId inner join Users u on u.userId = p.Users_userId inner join Colleges c on c.collegeId = t.teamId where playerId = ?) as teamId inner join TeamRanking tr on tr.Teams_teamId = teamId.teamId  WHERE tr.type LIKE ? order by type;`, [playerId,type], (error, results, fields) => {
+            if (error) {
+              connection.release();
+              return res.send(JSON.stringify({
+                "status": 500,
+                "error": error,
+                "response": null
+              }));
+            }
+            res.send(JSON.stringify({
+              "status": 200,
+              "error": null,
+              "response": results
+            }));
+            connection.release(); // CLOSE THE CONNECTION
+
+            console.log(query.sql);
+          });
+        });
+      },
 
 
 
 
-        };
+
+
+    };
