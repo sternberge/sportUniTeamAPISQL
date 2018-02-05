@@ -1,30 +1,36 @@
 const db = require('./../../db');
 
-const getCurrentSingleRankings = () => {
+
+const getCurrentSingleRankings = (connection) => {
   return new Promise (function (resolve, reject) {
-    db.pool.getConnection((error, connection) => {
+    var query = connection.query(`SELECT * FROM SingleRanking`, (error, results, fields) => {
       if (error){
         return reject(error);
       }
-      var query = connection.query(`SELECT * FROM SingleRanking`, (error, results, fields) => {
-        if (error){
-          connection.release();
-          return reject(error);
-        }
-        resolve(results);
-        connection.release(); // CLOSE THE CONNECTION
-      });
+      resolve(results);
     });
   });
 }
 
-const archiveCurrentSingleRanking = (playerId, rank, rankPoints, differenceRank,
+const archiveCurrentSingleRanking = (connection, playerId, rank, rankPoints, differenceRank,
   differencePoints, type, currentDate) => {
   return new Promise(function(resolve, reject) {
-    db.pool.getConnection((error, connection) => {
+    var query = connection.query(`INSERT INTO SingleRankingHistory
+    (Players_playerId, rank, rankPoints, differenceRank,
+      differencePoints, type, date)
+    VALUES(?, ?, ?, ?, ?, ?, ?)`, [playerId, rank, rankPoints, differenceRank,
+      differencePoints, type, currentDate], (error, results, fields) => {
       if (error) {
         return reject(error);
       }
+      resolve(results);
+    });
+  });
+}
+
+/*const archiveCurrentSingleRanking = (playerId, rank, rankPoints, differenceRank,
+  differencePoints, type, currentDate, connection) => {
+  return new Promise(function(resolve, reject) {
       var query = connection.query(`INSERT INTO SingleRankingHistory
       (Players_playerId, rank, rankPoints, differenceRank,
         differencePoints, type, date)
@@ -35,31 +41,29 @@ const archiveCurrentSingleRanking = (playerId, rank, rankPoints, differenceRank,
           return reject(error);
         }
         resolve(results);
-        connection.release(); // CLOSE THE CONNECTION
       });
-    });
   });
-}
+}*/
 
-const archiveCurrentSingleRankings = async () => {
+const archiveCurrentSingleRankings = async (connection) => {
   return new Promise(async (resolve, reject) => {
     let currentSingleRankings = [];
 
     try {
-      currentSingleRankings = await getCurrentSingleRankings();
-      console.log("Current Double Ranking fetched");
+      currentSingleRankings = await getCurrentSingleRankings(connection);
+      console.log("Current Single Ranking fetched");
     } catch (err) {
       console.log(err);
-      return reject("Could not fetch current Double Ranking");
+      return reject("Could not fetch current Single Ranking");
     }
 
     try {
       const currentDate = new Date();
       archiveCurrentSingleRankingsPromises = currentSingleRankings.map(currentSingleRanking =>
-        archiveCurrentSingleRanking(currentSingleRanking.Players_playerId,
-          currentSingleRanking.rank, currentSingleRanking.rankPoints,
-          currentSingleRanking.differenceRank, currentSingleRanking.differencePoints,
-          currentSingleRanking.type, currentDate)
+        archiveCurrentSingleRanking(connection, currentSingleRanking.Players_playerId,
+        currentSingleRanking.rank, currentSingleRanking.rankPoints,
+        currentSingleRanking.differenceRank, currentSingleRanking.differencePoints,
+        currentSingleRanking.type, currentDate)
       );
 
       await Promise.all(archiveCurrentSingleRankingsPromises);

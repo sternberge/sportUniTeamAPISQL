@@ -1,203 +1,217 @@
 const db = require('./../../db');
 
-const calculateRankingPerPlayer = async (playerId,limiteRequest,rankingType,date,res) => {
-  let winPoints = 0;
-  let losePoints = 0;
-  let nbWinMatches = 0;
-  let nbLoseMatches = 0;
-  let rankPoints = 0;
-  let i = 0;
-  let bestLoseMatchs = 0;
-  try{
-    // Recupere les matchs gagnés par le joueur ainsi que le nb de points gagnés selon les adversaires(nbmax de match = limiteRequest)
-    const bestMatches = await getSingleBestMatches(playerId,limiteRequest,rankingType,date);
-    nbWinMatches = bestMatches.length;
-    console.log("Nombre de match gagnés : ",nbWinMatches, " pour le playerId : ",playerId);
-    for(i=0; i<nbWinMatches; i++ ){
-      // Calcul du nb de points total gagnés
-      winPoints += bestMatches[i].winOverRankPoints;
-    }
-    console.log("Points gangés au cours de ce(s) matchs : ",winPoints);
-    // Si le joueur a gagné moins de match que la limite demandée
-    if(nbWinMatches < limiteRequest){
-      nbLoseMatches = limiteRequest - nbWinMatches;
-      console.log("Nombre de match perdus si le joeurs Id",playerId,"a joué plus de match que la limite : ",nbLoseMatches);
-      //On recupere les "meilleurs" match perdu afin de completer
-      bestLoseMatchs = await getSingleBestLossesMatches(playerId,rankingType,date,nbLoseMatches);
-    }
-    //Si le resultat n'est pas null, le joueur a perdu des matchs, on calcule les points perdus
-    if(bestLoseMatchs != 0){
-      let i =0;
-      console.log("Le joueur id ",playerId," a perdu le nombre suivant de match : ",bestLoseMatchs.length);
-      for(i=0; i<bestLoseMatchs.length; i++ ){
-        console.log("Match perdu numero :", i+1);
-        losePoints += bestLoseMatchs[i].lossToRankPoints;
-      }
-    }
-    //On calcule ses ranking points à l'aide de la formule
-    rankPoints = winPoints / (nbWinMatches + losePoints);
-    rankPoints = 400;
-    console.log("Nombre points totaux : ",rankPoints,"pour le joueur",playerId);
-    //On recupere le ranking id du player
-    let playerRankingId = await getSingleRankingPerPlayerId(playerId,rankingType);
-
-    console.log("Player Ranking Id par type selectionné (N,R,...) : ",playerRankingId,"pour le joueur ",playerId);
-    //on insert le nouveau ranking dans la table
-    await editSingleRankingWithPromise(playerRankingId,rankPoints);
-    console.log("Resultats du nouveau ranking : ",rankPoints," pour le playerId",playerId);
-  }
-  catch(error){
-    //res.send(error);
-  }
+const getSingleRankingByPlayerIdAndRankingType = (connection, playerId, rankingType) => {
+  return new Promise((resolve, reject) => {
+    var query = connection.query(`SELECT sr.singleRankingId, sr.rankPoints
+      FROM SingleRanking sr
+      INNER JOIN Players p ON sr.Players_playerId = p.playerId
+      WHERE p.playerId = ? AND sr.type = ?`, [playerId, rankingType],
+      (error, results, fields) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(results);
+      });
+  });
 }
 
-const getSingleBestMatches = (playerId,limiteRequest,rankingType,date) => {
-  return new Promise(function (resolve, reject) {
-    limiteRequest = Number(limiteRequest);
-    db.pool.getConnection((error, connection) => {
-
-      if (error){
-        return reject(error);
-      }
-      var query = connection.query(`Select s.homeAway, r.winOverRankPoints from SimpleMatches s
-        Left Outer Join Players p on s.loser = p.playerId
-        Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
-        Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
-        Where s.winner = ? and sr.type = ? and r.type = 'S' and s.date > ?
-        order by r.opponentRank Asc limit ?`, [playerId,rankingType,date,limiteRequest], (error, results, fields) => {
-          if (error){
-            connection.release();
-            return reject(error);
-          }
-          connection.release(); // CLOSE THE CONNECTION
-          return resolve(results);
-        });
-      });
-    });
-  }
-
-  const getSingleBestLossesMatches = (playerId,rankingType,date,nbMatch) => {
-    return new Promise(function (resolve, reject) {
-      limiteRequest = Number(nbMatch);
-      db.pool.getConnection((error, connection) => {
-        if (error){
-          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+const updateSingleRankingPoints = (connection, singleRankingId, rankPoints,
+  differencePoints) => {
+  return new Promise((resolve, reject) => {
+    var query = connection.query(`UPDATE SingleRanking
+      SET rankPoints = ?, differencePoints = ?
+      WHERE singleRankingId = ?`, [rankPoints, differencePoints, singleRankingId],
+      (error, results, fields) => {
+        if (error) {
+          return reject(error);
         }
-        var query = connection.query(`Select s.homeAway, r.lossToRankPoints from SimpleMatches s
-          Left Outer Join Players p on s.winner = p.playerId
-          Left Outer Join SingleRanking sr on sr.Players_playerId = p.playerId
-          Left Outer Join RankPointsRules r on r.opponentRank=sr.rank
-          Where s.loser = ? and sr.type = ?  and r.type = 'S' and s.date > ?
-          order by r.opponentRank Asc limit ?`, [playerId,rankingType,date,limiteRequest], (error, results, fields) => {
-            if (error){
-              connection.release();
-              return reject(error);
-            }
-            connection.release(); // CLOSE THE CONNECTION
-            //console.log(results);
-            return resolve(results);
-          });
-        });
+        resolve(results);
       });
+  });
+}
+
+const calculateSingleRankingPerTypeAndPlayer = async (connection, rankingType,
+  playerId, limit, date) => {
+  return new Promise(async (resolve, reject) => {
+    let winPoints = 0;
+    let losePoints = 0;
+    let nbMatchesWon = 0;
+    let nbMatchesLost = 0;
+    let rankPoints = 0;
+    let differencePoints = 0.0;
+    let bestSingleMatchesWon = [];
+    let bestSingleMatchesLost = [];
+    let singleRanking = [];
+
+    try {
+      bestSingleMatchesWon = await getBestSingleMatchesWon(connection, rankingType,
+        playerId, limit, date);
+      console.log(`Best Single Matches Won retrieved for type ${rankingType} and playerId ${playerId}`);
+    } catch (err) {
+      console.log(err);
+      return reject(`Could not retrieve best single matches won for type ${rankingType} and playerId ${playerId}`);
     }
 
-    const getSingleRankingPerPlayerId = (playerId,rankingType) => {
-      return new Promise(function (resolve, reject) {
+    nbMatchesWon = bestSingleMatchesWon.length;
+    for (let i = 0; i < nbMatchesWon; i++) {
+      winPoints += bestSingleMatchesWon[i].winOverRankPoints;
+      let homeAway = bestSingleMatchesWon[i].homeAway;
+      if (homeAway != null) {
+        if (homeAway == 'A') {
+          winPoints *= 1.1;
+        }
+      }
+    }
 
-        db.pool.getConnection((error, connection) => {
-          if (error){
-            return reject(error);
-          }
-          var query = connection.query(`Select sr.singleRankingId from SingleRanking sr
-            Left Outer Join Players p on sr.Players_playerId= p.playerId
-            Where p.playerId = ? and sr.type = ?`, [playerId,rankingType], (error, results, fields) => {
-              if (error){
-                connection.release();
-                return reject(error);
-              }
-              connection.release(); // CLOSE THE CONNECTION
-              //console.log(results);
-              return resolve(results[0].singleRankingId);
-            });
-          });
-        });
+    if ((nbMatchesWon < limit) && (nbMatchesWon > 0)) {
+      const countableBestLostMatches = limit - nbMatchesWon;
+
+      try {
+        bestSingleMatchesLost = await getBestSingleMatchesLost(connection,
+          rankingType, playerId, limit, date);
+        console.log(`Best Single Matches Lost retrieved for type ${rankingType} and playerId ${playerId}`);
+      } catch (err) {
+        console.log(err);
+        return reject(`Could not retrieve best single matches lost for type ${rankingType} and playerId ${playerId}`);
       }
 
-      const editSingleRankingWithPromise = (playerRankingId,rankPoints) => {
-        return new Promise(function (resolve, reject) {
-          const singleRankingId = playerRankingId;
-          const singleRankingProperties = rankPoints;
-          db.pool.getConnection((error, connection) => {
-            if (error){
-              return reject(error);
-            }
-            var query = connection.query('UPDATE SingleRanking SET rankPoints = ? WHERE singleRankingId = ?',[singleRankingProperties, singleRankingId], (error, results, fields) => {
-              if (error){
-                connection.release();
-                return reject(error);
-              }
-              connection.release(); // CLOSE THE CONNECTION
-              resolve(results);
-            });
-          });
-        });
+      const nbMatchesLost = bestSingleMatchesLost.length;
+      for (let i = 0; i < nbMatchesLost; i++) {
+        losePoints += bestSingleMatchesLost[i].lossToRankPoints;
       }
 
-      // Fonction de calculs de tous les ranking des players selon les trois types (R,N,C)
-      const calculateRanking = async (req,res)=>{
-        var rankingTypes = ["N", "R", "C"];
-        try{
-          const promisesPerTypeCalculation = rankingTypes.map(rankingType =>
-            calculateRankingPerTypeAndPlayer(rankingType, res));
-            await Promise.all(promisesPerTypeCalculation);
-            console.log("New Single Ranking Points calculated for all types");
+      //ITA Formula for rank points
+      rankPoints = winPoints / (nbMatchesWon + losePoints);
+      //rankPoints = 60; //For testing
+    } else if (nbMatchesWon == 0) {
+      console.log(`No match won for playerId ${playerId} and type ${rankingType}`);
+    } else {
+      console.log(`All countable matches are wins for playerId ${playerId} and type ${rankingType}`);
+    }
 
-          }
-          catch(error){
-            console.log(error);
-            res.send(JSON.stringify({"status": 500, "error": null, "response": null}))
-          }
-        }
+    let singleRankingId = 0;
+    let oldRankPoints = 0.0;
 
-        const calculateRankingPerTypeAndPlayer = async (rankingType, res)=>{
-          let playerId = 0;
-          let i,j;
-          try{
-            let allPlayers = await getAllPlayerId();
-            let testTab = [];
-            for(i=0; i<3; i++){
-              testTab.push(allPlayers[i]);
-            }
-            var limiteRequest = 5;
-            var date = "2017-01-01";
-            return Promise.all([testTab.map(player => { return calculateRankingPerPlayer(player.playerId,limiteRequest,rankingType,date,res)})]);
-          }
-          catch(error){
-            res.send(JSON.stringify({"status": 500, "error": error, "response": null}))
-            console.log(error);
-          }
-        }
+    try {
+      singleRanking = await getSingleRankingByPlayerIdAndRankingType(connection,
+        playerId, rankingType);
+      singleRankingId = singleRanking[0].singleRankingId;
+      oldRankPoints = singleRanking[0].rankPoints;
+      oldRank = singleRanking[0].rank;
+      differencePoints = parseFloat(rankPoints) - parseFloat(oldRankPoints);
 
-        const getAllPlayerId = () => {
-          return new Promise((resolve, reject) => {
-            db.pool.getConnection((error, connection) => {
+      console.log(`singleRankingId is ${singleRankingId} for playerId ${playerId} and type ${rankingType}`);
+    } catch (err) {
+      console.log(err);
+      return reject(`Could not retrieve singleRankingId for playerId ${playerId} and type ${rankingType}`);
+    }
 
-              if (error) {
-                return reject(error);
-              }
-              var query = connection.query(`SELECT playerId from Players`, (error, results, fields) => {
-                if (error) {
-                  connection.release();
-                  return reject(error);
-                }
-                resolve(results);
-                connection.release(); // CLOSE THE CONNECTION
-              });
-            });
-          });
-        }
+    try {
+      const updateSingleRankingPointsPromise = await updateSingleRankingPoints(connection,
+        singleRankingId, rankPoints, differencePoints);
+      console.log(`rankPoints and differencePoints updated for singleRankingId ${singleRankingId}`);
+    } catch (err) {
+      console.log(err);
+      return reject(`Could not update rankPoints for singleRankingId ${singleRankingId}`);
+    }
 
+    resolve(`New singleRanking Points computed for playerId ${playerId} and type ${rankingType}`);
+  });
+}
 
-        module.exports = {
-          calculateRanking
-        }
+const getBestSingleMatchesWon = (connection, rankingType, playerId, limit, date) => {
+  return new Promise(function(resolve, reject) {
+    limit = Number(limit);
+    var query = connection.query(`SELECT s.homeAway, r.winOverRankPoints
+      FROM SimpleMatches s
+      INNER JOIN Players p on s.loser = p.playerId
+      INNER JOIN SingleRanking sr on sr.Players_playerId = p.playerId
+      INNER JOIN RankPointsRules r on r.opponentRank=sr.rank
+      WHERE s.winner = ? and sr.type = ? and r.type = 'S' and s.date > ?
+      ORDER BY r.opponentRank ASC limit ?`, [playerId, rankingType, date, limit], (error, results, fields) => {
+      if (error) {
+        return reject(error);
+      }
+      return resolve(results);
+    });
+  });
+}
+
+const getBestSingleMatchesLost = (connection, rankingType, playerId, limit, date) => {
+  return new Promise(function(resolve, reject) {
+    limit = Number(limit);
+    var query = connection.query(`SELECT s.homeAway, r.lossToRankPoints
+      FROM SimpleMatches s
+      INNER JOIN Players p on s.winner = p.playerId
+      INNER JOIN SingleRanking sr on sr.Players_playerId = p.playerId
+      INNER JOIN RankPointsRules r on r.opponentRank=sr.rank
+      WHERE s.loser = ? and sr.type = ?  and r.type = 'S' and s.date > ?
+      ORDER BY r.opponentRank ASC limit ?`, [playerId, rankingType, date, limit], (error, results, fields) => {
+      if (error) {
+        return reject(error);
+      }
+      return resolve(results);
+    });
+  });
+}
+
+const getAllPlayerId = (connection) => {
+  return new Promise((resolve, reject) => {
+    var query = connection.query(`SELECT playerId from Players`, (error, results, fields) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(results);
+    });
+  });
+}
+
+const calculateSingleRankingPerType = async (connection, rankingType) => {
+  return new Promise(async function(resolve, reject) {
+    let playersIds = [];
+    try {
+      playersIds = await getAllPlayerId(connection);
+      console.log(`Players IDs retrieved for type ${rankingType}`);
+    } catch (err) {
+      console.log(err);
+      return reject("Could not retrieve Players IDs");
+    }
+
+    const limit = 5;
+    const date = "2017-01-01";
+
+    try {
+      const promisesPerPlayer = playersIds.map(playerId =>
+        calculateSingleRankingPerTypeAndPlayer(connection, rankingType,
+          playerId.playerId, limit, date)
+      );
+      await Promise.all(promisesPerPlayer);
+      resolve(`New Single Ranking Points calculated for type ${rankingType}`);
+    } catch (err) {
+      console.log(err);
+      return reject(`Could not calculate new singleRanking Points for type ${rankingType}`);
+    }
+
+  });
+}
+
+// Fonction de calculs de tous les ranking des players selon les trois types (R,N,C)
+const calculateSingleRanking = async (connection) => {
+  return new Promise ( async (resolve, reject) => {
+    const rankingTypes = ["N", "R", "C"];
+    try {
+      const promisesPerTypeCalculation = rankingTypes.map(rankingType =>
+        calculateSingleRankingPerType(connection, rankingType));
+      await Promise.all(promisesPerTypeCalculation);
+      resolve("New Single Ranking Points calculated for all types");
+
+    } catch (error) {
+      console.log(error);
+      reject("New Single Ranking Points calculation failed");
+    }
+  });
+}
+
+module.exports = {
+  calculateSingleRanking
+}
