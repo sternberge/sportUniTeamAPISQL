@@ -1,9 +1,5 @@
-const updateDoubleRankingOrder = (doubleRankingId, rank, differenceRank) => {
+const updateDoubleRankingOrder = (connection,doubleRankingId, rank, differenceRank) => {
   return new Promise(function(resolve, reject) {
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`UPDATE DoubleRanking
         SET rank = ?, differenceRank = ?
         WHERE doubleRankingId = ?`, [rank, differenceRank, doubleRankingId], (error, results, fields) => {
@@ -11,19 +7,13 @@ const updateDoubleRankingOrder = (doubleRankingId, rank, differenceRank) => {
           connection.release();
           return reject(error);
         }
-        connection.release(); // CLOSE THE CONNECTION
         resolve(results);
       });
     });
-  });
 }
 
-const getNewNationalRankingOrder = (leagueId, gender) => {
+const getNewNationalRankingOrder = (connection,leagueId, gender) => {
   return new Promise(function(resolve, reject) {
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`SELECT doubleRankingId, rank
       FROM DoubleRanking dr
 			INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
@@ -37,19 +27,13 @@ const getNewNationalRankingOrder = (leagueId, gender) => {
           connection.release();
           return reject(error);
         }
-        connection.release(); // CLOSE THE CONNECTION
         resolve(results);
       });
     });
-  });
 }
 
-const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
+const getNewRegionalRankingOrder = (connection,leagueId, gender, regionId) => {
   return new Promise(function(resolve, reject) {
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`SELECT doubleRankingId, rank
       FROM DoubleRanking dr
 			INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
@@ -63,19 +47,13 @@ const getNewRegionalRankingOrder = (leagueId, gender, regionId) => {
           connection.release();
           return reject(error);
         }
-        connection.release(); // CLOSE THE CONNECTION
         resolve(results);
       });
-    });
   });
 }
 
-const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
+const getNewConferenceRankingOrder = (connection,leagueId, gender, conferenceId) => {
   return new Promise(function(resolve, reject) {
-    db.pool.getConnection((error, connection) => {
-      if (error) {
-        return reject(error);
-      }
       var query = connection.query(`SELECT doubleRankingId, rank
       FROM DoubleRanking dr
 			INNER JOIN DoubleTeams dt on dt.doubleTeamId = dr.DoubleTeams_doubleTeamId
@@ -86,22 +64,19 @@ const getNewConferenceRankingOrder = (leagueId, gender, conferenceId) => {
 			WHERE dr.type = 'C' AND c.Leagues_leagueId = ? AND t.gender = ? AND c.Conferences_conferenceId
 			ORDER BY dr.rankPoints DESC`, [leagueId, gender, conferenceId], (error, results, fields) => {
         if (error) {
-          connection.release();
           return reject(error);
         }
-        connection.release(); // CLOSE THE CONNECTION
         resolve(results);
       });
     });
-  });
 }
 
-const orderNationalRanking = async (leagueId, gender) => {
+const orderNationalRanking = async (connection,leagueId, gender) => {
   return new Promise( async (resolve, reject) => {
     let newNationalRanking = [];
 
     try{
-      newNationalRanking = await getNewNationalRankingOrder(leagueId, gender);
+      newNationalRanking = await getNewNationalRankingOrder(connection,leagueId, gender);
       console.log(`New national ranking order fetched for league ${leagueId} and gender ${gender}`);
     } catch(err){
       console.log(err);
@@ -110,7 +85,7 @@ const orderNationalRanking = async (leagueId, gender) => {
 
     try{
       const updateNationalDoubleRankingOrderPromises = newNationalRanking.map( (doubleTeamNationalRank, rank) =>
-        updateDoubleRankingOrder(doubleTeamNationalRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamNationalRank.rank)
+        updateDoubleRankingOrder(connection,doubleTeamNationalRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamNationalRank.rank)
       );
       await Promise.all(updateNationalDoubleRankingOrderPromises);
       console.log(`National double ranking updated for league ${leagueId} and gender ${gender}`);
@@ -123,11 +98,11 @@ const orderNationalRanking = async (leagueId, gender) => {
   });
 }
 
-const orderRegionalRankingPerRegion = async (leagueId, gender, regionId) => {
+const orderRegionalRankingPerRegion = async (connection,leagueId, gender, regionId) => {
   return new Promise( async (resolve, reject) => {
     let newRegionalRanking = [];
     try{
-      newRegionalRanking = await getNewRegionalRankingOrder(leagueId, gender, regionId);
+      newRegionalRanking = await getNewRegionalRankingOrder(connection,leagueId, gender, regionId);
       console.log(`New regional ranking order fetched for league ${leagueId}, gender ${gender} and region ${regionId}`);
     } catch(err){
       console.log(err);
@@ -136,7 +111,7 @@ const orderRegionalRankingPerRegion = async (leagueId, gender, regionId) => {
 
     try{
       const updateRegionalDoubleRankingOrderPromises = newRegionalRanking.map( (doubleTeamRegionalRank, rank) =>
-        updateDoubleRankingOrder(doubleTeamRegionalRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamRegionalRank.rank)
+        updateDoubleRankingOrder(connection,doubleTeamRegionalRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamRegionalRank.rank)
       );
       await Promise.all(updateRegionalDoubleRankingOrderPromises);
       console.log(`Regional double ranking updated for league ${leagueId}, gender ${gender} and region ${regionId}`);
@@ -149,12 +124,12 @@ const orderRegionalRankingPerRegion = async (leagueId, gender, regionId) => {
   });
 }
 
-const orderRegionalRanking = async (leagueId, gender) => {
+const orderRegionalRanking = async (connection,leagueId, gender) => {
   return new Promise( async (resolve, reject) => {
     let regions = [];
     let orderRegionalRankingPerRegionPromises = [];
     try{
-      regions = await RegionsController.getRegionIds();
+      regions = await RegionsController.getRegionIds(connection);
       console.log(`Region Ids fetched`);
     } catch(err){
       console.log(err);
@@ -163,7 +138,7 @@ const orderRegionalRanking = async (leagueId, gender) => {
 
     try{
       const orderRegionalDoubleRankingOrderPromises = regions.map( region =>
-        orderRegionalRankingPerRegion(leagueId, gender, region.regionId)
+        orderRegionalRankingPerRegion(connection,leagueId, gender, region.regionId)
       );
       await Promise.all(orderRegionalDoubleRankingOrderPromises);
       console.log(`Regional double ranking updated for league ${leagueId} and gender ${gender}`);
@@ -176,11 +151,11 @@ const orderRegionalRanking = async (leagueId, gender) => {
   });
 }
 
-const orderConferenceRankingPerConference = async (leagueId, gender, conferenceId) => {
+const orderConferenceRankingPerConference = async (connection,leagueId, gender, conferenceId) => {
   return new Promise( async (resolve, reject) => {
     let newConferenceRanking = [];
     try{
-      newConferenceRanking = await getNewConferenceRankingOrder(leagueId, gender, conferenceId);
+      newConferenceRanking = await getNewConferenceRankingOrder(connection,leagueId, gender, conferenceId);
       console.log(`New conference ranking order fetched for league ${leagueId}, gender ${gender} and conference ${conferenceId}`);
     } catch(err){
       console.log(err);
@@ -190,7 +165,7 @@ const orderConferenceRankingPerConference = async (leagueId, gender, conferenceI
 
     try{
       const updateConferenceDoubleRankingOrderPromises = newConferenceRanking.map( (doubleTeamConferenceRank, rank) =>
-        updateDoubleRankingOrder(doubleTeamConferenceRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamConferenceRank.rank)
+        updateDoubleRankingOrder(connection,doubleTeamConferenceRank.doubleRankingId, rank + 1, rank + 1 - doubleTeamConferenceRank.rank)
       );
       await Promise.all(updateConferenceDoubleRankingOrderPromises);
       console.log(`Conference double ranking updated for league ${leagueId}, gender ${gender} and conference ${conferenceId}`);
@@ -203,12 +178,12 @@ const orderConferenceRankingPerConference = async (leagueId, gender, conferenceI
   });
 }
 
-const orderConferenceRanking = async (leagueId, gender) => {
+const orderConferenceRanking = async (connection,leagueId, gender) => {
   return new Promise( async (resolve, reject) => {
     let conferences = [];
     let orderConferenceRankingPerConferencePromises = [];
     try{
-      conferences = await ConferencesController.getConferenceIds();
+      conferences = await ConferencesController.getConferenceIds(connection);
       console.log(`Conference Ids fetched`);
     } catch(err){
       console.log(err);
@@ -217,7 +192,7 @@ const orderConferenceRanking = async (leagueId, gender) => {
 
     try{
       const orderConferenceDoubleRankingOrderPromises = conferences.map( conference =>
-        orderConferenceRankingPerConference(leagueId, gender, conference.conferenceId)
+        orderConferenceRankingPerConference(connection,leagueId, gender, conference.conferenceId)
       );
       await Promise.all(orderConferenceDoubleRankingOrderPromises);
       console.log(`Conference double ranking updated for league ${leagueId} and gender ${gender}`);
@@ -230,20 +205,20 @@ const orderConferenceRanking = async (leagueId, gender) => {
   });
 }
 
-const orderRankingPerGender = async (leagueId) => {
+const orderRankingPerGender = async (connection,leagueId) => {
   return new Promise( async (resolve, reject) => {
     const genders = ["M", "F"];
 
     const orderNationalRankingPerGenderPromises = genders.map(gender =>
-      orderNationalRanking(leagueId, gender)
+      orderNationalRanking(connection,leagueId, gender)
     );
 
     const orderRegionalRankingPerGenderPromises = genders.map(gender =>
-      orderRegionalRanking(leagueId, gender)
+      orderRegionalRanking(connection,leagueId, gender)
     );
 
     const orderConferenceRankingPerGenderPromises = genders.map(gender =>
-      orderConferenceRanking(leagueId, gender)
+      orderConferenceRanking(connection,leagueId, gender)
     );
 
     try{
@@ -274,13 +249,13 @@ const orderRankingPerGender = async (leagueId) => {
   });
 }
 
-const orderDoubleRanking = async () => {
+const orderDoubleRanking = async (connection) => {
   return new Promise ( async (resolve, reject) => {
     const leagues = [1, 2, 3, 4, 5];
 
     try{
       const orderRankingPerLeaguePromises = leagues.map(leagueId =>
-        orderRankingPerGender(leagueId)
+        orderRankingPerGender(connection,leagueId)
       );
       await Promise.all(orderRankingPerLeaguePromises);
       resolve("New Double Ranking ordered for all leagues");
@@ -296,5 +271,5 @@ module.exports = {
   orderDoubleRanking
 }
 
-const RegionsController = require('../controllers/regions_controller');
-const ConferencesController = require('../controllers/conferences_controller');
+const RegionsController = require('./../../controllers/regions_controller');
+const ConferencesController = require('./../../controllers/conferences_controller');

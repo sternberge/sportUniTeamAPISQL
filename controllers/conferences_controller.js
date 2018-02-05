@@ -1,7 +1,7 @@
 var db = require('./../db');
 
 //Get the different Conference ids from the Conferences Table in the DB
-const getConferenceIds = () => {
+const getConferenceIds = (connection) => {
 	return new Promise( (resolve, reject) => {
 		db.pool.getConnection((error, connection) => {
         if (error){

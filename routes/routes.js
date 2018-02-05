@@ -17,6 +17,7 @@ const SingleRankingController = require ('../controllers/single_ranking_controll
 const DropDownListController = require ('../controllers/drop_down_list_controller');
 
 const calculateRanking = require('../ranking/singleranking/index.js');
+const calculateDoubleRanking = require('../ranking/double_ranking/index.js');
 
 
 const AuthenticateController = require ('../middlewares/authentication/index.js');
@@ -129,7 +130,7 @@ module.exports = (app) => {
   app.get('/api/singleRanking/getSingleRankingsByConferenceDivisionGender/:leagueId/:gender/:conferenceId', SingleRankingController.getSingleRankingsByConferenceDivisionGender);
 
   //DoubleRanking
-  app.get('/api/doubleRanking/createNewDoubleRanking', DoubleRankingController.createNewDoubleRanking);
+  app.get('/api/doubleRanking/createNewDoubleRanking', calculateDoubleRanking.createNewDoubleRankings);
   app.post('/api/doubleRanking', DoubleRankingController.create);
   app.delete('/api/doubleRanking/:doubleRankingId', DoubleRankingController.delete);
   app.get('/api/doubleRanking/:doubleRankingId', DoubleRankingController.find);
