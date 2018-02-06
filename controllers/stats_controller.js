@@ -1,6 +1,375 @@
 var db = require('./../db');
 
+const getTeamStatsVsRanked = (req, res) => {
+
+  const teamId = req.params.teamId;
+
+  db.pool.getConnection((error, connection) => {
+    if (error) {
+      return res.status(500).send(JSON.stringify({
+        "status": 500,
+        "error": error,
+        "response": null
+      }));
+    }
+
+    var query = connection.query(`SELECT simpleMatchesSpringWonVsNationalRanked,
+    simpleMatchesSpringWonVsNationalRanked + simpleMatchesSpringLostVsNationalRanked
+    AS simpleMatchesSpringPlayedVsNationalRanked,
+    (simpleMatchesSpringWonVsNationalRanked /
+      (simpleMatchesSpringWonVsNationalRanked + simpleMatchesSpringLostVsNationalRanked)) * 100
+    AS simpleMatchesSpringRatioVsNationalRanked,
+    simpleMatchesFallWonVsNationalRanked,
+    simpleMatchesFallWonVsNationalRanked + simpleMatchesFallLostVsNationalRanked
+    AS simpleMatchesFallPlayedVsNationalRanked,
+    (simpleMatchesFallWonVsNationalRanked /
+      (simpleMatchesFallWonVsNationalRanked + simpleMatchesFallLostVsNationalRanked)) * 100
+    AS simpleMatchesFallRatioVsNationalRanked,
+
+    simpleMatchesSpringWonVsRegionalRanked,
+    simpleMatchesSpringWonVsRegionalRanked + simpleMatchesSpringLostVsRegionalRanked
+    AS simpleMatchesSpringPlayedVsRegionalRanked,
+    (simpleMatchesSpringWonVsRegionalRanked /
+      (simpleMatchesSpringWonVsRegionalRanked + simpleMatchesSpringLostVsRegionalRanked)) * 100
+    AS simpleMatchesSpringRatioVsRegionalRanked,
+    simpleMatchesFallWonVsRegionalRanked,
+    simpleMatchesFallWonVsRegionalRanked + simpleMatchesFallLostVsRegionalRanked
+    AS simpleMatchesFallPlayedVsRegionalRanked,
+    (simpleMatchesFallWonVsRegionalRanked /
+      (simpleMatchesFallWonVsRegionalRanked + simpleMatchesFallLostVsRegionalRanked)) * 100
+    AS simpleMatchesFallRatioVsRegionalRanked,
+
+    simpleMatchesSpringWonVsConferenceRanked,
+    simpleMatchesSpringWonVsConferenceRanked + simpleMatchesSpringLostVsConferenceRanked
+    AS simpleMatchesSpringPlayedVsConferenceRanked,
+    (simpleMatchesSpringWonVsConferenceRanked /
+      (simpleMatchesSpringWonVsConferenceRanked + simpleMatchesSpringLostVsConferenceRanked)) * 100
+    AS simpleMatchesSpringRatioVsConferenceRanked,
+    simpleMatchesFallWonVsConferenceRanked,
+    simpleMatchesFallWonVsConferenceRanked + simpleMatchesFallLostVsConferenceRanked
+    AS simpleMatchesFallPlayedVsConferenceRanked,
+    (simpleMatchesFallWonVsConferenceRanked /
+      (simpleMatchesFallWonVsConferenceRanked + simpleMatchesFallLostVsConferenceRanked)) * 100
+    AS simpleMatchesFallRatioVsConferenceRanked,
+
+    doubleMatchesSpringWonVsNationalRanked,
+    doubleMatchesSpringWonVsNationalRanked + doubleMatchesSpringLostVsNationalRanked
+    AS doubleMatchesSpringPlayedVsNationalRanked,
+    (doubleMatchesSpringWonVsNationalRanked /
+      (doubleMatchesSpringWonVsNationalRanked + doubleMatchesSpringLostVsNationalRanked)) * 100
+    AS doubleMatchesSpringRatioVsNationalRanked,
+    doubleMatchesFallWonVsNationalRanked,
+    doubleMatchesFallWonVsNationalRanked + doubleMatchesFallLostVsNationalRanked
+    AS doubleMatchesFallPlayedVsNationalRanked,
+    (doubleMatchesFallWonVsNationalRanked /
+      (doubleMatchesFallWonVsNationalRanked + doubleMatchesFallLostVsNationalRanked)) * 100
+    AS doubleMatchesFallRatioVsNationalRanked,
+
+    doubleMatchesSpringWonVsRegionalRanked,
+    doubleMatchesSpringWonVsRegionalRanked + doubleMatchesSpringLostVsRegionalRanked
+    AS doubleMatchesSpringPlayedVsRegionalRanked,
+    (doubleMatchesSpringWonVsRegionalRanked /
+      (doubleMatchesSpringWonVsRegionalRanked + doubleMatchesSpringLostVsRegionalRanked)) * 100
+    AS doubleMatchesSpringRatioVsRegionalRanked,
+    doubleMatchesFallWonVsRegionalRanked,
+    doubleMatchesFallWonVsRegionalRanked + doubleMatchesFallLostVsRegionalRanked
+    AS doubleMatchesFallPlayedVsRegionalRanked,
+    (doubleMatchesFallWonVsRegionalRanked /
+      (doubleMatchesFallWonVsRegionalRanked + doubleMatchesFallLostVsRegionalRanked)) * 100
+    AS doubleMatchesFallRatioVsRegionalRanked,
+
+    doubleMatchesSpringWonVsConferenceRanked,
+    doubleMatchesSpringWonVsConferenceRanked + doubleMatchesSpringLostVsConferenceRanked
+    AS doubleMatchesSpringPlayedVsConferenceRanked,
+    (doubleMatchesSpringWonVsConferenceRanked /
+      (doubleMatchesSpringWonVsConferenceRanked + doubleMatchesSpringLostVsConferenceRanked)) * 100
+    AS doubleMatchesSpringRatioVsConferenceRanked,
+    doubleMatchesFallWonVsConferenceRanked,
+    doubleMatchesFallWonVsConferenceRanked + doubleMatchesFallLostVsConferenceRanked
+    AS doubleMatchesFallPlayedVsConferenceRanked,
+    (doubleMatchesFallWonVsConferenceRanked /
+      (doubleMatchesFallWonVsConferenceRanked + doubleMatchesFallLostVsConferenceRanked)) * 100
+    AS doubleMatchesFallRatioVsConferenceRanked
+
+    FROM
+
+    (SELECT count(*) simpleMatchesSpringWonVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'S' AND t.teamId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringWonVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesSpringLostVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'S' AND t.teamId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringLostVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesFallWonVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND t.teamId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallWonVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesFallLostVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND t.teamId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallLostVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesSpringWonVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'S' AND t.teamId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringWonVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesSpringLostVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'S' AND t.teamId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringLostVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesFallWonVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND t.teamId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallWonVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesFallLostVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND t.teamId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallLostVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesSpringWonVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'S' AND t.teamId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringWonVsConferenceRanked,
+
+    (SELECT count(*) simpleMatchesSpringLostVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'S' AND t.teamId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringLostVsConferenceRanked,
+
+    (SELECT count(*) simpleMatchesFallWonVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND t.teamId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallWonVsConferenceRanked,
+
+    (SELECT count(*) simpleMatchesFallLostVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND t.teamId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallLostVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesSpringWonVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'S' AND t.teamId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringWonVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesSpringLostVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'S' AND t.teamId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringLostVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesFallWonVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'F' AND t.teamId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallWonVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesFallLostVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'F' AND t.teamId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallLostVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesSpringWonVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'S' AND t.teamId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringWonVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesSpringLostVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'S' AND t.teamId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringLostVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesFallWonVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'F' AND t.teamId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallWonVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesFallLostVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'F' AND t.teamId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallLostVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesSpringWonVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'S' AND t.teamId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringWonVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesSpringLostVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'S' AND t.teamId = ? AND dr.type = 'C' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringLostVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesFallWonVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'F' AND t.teamId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallWonVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesFallLostVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN Teams t on t.teamId = p.Teams_teamId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'F' AND t.teamId = ? AND dr.type = 'C' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallLostVsConferenceRanked`,
+      [teamId, teamId, teamId, teamId, teamId, teamId, teamId, teamId, teamId,
+        teamId, teamId, teamId, teamId, teamId, teamId, teamId, teamId, teamId,
+        teamId, teamId, teamId, teamId, teamId, teamId], (error, results, fields) => {
+        if (error) {
+          connection.release();
+          return res.send(JSON.stringify({
+            "status": 500,
+            "error": error,
+            "response": null
+          }));
+        }
+
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+  });
+}
+
 module.exports = {
+
+  getTeamStatsVsRanked,
 
   getSimpleMatchsWonByPlayerId(req, res, next) {
 
@@ -82,7 +451,7 @@ module.exports = {
           "response": null
         }));
       }
-      var query = connection.query(`SELECT COUNT(*) as result FROM SimpleMatches sm WHERE Winner = ? OR Loser = ?;`, [playerId,playerId], (error, results, fields) => {
+      var query = connection.query(`SELECT COUNT(*) as result FROM SimpleMatches sm WHERE Winner = ? OR Loser = ?;`, [playerId, playerId], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -119,7 +488,7 @@ module.exports = {
       }
       var query = connection.query(`SELECT count(*) as result FROM DoubleMatches dm
       INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
-      WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?`, [playerId,playerId], (error, results, fields) => {
+      WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?`, [playerId, playerId], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -155,7 +524,7 @@ module.exports = {
       }
       var query = connection.query(`SELECT count(*) as result FROM DoubleMatches dm
       INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.loserDouble
-      WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?;`, [playerId,playerId], (error, results, fields) => {
+      WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ?;`, [playerId, playerId], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -193,7 +562,7 @@ module.exports = {
       INNER JOIN DoubleTeams dt1 on dt1.doubleTeamId = dm.winnerDouble
       INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
       WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? OR dt2.Players_playerId = ? OR dt2.Players_playerId2 = ?
-      `, [playerId,playerId,playerId,playerId], (error, results, fields) => {
+      `, [playerId, playerId, playerId, playerId], (error, results, fields) => {
         if (error) {
           connection.release();
           return res.send(JSON.stringify({
@@ -252,43 +621,43 @@ module.exports = {
         INNER JOIN DoubleTeams dt2 on dt2.doubleTeamId = dm.loserDouble
         WHERE dt1.Players_playerId = ? OR dt1.Players_playerId2 = ? OR dt2.Players_playerId = ? OR dt2.Players_playerId2 = ? AND dm.springFall LIKE ?) as doubleMatchsPlayed
 
-        `, [playerId,springFall,playerId,springFall,playerId,playerId,springFall,playerId,playerId,springFall,playerId,playerId,springFall,playerId,playerId,playerId,playerId,springFall],(error, results, fields) => {
-          if (error) {
-            connection.release();
-            return res.send(JSON.stringify({
-              "status": 500,
-              "error": error,
-              "response": null
-            }));
-          }
-
-          console.log(query.sql);
-
-          res.send(JSON.stringify({
-            "status": 200,
-            "error": null,
-            "response": results
-          }));
-          connection.release(); // CLOSE THE CONNECTION
-
-        });
-      });
-    },
-
-    getWinRatioByTeam(req, res, next) {
-
-      const springFall = req.params.springFall;
-      const teamId = Number(req.params.teamId);
-
-      db.pool.getConnection((error, connection) => {
+        `, [playerId, springFall, playerId, springFall, playerId, playerId, springFall, playerId, playerId, springFall, playerId, playerId, springFall, playerId, playerId, playerId, playerId, springFall], (error, results, fields) => {
         if (error) {
+          connection.release();
           return res.send(JSON.stringify({
             "status": 500,
             "error": error,
             "response": null
           }));
         }
-        var query = connection.query(`SELECT *, (simpleMatchsWon/simpleMatchsPlayed)*100 as simpleMatchWonRatioByTeam,(doubleMatchsWon/doubleMatchsPlayed)*100  as doubleMatchWonRatioByTeam, ((simpleMatchsWon+doubleMatchsWon) / (simpleMatchsPlayed+doubleMatchsPlayed))*100 as overallRatio FROM
+
+        console.log(query.sql);
+
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
+
+      });
+    });
+  },
+
+  getWinRatioByTeam(req, res, next) {
+
+    const springFall = req.params.springFall;
+    const teamId = Number(req.params.teamId);
+
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return res.send(JSON.stringify({
+          "status": 500,
+          "error": error,
+          "response": null
+        }));
+      }
+      var query = connection.query(`SELECT *, (simpleMatchsWon/simpleMatchsPlayed)*100 as simpleMatchWonRatioByTeam,(doubleMatchsWon/doubleMatchsPlayed)*100  as doubleMatchWonRatioByTeam, ((simpleMatchsWon+doubleMatchsWon) / (simpleMatchsPlayed+doubleMatchsPlayed))*100 as overallRatio FROM
 
         (SELECT count(*) as simpleMatchsWon FROM SimpleMatches sm
         INNER JOIN Players p on p.playerId = sm.winner
@@ -321,43 +690,43 @@ module.exports = {
         INNER JOIN Players p1 on p1.playerId = dt1.Players_playerId
         INNER JOIN Players p2 on p2.playerId = dt2.Players_playerId
         WHERE p1.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?)
-        or p2.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as doubleMatchsPlayed`, [teamId,springFall,teamId,springFall,teamId,teamId,springFall,teamId,springFall,teamId,springFall,teamId,teamId,springFall,springFall],(error, results, fields) => {
-          if (error) {
-            connection.release();
-            return res.send(JSON.stringify({
-              "status": 500,
-              "error": error,
-              "response": null
-            }));
-          }
-
-          console.log(query.sql);
-
-          res.send(JSON.stringify({
-            "status": 200,
-            "error": null,
-            "response": results
-          }));
-          connection.release(); // CLOSE THE CONNECTION
-
-        });
-      });
-    },
-
-    getSpringWinRatioByTeam(req, res, next) {
-
-    
-      const teamId = Number(req.params.teamId);
-
-      db.pool.getConnection((error, connection) => {
+        or p2.playerId in (SELECT p.playerId FROM Players p WHERE Teams_teamId = ?) AND springFall LIKE ?) as doubleMatchsPlayed`, [teamId, springFall, teamId, springFall, teamId, teamId, springFall, teamId, springFall, teamId, springFall, teamId, teamId, springFall, springFall], (error, results, fields) => {
         if (error) {
+          connection.release();
           return res.send(JSON.stringify({
             "status": 500,
             "error": error,
             "response": null
           }));
         }
-        var query = connection.query(`SELECT *, (springsHomeWonByTeam / springsPlayedByTeam)*100 springsHomeWinRatio,(springsAwayWonByTeam / springsAwayPlayedByTeam)*100 as springAwayWinRatio,(springsWonByTeam/springsPlayedByTeam)*100 as springOverallWinRatio
+
+        console.log(query.sql);
+
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
+
+      });
+    });
+  },
+
+  getSpringWinRatioByTeam(req, res, next) {
+
+
+    const teamId = Number(req.params.teamId);
+
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return res.send(JSON.stringify({
+          "status": 500,
+          "error": error,
+          "response": null
+        }));
+      }
+      var query = connection.query(`SELECT *, (springsHomeWonByTeam / springsPlayedByTeam)*100 springsHomeWinRatio,(springsAwayWonByTeam / springsAwayPlayedByTeam)*100 as springAwayWinRatio,(springsWonByTeam/springsPlayedByTeam)*100 as springOverallWinRatio
 
         FROM
 
@@ -380,47 +749,46 @@ module.exports = {
         (SELECT count(*) as springsPlayedByTeam FROM SpringResult sr
         WHERE (winnerId = ? or loserId = ?)) as springsPlayedByTeam
 
-        `
-        ,[teamId,teamId,teamId,teamId,teamId,teamId,teamId,teamId,teamId],(error, results, fields) => {
-          if (error) {
-            connection.release();
-            return res.send(JSON.stringify({
-              "status": 500,
-              "error": error,
-              "response": null
-            }));
-          }
-
-          console.log(query.sql);
-
-          res.send(JSON.stringify({
-            "status": 200,
-            "error": null,
-            "response": results
-          }));
-          connection.release(); // CLOSE THE CONNECTION
-
-        });
-
-
-      });
-    },
-
-
-    getTournamentsWinRatioByPlayer(req, res, next) {
-
-      const springFall = req.params.springFall;
-      const playerId = Number(req.params.playerId);
-
-      db.pool.getConnection((error, connection) => {
+        `, [teamId, teamId, teamId, teamId, teamId, teamId, teamId, teamId, teamId], (error, results, fields) => {
         if (error) {
+          connection.release();
           return res.send(JSON.stringify({
             "status": 500,
             "error": error,
             "response": null
           }));
         }
-        var query = connection.query(`SELECT *, (tournamentsSimpleWonByPlayer / tournamentSimplePlayedByPlayer)*100 as simpleWonRatio ,(tournamentsDoubleWonByPlayer/tournamentDoublePlayedByPlayer)*100 as doubleWonRatio, ( (tournamentsSimpleWonByPlayer+tournamentsDoubleWonByPlayer)/(tournamentSimplePlayedByPlayer+tournamentDoublePlayedByPlayer))*100 as overAllRatio FROM
+
+        console.log(query.sql);
+
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
+
+      });
+
+
+    });
+  },
+
+
+  getTournamentsWinRatioByPlayer(req, res, next) {
+
+    const springFall = req.params.springFall;
+    const playerId = Number(req.params.playerId);
+
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return res.send(JSON.stringify({
+          "status": 500,
+          "error": error,
+          "response": null
+        }));
+      }
+      var query = connection.query(`SELECT *, (tournamentsSimpleWonByPlayer / tournamentSimplePlayedByPlayer)*100 as simpleWonRatio ,(tournamentsDoubleWonByPlayer/tournamentDoublePlayedByPlayer)*100 as doubleWonRatio, ( (tournamentsSimpleWonByPlayer+tournamentsDoubleWonByPlayer)/(tournamentSimplePlayedByPlayer+tournamentDoublePlayedByPlayer))*100 as overAllRatio FROM
         /*Nombre de tournois simple gagnés*/
         (SELECT count(*) as tournamentsSimpleWonByPlayer FROM SimpleMatches sm
         WHERE sm.round = 'Final' AND sm.Tournaments_tournamentId is not null AND  sm.winner = ? AND sm.springFall LIKE ?) as tournamentsSimpleWonByPlayer,
@@ -447,46 +815,45 @@ module.exports = {
         where Tournaments_tournamentId is not null AND dm.springFall LIKE ?
         group by Tournaments_tournamentId) AS T
         where tournamentPlayers LIKE '?,%' or tournamentPlayers LIKE '%,?,%' or tournamentPlayers LIKE '%,?') as tournamentDoublePlayedByPlayer
-        `
-        ,[playerId,springFall,playerId,playerId,springFall,springFall,playerId,playerId,playerId,springFall,playerId,playerId,playerId],(error, results, fields) => {
-          if (error) {
-            connection.release();
-            return res.send(JSON.stringify({
-              "status": 500,
-              "error": error,
-              "response": null
-            }));
-          }
-
-          console.log(query.sql);
-
-          res.send(JSON.stringify({
-            "status": 200,
-            "error": null,
-            "response": results
-          }));
-          connection.release(); // CLOSE THE CONNECTION
-
-        });
-      });
-    },
-
-
-
-    getTournamentsWinRatioByTeam(req, res, next) {
-
-
-      const teamId = Number(req.params.teamId);
-
-      db.pool.getConnection((error, connection) => {
+        `, [playerId, springFall, playerId, playerId, springFall, springFall, playerId, playerId, playerId, springFall, playerId, playerId, playerId], (error, results, fields) => {
         if (error) {
+          connection.release();
           return res.send(JSON.stringify({
             "status": 500,
             "error": error,
             "response": null
           }));
         }
-        var query = connection.query(`
+
+        console.log(query.sql);
+
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
+
+      });
+    });
+  },
+
+
+
+  getTournamentsWinRatioByTeam(req, res, next) {
+
+
+    const teamId = Number(req.params.teamId);
+
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return res.send(JSON.stringify({
+          "status": 500,
+          "error": error,
+          "response": null
+        }));
+      }
+      var query = connection.query(`
           SELECT *,(tournamentsSimpleWonByTeam / tournamentSimplePlayedByTeam )*100 as simpleWonRatio, (tournamentsDoubleWonByTeam / tournamentDoublePlayedByTeam)*100 as DoubleWonRatio, ( (tournamentsSimpleWonByTeam+tournamentsDoubleWonByTeam)/(tournamentSimplePlayedByTeam+tournamentDoublePlayedByTeam) )*100 as overAllRatio FROM
           /*Liste des tournois simples remportés par telle équipe */
           (SELECT count(*) as tournamentsSimpleWonByTeam FROM SimpleMatches sm
@@ -518,46 +885,45 @@ module.exports = {
           where Tournaments_tournamentId is not null
           group by Tournaments_tournamentId) as t
           where tournamentTeams  Like '?,%' or tournamentTeams LIKE '%,?,%' or tournamentTeams LIKE '%,?') as tournamentDoublePlayedByTeam
-          `
-          ,[teamId,teamId,teamId,teamId,teamId,teamId,teamId,teamId],(error, results, fields) => {
-            if (error) {
-              connection.release();
-              return res.send(JSON.stringify({
-                "status": 500,
-                "error": error,
-                "response": null
-              }));
-            }
+          `, [teamId, teamId, teamId, teamId, teamId, teamId, teamId, teamId], (error, results, fields) => {
+        if (error) {
+          connection.release();
+          return res.send(JSON.stringify({
+            "status": 500,
+            "error": error,
+            "response": null
+          }));
+        }
 
-            console.log(query.sql);
+        console.log(query.sql);
 
-            res.send(JSON.stringify({
-              "status": 200,
-              "error": null,
-              "response": results
-            }));
-            connection.release(); // CLOSE THE CONNECTION
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
 
-          });
-        });
-      },
-
-
-      getSpringHomeAwayWinByPlayer(req, res, next) {
+      });
+    });
+  },
 
 
-        const playerId = Number(req.params.playerId);
-        const homeAway = req.params.homeAway;
+  getSpringHomeAwayWinByPlayer(req, res, next) {
 
-        db.pool.getConnection((error, connection) => {
-          if (error) {
-            return res.send(JSON.stringify({
-              "status": 500,
-              "error": error,
-              "response": null
-            }));
-          }
-          var query = connection.query(`
+
+    const playerId = Number(req.params.playerId);
+    const homeAway = req.params.homeAway;
+
+    db.pool.getConnection((error, connection) => {
+      if (error) {
+        return res.send(JSON.stringify({
+          "status": 500,
+          "error": error,
+          "response": null
+        }));
+      }
+      var query = connection.query(`
             SELECT *, (SpringsWon/SpringsPlayed)*100 as springsVictoryRatio FROM
             /*SpringPlayed By the player*/
             (select count(*) as SpringsPlayed from (SELECT sr.*,concat(group_concat(distinct sm.winner),',',group_concat(distinct sm.loser),',',group_concat(distinct dt1.Players_playerId),',',group_concat(distinct dt1.Players_playerId2),',',group_concat(distinct dt2.Players_playerId),',',group_concat(distinct dt2.Players_playerId2)) as playersInvolvedInSpring FROM SpringResult sr
@@ -589,29 +955,28 @@ module.exports = {
           GROUP BY sm.springId) as t
           WHERE (playersInvolvedInSpring Like '?,%' OR playersInvolvedInSpring Like '%,?,%'Or  playersInvolvedInSpring Like '%,?')
           AND winnerId = (SELECT Teams_teamId FROM Players p INNER JOIN Teams t on t.teamId = p.Teams_teamId WHERE p.playerId = ?)) as SpringWon
-          `
-          ,[homeAway,playerId,playerId,playerId,playerId,playerId,homeAway,playerId,playerId,playerId,playerId],(error, results, fields) => {
-            if (error) {
-              connection.release();
-              return res.send(JSON.stringify({
-                "status": 500,
-                "error": error,
-                "response": null
-              }));
-            }
+          `, [homeAway, playerId, playerId, playerId, playerId, playerId, homeAway, playerId, playerId, playerId, playerId], (error, results, fields) => {
+        if (error) {
+          connection.release();
+          return res.send(JSON.stringify({
+            "status": 500,
+            "error": error,
+            "response": null
+          }));
+        }
 
-            console.log(query.sql);
+        console.log(query.sql);
 
-            res.send(JSON.stringify({
-              "status": 200,
-              "error": null,
-              "response": results
-            }));
-            connection.release(); // CLOSE THE CONNECTION
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
 
-          });
-        });
-      },
+      });
+    });
+  },
 
 
-    };
+};
