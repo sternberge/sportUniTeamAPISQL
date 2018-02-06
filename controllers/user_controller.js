@@ -39,7 +39,7 @@ module.exports = {
     let connection;
     try{
       //Ouverture de la transaction
-      await db.getConnectionForTransaction(db.pool);
+      connection = await db.getConnectionForTransaction(db.pool);
       // Check si l'email n'est pas deja en BDD
       let emailOk = await module.exports.checkEmailUnicity(connection,req.body.email);
       //Creation du profil utilisateur

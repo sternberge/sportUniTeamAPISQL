@@ -2,6 +2,7 @@ const doubleRankingHistory = require('./archive_double_rankings.js');
 const calculateRanking = require("./calculate_double_rankings.js");
 const orderRanking = require("./order_double_rankings.js");
 const db = require('./../../db');
+const schedule = require('node-schedule');
 
 const createNewDoubleRankings = async (req, res) => {
   let connection;
@@ -65,6 +66,10 @@ const createNewDoubleRankings = async (req, res) => {
   console.log("New Double Ranking Created");
   res.send(JSON.stringify({"status": 200, "error": null, "response": "New Double Ranking Done"}));
 }
+
+// Script ranking --> launch script on the following date
+let date = new Date(2018, 01, 06, 14, 42, 00);
+schedule.scheduleJob(date, createNewDoubleRankings);
 
 module.exports = {
   createNewDoubleRankings
