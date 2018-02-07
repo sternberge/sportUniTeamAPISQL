@@ -95,6 +95,7 @@ module.exports = (app) => {
   app.delete('/api/users/:user_id', UserController.deleteUser);
   app.get('/api/users/:user_id', UserController.findUserById);
   app.put('/api/users/:user_id', UserController.editUser);
+  app.get('/api/users/getUserInformationByUserId/:userId', UserController.getUserInformationByUserId);
 
   //Budget
   /*
