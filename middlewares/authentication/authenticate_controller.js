@@ -13,7 +13,8 @@ const authenticateWithToken = (informations) => {
       firstName : informations[0].firstName,
       lastName : informations[0].lastName,
       birthday : informations[0].birthday,
-      userType : informations[0].userType
+      userType : informations[0].userType,
+      program : "M"
     }
     if(informations[0].playerId != null){
       user.playerId = informations[0].playerId,
