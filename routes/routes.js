@@ -55,6 +55,7 @@ module.exports = (app) => {
   app.get('/api/colleges/getCollegeNameFromTeamId/:teamId',CollegeController.getCollegeNameFromTeamId);
   app.get('/api/colleges/getCollegeNameFromCollegeId/:collegeId',CollegeController.getCollegeNameFromCollegeId);
   app.get('/api/colleges/getCollegeRankingByCollegeIdGender/:collegeId/:gender/:type',CollegeController.getCollegeRankingByCollegeIdGender);
+  app.get('/api/colleges/getConferencesByCollegeId/:collegeId',CollegeController.getConferencesByCollegeId);
 
 
   //Coaches
