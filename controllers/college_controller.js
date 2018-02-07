@@ -170,7 +170,7 @@ module.exports = {
       if (error){
         return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
       }
-      var query = connection.query(`SELECT distinct Conferences_conferenceId as conferenceId FROM Colleges where Leagues_leagueId = (SELECT Leagues_leagueId FROM Colleges where collegeId  = ?)`,collegeId, (error, results, fields) => {
+      var query = connection.query(`SELECT distinct Conferences_conferenceId,c.conferenceLabel as name FROM Colleges co INNER JOIN Conferences c on c.conferenceId = co.Conferences_conferenceId where Leagues_leagueId = (SELECT Leagues_leagueId FROM Colleges where collegeId  = ?)`,collegeId, (error, results, fields) => {
         if (error){
           connection.release();
           return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
