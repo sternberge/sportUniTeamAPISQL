@@ -55,6 +55,7 @@ module.exports = (app) => {
   app.get('/api/colleges/getCollegeNameFromTeamId/:teamId',CollegeController.getCollegeNameFromTeamId);
   app.get('/api/colleges/getCollegeNameFromCollegeId/:collegeId',CollegeController.getCollegeNameFromCollegeId);
   app.get('/api/colleges/getCollegeRankingByCollegeIdGender/:collegeId/:gender/:type',CollegeController.getCollegeRankingByCollegeIdGender);
+  app.get('/api/colleges/getConferencesByCollegeId/:collegeId',CollegeController.getConferencesByCollegeId);
 
 
   //Coaches
@@ -95,6 +96,7 @@ module.exports = (app) => {
   app.delete('/api/users/:user_id', UserController.deleteUser);
   app.get('/api/users/:user_id', UserController.findUserById);
   app.put('/api/users/:user_id', UserController.editUser);
+  app.get('/api/users/getUserInformationByUserId/:userId', UserController.getUserInformationByUserId);
 
   //Budget
   /*

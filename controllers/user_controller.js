@@ -175,6 +175,25 @@ module.exports = {
     });
   },
 
+  getUserInformationByUserId(req, res, next){
+    const userId = req.params.userId;
+  
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`SELECT *,phone as userPhone FROM mydb.Users where userId = ?;`,userId, (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+    });
+  },
+
   modifyPassword(req, res, next){
     const oldPassword = req.body.oldPassword;
     const newPassword = req.body.newPassword;

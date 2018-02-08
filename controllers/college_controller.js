@@ -161,4 +161,27 @@ module.exports = {
   },
 
 
+  getConferencesByCollegeId(req, res, next) {
+
+    const collegeId = req.params.collegeId;
+
+    db.pool.getConnection((error, connection) => {
+
+      if (error){
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      var query = connection.query(`SELECT distinct Conferences_conferenceId as conferenceId,c.conferenceLabel as name FROM Colleges co INNER JOIN Conferences c on c.conferenceId = co.Conferences_conferenceId where Leagues_leagueId = (SELECT Leagues_leagueId FROM Colleges where collegeId  = ?)`,collegeId, (error, results, fields) => {
+        if (error){
+          connection.release();
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+      console.log(query.sql);
+    });
+  },
+
+
 };
