@@ -1,5 +1,353 @@
 var db = require('./../db');
 
+const getPlayerStatsVSRanked = (req, res) => {
+
+  const playerId = req.params.playerId;
+
+  db.pool.getConnection((error, connection) => {
+    if (error) {
+      return res.status(500).send(JSON.stringify({
+        "status": 500,
+        "error": error,
+        "response": null
+      }));
+    }
+
+    var query = connection.query(`SELECT simpleMatchesSpringWonVsNationalRanked,
+    simpleMatchesSpringWonVsNationalRanked + simpleMatchesSpringLostVsNationalRanked
+    AS simpleMatchesSpringPlayedVsNationalRanked,
+    (simpleMatchesSpringWonVsNationalRanked /
+      (simpleMatchesSpringWonVsNationalRanked + simpleMatchesSpringLostVsNationalRanked)) * 100
+    AS simpleMatchesSpringRatioVsNationalRanked,
+    simpleMatchesFallWonVsNationalRanked,
+    simpleMatchesFallWonVsNationalRanked + simpleMatchesFallLostVsNationalRanked
+    AS simpleMatchesFallPlayedVsNationalRanked,
+    (simpleMatchesFallWonVsNationalRanked /
+      (simpleMatchesFallWonVsNationalRanked + simpleMatchesFallLostVsNationalRanked)) * 100
+    AS simpleMatchesFallRatioVsNationalRanked,
+
+    simpleMatchesSpringWonVsRegionalRanked,
+    simpleMatchesSpringWonVsRegionalRanked + simpleMatchesSpringLostVsRegionalRanked
+    AS simpleMatchesSpringPlayedVsRegionalRanked,
+    (simpleMatchesSpringWonVsRegionalRanked /
+      (simpleMatchesSpringWonVsRegionalRanked + simpleMatchesSpringLostVsRegionalRanked)) * 100
+    AS simpleMatchesSpringRatioVsRegionalRanked,
+    simpleMatchesFallWonVsRegionalRanked,
+    simpleMatchesFallWonVsRegionalRanked + simpleMatchesFallLostVsRegionalRanked
+    AS simpleMatchesFallPlayedVsRegionalRanked,
+    (simpleMatchesFallWonVsRegionalRanked /
+      (simpleMatchesFallWonVsRegionalRanked + simpleMatchesFallLostVsRegionalRanked)) * 100
+    AS simpleMatchesFallRatioVsRegionalRanked,
+
+    simpleMatchesSpringWonVsConferenceRanked,
+    simpleMatchesSpringWonVsConferenceRanked + simpleMatchesSpringLostVsConferenceRanked
+    AS simpleMatchesSpringPlayedVsConferenceRanked,
+    (simpleMatchesSpringWonVsConferenceRanked /
+      (simpleMatchesSpringWonVsConferenceRanked + simpleMatchesSpringLostVsConferenceRanked)) * 100
+    AS simpleMatchesSpringRatioVsConferenceRanked,
+    simpleMatchesFallWonVsConferenceRanked,
+    simpleMatchesFallWonVsConferenceRanked + simpleMatchesFallLostVsConferenceRanked
+    AS simpleMatchesFallPlayedVsConferenceRanked,
+    (simpleMatchesFallWonVsConferenceRanked /
+      (simpleMatchesFallWonVsConferenceRanked + simpleMatchesFallLostVsConferenceRanked)) * 100
+    AS simpleMatchesFallRatioVsConferenceRanked,
+
+    doubleMatchesSpringWonVsNationalRanked,
+    doubleMatchesSpringWonVsNationalRanked + doubleMatchesSpringLostVsNationalRanked
+    AS doubleMatchesSpringPlayedVsNationalRanked,
+    (doubleMatchesSpringWonVsNationalRanked /
+      (doubleMatchesSpringWonVsNationalRanked + doubleMatchesSpringLostVsNationalRanked)) * 100
+    AS doubleMatchesSpringRatioVsNationalRanked,
+    doubleMatchesFallWonVsNationalRanked,
+    doubleMatchesFallWonVsNationalRanked + doubleMatchesFallLostVsNationalRanked
+    AS doubleMatchesFallPlayedVsNationalRanked,
+    (doubleMatchesFallWonVsNationalRanked /
+      (doubleMatchesFallWonVsNationalRanked + doubleMatchesFallLostVsNationalRanked)) * 100
+    AS doubleMatchesFallRatioVsNationalRanked,
+
+    doubleMatchesSpringWonVsRegionalRanked,
+    doubleMatchesSpringWonVsRegionalRanked + doubleMatchesSpringLostVsRegionalRanked
+    AS doubleMatchesSpringPlayedVsRegionalRanked,
+    (doubleMatchesSpringWonVsRegionalRanked /
+      (doubleMatchesSpringWonVsRegionalRanked + doubleMatchesSpringLostVsRegionalRanked)) * 100
+    AS doubleMatchesSpringRatioVsRegionalRanked,
+    doubleMatchesFallWonVsRegionalRanked,
+    doubleMatchesFallWonVsRegionalRanked + doubleMatchesFallLostVsRegionalRanked
+    AS doubleMatchesFallPlayedVsRegionalRanked,
+    (doubleMatchesFallWonVsRegionalRanked /
+      (doubleMatchesFallWonVsRegionalRanked + doubleMatchesFallLostVsRegionalRanked)) * 100
+    AS doubleMatchesFallRatioVsRegionalRanked,
+
+    doubleMatchesSpringWonVsConferenceRanked,
+    doubleMatchesSpringWonVsConferenceRanked + doubleMatchesSpringLostVsConferenceRanked
+    AS doubleMatchesSpringPlayedVsConferenceRanked,
+    (doubleMatchesSpringWonVsConferenceRanked /
+      (doubleMatchesSpringWonVsConferenceRanked + doubleMatchesSpringLostVsConferenceRanked)) * 100
+    AS doubleMatchesSpringRatioVsConferenceRanked,
+    doubleMatchesFallWonVsConferenceRanked,
+    doubleMatchesFallWonVsConferenceRanked + doubleMatchesFallLostVsConferenceRanked
+    AS doubleMatchesFallPlayedVsConferenceRanked,
+    (doubleMatchesFallWonVsConferenceRanked /
+      (doubleMatchesFallWonVsConferenceRanked + doubleMatchesFallLostVsConferenceRanked)) * 100
+    AS doubleMatchesFallRatioVsConferenceRanked
+
+    FROM
+
+    (SELECT count(*) simpleMatchesSpringWonVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    WHERE sm.springFall = 'S' AND p.playerId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringWonVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesSpringLostVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    WHERE sm.springFall = 'S' AND p.playerId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringLostVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesFallWonVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    WHERE sm.springFall = 'F' AND p.playerId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallWonVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesFallLostVsNationalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    WHERE sm.springFall = 'F' AND p.playerId = ? AND sr.type = 'N' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallLostVsNationalRanked,
+
+    (SELECT count(*) simpleMatchesSpringWonVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    WHERE sm.springFall = 'S' AND p.playerId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringWonVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesSpringLostVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    WHERE sm.springFall = 'S' AND p.playerId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringLostVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesFallWonVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    WHERE sm.springFall = 'F' AND p.playerId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallWonVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesFallLostVsRegionalRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    WHERE sm.springFall = 'F' AND p.playerId = ? AND sr.type = 'R' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallLostVsRegionalRanked,
+
+    (SELECT count(*) simpleMatchesSpringWonVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    WHERE sm.springFall = 'S' AND p.playerId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringWonVsConferenceRanked,
+
+    (SELECT count(*) simpleMatchesSpringLostVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    WHERE sm.springFall = 'S' AND p.playerId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesSpringLostVsConferenceRanked,
+
+    (SELECT count(*) simpleMatchesFallWonVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.winner
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.loser
+    INNER JOIN Teams t on p.playerId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND p.playerId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallWonVsConferenceRanked,
+
+    (SELECT count(*) simpleMatchesFallLostVsConferenceRanked FROM SimpleMatches sm
+    INNER JOIN Players p on p.playerId = sm.loser
+    INNER JOIN SingleRanking sr on sr.Players_playerId = sm.winner
+    INNER JOIN Teams t on p.playerId = p.Teams_teamId
+    WHERE sm.springFall = 'F' AND p.playerId = ? AND sr.type = 'C' AND sr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'S'
+    ORDER BY opponentRank DESC LIMIT 1)) AS simpleMatchesFallLostVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesSpringWonVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'S' AND p.playerId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringWonVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesSpringLostVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'S' AND p.playerId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringLostVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesFallWonVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'F' AND p.playerId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallWonVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesFallLostVsNationalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'F' AND p.playerId = ? AND dr.type = 'N' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallLostVsNationalRanked,
+
+    (SELECT count(*) doubleMatchesSpringWonVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'S' AND p.playerId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringWonVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesSpringLostVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'S' AND p.playerId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringLostVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesFallWonVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'F' AND p.playerId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallWonVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesFallLostVsRegionalRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'F' AND p.playerId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallLostVsRegionalRanked,
+
+    (SELECT count(*) doubleMatchesSpringWonVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'S' AND p.playerId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringWonVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesSpringLostVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'S' AND p.playerId = ? AND dr.type = 'C' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesSpringLostVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesFallWonVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.winnerDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.loserDouble
+    WHERE dm.springFall = 'F' AND p.playerId = ? AND dr.type = 'R' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallWonVsConferenceRanked,
+
+    (SELECT count(*) doubleMatchesFallLostVsConferenceRanked FROM DoubleMatches dm
+    INNER JOIN DoubleTeams dt on dt.doubleTeamId = dm.loserDouble
+    INNER JOIN Players p on p.playerId = dt.Players_playerId
+    INNER JOIN DoubleRanking dr on dr.DoubleTeams_doubleTeamId = dm.winnerDouble
+    WHERE dm.springFall = 'F' AND p.playerId = ? AND dr.type = 'C' AND dr.rank <
+    (SELECT opponentRank
+    FROM RankPointsRules
+    WHERE type = 'D'
+    ORDER BY opponentRank DESC LIMIT 1)) AS doubleMatchesFallLostVsConferenceRanked`,
+      [playerId, playerId, playerId, playerId, playerId, playerId, playerId, playerId, playerId,
+        playerId, playerId, playerId, playerId, playerId, playerId, playerId, playerId, playerId,
+        playerId, playerId, playerId, playerId, playerId, playerId], (error, results, fields) => {
+        if (error) {
+          connection.release();
+          return res.send(JSON.stringify({
+            "status": 500,
+            "error": error,
+            "response": null
+          }));
+        }
+
+
+
+
+        res.send(JSON.stringify({
+          "status": 200,
+          "error": null,
+          "response": results
+        }));
+        connection.release(); // CLOSE THE CONNECTION
+      });
+
+  });
+}
+
 const getTeamStatsVsRanked = (req, res) => {
 
   const teamId = req.params.teamId;
@@ -368,7 +716,7 @@ const getTeamStatsVsRanked = (req, res) => {
 }
 
 module.exports = {
-
+  getPlayerStatsVSRanked,
   getTeamStatsVsRanked,
 
   getSimpleMatchsWonByPlayerId(req, res, next) {

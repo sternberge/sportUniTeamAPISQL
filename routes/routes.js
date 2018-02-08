@@ -276,7 +276,7 @@ module.exports = (app) => {
   app.get('/api/stats/getTournamentsWinRatioByTeam/:teamId',StatsController.getTournamentsWinRatioByTeam);
   app.get('/api/stats/getSpringHomeAwayWinByPlayer/:homeAway/:playerId',StatsController.getSpringHomeAwayWinByPlayer);
   app.get('/api/stats/getTeamStatsVsRanked/:teamId', StatsController.getTeamStatsVsRanked);
-
+  app.get('/api/stats/getPlayerStatsVSRanked/:playerId', StatsController.getPlayerStatsVSRanked);
 
 
   //app.post('/api/upload',UserController.upload);
