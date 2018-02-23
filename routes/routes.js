@@ -188,6 +188,9 @@ module.exports = (app) => {
 
   app.get('/api/simpleMatches/getMatchsByCurrentYear/:gender/:springFall',SimpleMatchesController.getMatchsByCurrentYear);
 
+  app.get('/api/simpleMatches/getSimpleFallMatchsByTeamId/:year/:teamId',SimpleMatchesController.getSimpleFallMatchsByTeamId);
+
+
   app.post('/api/simpleMatches', simpleMatches.createSimpleMatch);
   app.delete('/api/simpleMatches/:simpleMatch_id',SimpleMatchesController.delete);
   app.get('/api/simpleMatches/:simpleMatch_id', SimpleMatchesController.find);
@@ -206,6 +209,9 @@ module.exports = (app) => {
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentPlayer1Player2/:year/:springFall/:tournamentId/:playerId1/:playerId2',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentPlayer1Player2);
   app.get('/api/doubleMatches/getMatchsByYearSpringFallGenderTournamentCollege/:year/:springFall/:gender/:tournamentId/:collegeId',DoubleMatchesController.getMatchsByYearSpringFallGenderTournamentCollege);
   app.get('/api/doubleMatches/getMatchSimpleOrDoubleByMatchId/:matchId/:matchType',DoubleMatchesController.getMatchSimpleOrDoubleByMatchId);
+
+  app.get('/api/doubleMatches/getDoubleFallMatchsByTeamId/:year/:teamId',DoubleMatchesController.getDoubleFallMatchsByTeamId);
+
 
   //Teams
   app.get('/api/teams/getTeamIdByGenderCollege/:gender/:collegeId',TeamsController.getTeamIdByGenderCollege);

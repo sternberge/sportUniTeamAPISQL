@@ -56,7 +56,7 @@ module.exports = {
     });
   },
 
-  
+
 
   edit(req, res, next) {
     const simpleMatchId = req.params.simpleMatch_id;
@@ -339,6 +339,47 @@ module.exports = {
           res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
           connection.release(); // CLOSE THE CONNECTION
         });
+
+
+      });
+
+    },
+
+    getSimpleFallMatchsByTeamId(req, res, next) {
+      let year = Number(req.params.year);
+      const teamId = req.params.teamId;
+      const yearPlusOne = Number(year)+1;
+
+      db.pool.getConnection((error, connection) => {
+
+        if (error){
+          return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+        }
+        var query = connection.query(`SELECT concat(u1.firstName,' ',u1.lastName) as WinnerName,concat(u2.firstName,' ',u2.lastName) as LoserName,sm.*,t.name as TournamentName,sm.score,c1.name as winnerCollege,c2.name as loserCollege,sr1.rank as winnerRank,sr2.rank as loserRank,c1.collegeId as winnerCollege,c2.collegeId as loserColleger
+        FROM SimpleMatches sm
+        INNER JOIN Players p1 on p1.playerId = sm.winner
+        INNER JOIN Players p2 on p2.playerId = sm.loser
+        INNER JOIN Users u1 on u1.userId = p1.Users_userId
+        INNER JOIN Users u2 on u2.userId = p2.Users_userId
+        INNER JOIN Teams t1 on t1.teamId = p1.Teams_teamId
+        INNER JOIN Teams t2 on t2.teamId = p2.Teams_teamId
+        INNER JOIN Colleges c1 on c1.collegeId = t1.Colleges_collegeId
+        INNER JOIN Colleges c2 on c2.collegeId = t2.Colleges_collegeId
+        INNER JOIN Tournaments t on t.tournamentId = sm.Tournaments_tournamentId
+        LEFT join SingleRanking sr1 ON sr1.Players_playerId = p1.playerId
+        LEFT join SingleRanking sr2 ON sr2.Players_playerId = p2.playerId
+        WHERE(p1.Teams_teamId = ? OR p2.Teams_teamId = ?) AND sm.date >= '?-09-01' AND sm.date <= '?-06-30' AND sr1.type = 'N' AND sr2.type = 'N'
+        ORDER BY sm.date DESC;
+        `,[teamId,teamId,year,yearPlusOne] ,(error, results, fields) => {
+          if (error){
+            connection.release();
+            return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+          }
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+          connection.release(); // CLOSE THE CONNECTION
+        });
+
+        console.log(query.sql);
 
 
       });
