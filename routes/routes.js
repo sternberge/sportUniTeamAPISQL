@@ -21,6 +21,7 @@ const TeamRanking = require('../ranking/team_ranking/index.js');
 
 
 const AuthenticateController = require ('../middlewares/authentication/index.js');
+const simpleMatches = require ('../matches/simple_matches/index.js');
 
 const SingleRankingController = require ('../controllers/single_ranking_controller');
 const DoubleRankingController = require ('../controllers/double_ranking_controller');
@@ -187,7 +188,7 @@ module.exports = (app) => {
 
   app.get('/api/simpleMatches/getMatchsByCurrentYear/:gender/:springFall',SimpleMatchesController.getMatchsByCurrentYear);
 
-  app.post('/api/simpleMatches', SimpleMatchesController.create);
+  app.post('/api/simpleMatches', simpleMatches.createSimpleMatch);
   app.delete('/api/simpleMatches/:simpleMatch_id',SimpleMatchesController.delete);
   app.get('/api/simpleMatches/:simpleMatch_id', SimpleMatchesController.find);
   app.put('/api/simpleMatches/:simpleMatch_id', SimpleMatchesController.edit);
