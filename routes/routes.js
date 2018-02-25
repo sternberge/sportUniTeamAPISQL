@@ -98,6 +98,8 @@ module.exports = (app) => {
   app.get('/api/users/:user_id', UserController.findUserById);
   app.put('/api/users/:user_id', UserController.editUser);
   app.get('/api/users/getUserInformationByUserId/:userId', UserController.getUserInformationByUserId);
+  app.post('/api/users/uploadImage', UserController.uploadImage);
+  //app.post('/api/users/getImage/:userId', UserController.getImage);
 
   //Budget
   /*
@@ -286,8 +288,5 @@ module.exports = (app) => {
   app.get('/api/stats/getSpringHomeAwayWinByPlayer/:homeAway/:playerId',StatsController.getSpringHomeAwayWinByPlayer);
   app.get('/api/stats/getTeamStatsVsRanked/:teamId', StatsController.getTeamStatsVsRanked);
   app.get('/api/stats/getPlayerStatsVSRanked/:playerId', StatsController.getPlayerStatsVSRanked);
-
-
-  //app.post('/api/upload',UserController.upload);
 
 };

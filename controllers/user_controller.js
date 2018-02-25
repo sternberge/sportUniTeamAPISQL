@@ -3,11 +3,60 @@ var expressValidator = require('express-validator');
 var promise = require('promise');
 var bcrypt = require('bcrypt'); // algo de hash
 const saltRounds = 10;
+var fs = require('fs-extra');
+
+// const updateUserImage = async (imagePath, userId) => {
+//   return new Promise(function (resolve, reject) {
+//
+//     db.pool.getConnection((error, connection) => {
+//       if (error) {
+//         return res.status(500).send(JSON.stringify({
+//           "status": 500,
+//           "error": error,
+//           "response": null
+//         }));
+//       }
+//       var query = connection.query(`UPDATE Users
+//         SET image = ?
+//         WHERE userId = ?`, [imagePath, userId], (error, results, fields) => {
+//         if (error) {
+//           connection.release();
+//           return reject(error);
+//         }
+//         connection.release();
+//         resolve(results);
+//       });
+//     });
+//
+//   });
+// }
+
+const uploadImage = async (req, res) => {
+  let imagePath;
+  let fstream;
+  let userId;
+  req.pipe(req.busboy);
+  req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
+      userId = val;
+    });
+  req.busboy.on('file', function (fieldname, file, filename) {
+    console.log(`Uploading file for user ${userId}`);
+    const extension = filename.substring(filename.indexOf("."));
+    imagePath = "uploaded_files/images/users/" + userId + extension;
+    fstream = fs.createWriteStream(imagePath);
+    file.pipe(fstream);
+    fstream.on('close', function () {
+      res.send('uploaded');
+    });
+  });
+
+}
 
 
 
 module.exports = {
 
+  uploadImage,
 
   findUserById (req, res) {
     const userId = req.params.user_id;
@@ -177,7 +226,7 @@ module.exports = {
 
   getUserInformationByUserId(req, res, next){
     const userId = req.params.userId;
-  
+
     db.pool.getConnection((error, connection) => {
 
       if (error){
