@@ -221,6 +221,7 @@ module.exports = (app) => {
   app.delete('/api/teams/:team_id',TeamsController.delete);
   app.get('/api/teams/:team_id', TeamsController.find);
   app.put('/api/teams/:team_id', TeamsController.edit);
+  app.get('/api/teams/getTeamsByGender/:gender',TeamsController.getTeamsByGender);
 
 
 

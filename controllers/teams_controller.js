@@ -1,5 +1,26 @@
 var db = require('./../db');
 
+const getTeamsByGender = (req, res) => {
+  const gender = req.params.gender;
+  db.pool.getConnection((error, connection) => {
+    if (error){
+      return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+    }
+    var query = connection.query(`SELECT t.teamId, c.collegeId, c.name as collegeName
+    FROM Teams t
+    INNER JOIN Colleges c on c.collegeId = t.Colleges_collegeId
+    WHERE t.gender = ?`,
+    gender, (error, results, fields) => {
+      if (error){
+        connection.release();
+        return res.send(JSON.stringify({"status": 500, "error": error, "response": null}));
+      }
+      res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+      connection.release(); // CLOSE THE CONNECTION
+    });
+  });
+}
+
 const getTeamUnrankedNumber = () => {
   return new Promise((resolve, reject) => {
     db.pool.getConnection((error, connection) => {
@@ -122,6 +143,8 @@ const createTeamWithDefaultRankings = async (req, res) => {
 module.exports = {
 
   createTeamWithDefaultRankings,
+
+  getTeamsByGender,
 
   find(req, res) {
     const teamId = req.params.team_id;
